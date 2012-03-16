@@ -12,11 +12,12 @@ TODO
 
 Priority queue; move the important items to the top.
 
-* Github setup
-* project development layout
-  * directory for development documentation, meta, etc.?
+* What to do about features table in README?
+* Revise README to have good mission statement.  Also update GitHub
+  tagline.
 * flesh out and revise readme
-* build system
+* build system!  (people won't contribute if they can't build the
+  software)
 * basic tests and scenarios
 
 
@@ -24,3 +25,7 @@ Bugs
 ----
 
 None!
+
+
+Copyright (c) 2012 Roc Project
+This is free software.  See LICENSE.txt for details.

@@ -6,8 +6,7 @@ High-Level Issues
 -----------------
 
 * Project name: Roc
-* Code license: FreeBSD (?)
-* Documentation/web license: ?
+* Code license: BSD 2-clause (FreeBSD)
 
 
 Features
@@ -80,7 +79,7 @@ Tools and Languages
 * Vala for library implementation
 * Swig for language bindings
 * Python for CLI?
-* Build system?
+* Build system?  Waf?
 
 
 Competitors
@@ -90,3 +89,7 @@ Competitors
 * Analyse-it
 * Metz group at University of Chicago: ROCKIT (ROCFIT?)
   * derivative JROCFIT
+
+
+Copyright (c) 2012 Roc Project
+This is free software.  See LICENSE.txt for details.

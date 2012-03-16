@@ -26,8 +26,9 @@ in languages suited to each investigator's environment.
 License
 -------
 
-Roc is released under the BSD 2-Clause License (also known as the
-FreeBSD License).  See the file LICENSE.txt for details.
+Roc is free, open source software.  It is released under the BSD
+2-Clause License (also known as the FreeBSD License).  See the file
+LICENSE.txt for details.
 
 
 Features and Project Maturity
@@ -69,3 +70,21 @@ Plotting                 NA       P
 Ranking statistics       P        P
 
 ----------------------------------------
+
+
+Requirements
+------------
+
+* Java 5 if using the Java library
+* Python 2.5 if using the command line interface
+
+
+Contact
+-------
+
+* [Kendrick Boyd](http://github.com/kboyd)
+* [Aubrey Barnard](http://github.com/afbarnard)
+
+
+Copyright (c) 2012 Roc Project
+This is free software.  See LICENSE.txt for details.
