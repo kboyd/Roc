@@ -38,38 +38,25 @@ The software is released as a library and as a command-line interface
 (CLI) front-end for the library.  Features are "not applicable",
 "planned", "implemented", "tested", or "stable".
 
-----------------------------------------
-Feature Description      Library  CLI
-                         Status   Status
------------------------  -------  ------
-Calculate curve points   P        P
-
-Calculate curve area     P        P
-
-Maximum achievable area  P        P
-(convex hull)
-
-Curve aggregation        P        P
-(vertical averaging)
-
-Curve clipping           P        P
-
-Minimum-aware PR         P        P
-
-Label column input       P        P
-
-Predicted-actual pairs   P        P
-columns input
-
-Weighted examples        P        P
-
-Confidence intervals     P        P
-
-Plotting                 NA       P
-
-Ranking statistics       P        P
-
-----------------------------------------
+<table>
+  <thead>
+    <tr><th>Feature Description</th><th>Library Status</th><th>CLI Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Calculate curve points</td><td>P</td><td>P</td></tr>
+    <tr><td>Calculate curve area</td><td>P</td><td>P</td></tr>
+    <tr><td>Maximum achievable area (convex hull)</td><td>P</td><td>P</td></tr>
+    <tr><td>Curve aggregation (vertical averaging)</td><td>P</td><td>P</td></tr>
+    <tr><td>Curve clipping</td><td>P</td><td>P</td></tr>
+    <tr><td>Minimum-aware PR</td><td>P</td><td>P</td></tr>
+    <tr><td>Label column input</td><td>P</td><td>P</td></tr>
+    <tr><td>Predicted-actual pairs columns input</td><td>P</td><td>P</td></tr>
+    <tr><td>Weighted examples</td><td>P</td><td>P</td></tr>
+    <tr><td>Confidence intervals</td><td>P</td><td>P</td></tr>
+    <tr><td>Plotting</td><td>NA</td><td>P</td></tr>
+    <tr><td>Ranking statistics</td><td>P</td><td>P</td></tr>
+  </tbody>
+</table>
 
 
 Requirements
