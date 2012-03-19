@@ -10,17 +10,16 @@ Characteristic](http://en.wikipedia.org/wiki/Receiver_operating_characteristic))
 and PR
 ([Precision-Recall](http://en.wikipedia.org/wiki/Precision_and_recall))
 curves.  These curves are typically used to evaluate classification
-approaches in areas like Machine Learning and Epidemiology.
+approaches in areas such as Machine Learning and Epidemiology.
+Scientists and researchers are the target audience of this software.
+
+The goal of this project is to provide software for evaluation curves
+that correctly implements the traditional and recent approaches in
+languages suited to each investigator's environment.
 
 Roc, the name of the software, is pronounced "rock" like its namesake,
 roc, an [enormous, legendary bird of
-prey](http://en.wikipedia.org/wiki/Roc_(mythology)).
-
-This software is aimed at scientists and researchers.
-
-One of the goals of this project is to provide software for evaluation
-curves that correctly implements the traditional and recent approaches
-in languages suited to each investigator's environment.
+prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
 
 
 License
@@ -34,9 +33,11 @@ LICENSE.txt for details.
 Features and Project Maturity
 -----------------------------
 
-The software is released as a library and as a command-line interface
-(CLI) front-end for the library.  Features are "not applicable",
-"planned", "implemented", "tested", or "stable".
+This software is in the early design and development stages.  It is
+planned to be released as a library and as a command-line interface
+(CLI) front-end for the library.  The table below contains a summary of
+features.  Features are "not applicable", "planned", "implemented",
+"tested", or "stable".
 
 <table>
   <thead>
