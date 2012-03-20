@@ -13,9 +13,10 @@ curves.  These curves are typically used to evaluate classification
 approaches in areas such as Machine Learning and Epidemiology.
 Scientists and researchers are the target audience of this software.
 
-The goal of this project is to provide software for evaluation curves
-that correctly implements the traditional and recent approaches in
-languages suited to each investigator's environment.
+The goal of this project is to provide software for evaluating ROC and
+PR curves that correctly implements the traditional and recent
+approaches using languages allowing for flexibility in each
+investigator's environment.
 
 Roc, the name of the software, is pronounced "rock" like its namesake,
 roc, an [enormous, legendary bird of
