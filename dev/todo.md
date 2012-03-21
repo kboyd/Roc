@@ -12,12 +12,9 @@ TODO
 
 Priority queue; move the important items to the top.
 
-* What to do about features table in README?
-* Revise README to have good mission statement.  Also update GitHub
-  tagline.
-* flesh out and revise readme
 * build system!  (people won't contribute if they can't build the
   software)
+* Design API, including names.  Note language-specific things.
 * basic tests and scenarios
 
 
