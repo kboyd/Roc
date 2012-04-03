@@ -60,7 +60,8 @@ Formalized Nouns and Verbs
 
 Nouns (Objects?)
 * curve data - information for creating a curve, list of confusion
-  matrices
+  matrices - might want a different name for this curve may be
+  misleading
 * area under curve - number (Auc?)
 * curve points - list of points (x,y) defining a curve
 * data - list of weight,label
@@ -73,7 +74,7 @@ Verbs (Methods)
   info like pos and neg counts)
 * calculate: curve data -> area under curve
 * plot: curve data -> curve points
-* average: curve points -> curve points? or curve data -> curve data?
+* average: list of curve points -> curve points? or list of curve data -> curve data?
 * clip: curve points -> curve points
 
 
@@ -98,7 +99,7 @@ Development Structure
 
 * How organize different languages, tests?
 * Build system?  (Probably not Ant.)
-
+* Versions - how do we want to deal with versions, or does it not matter at this point
 
 Tools and Languages
 -------------------
