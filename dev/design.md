@@ -49,10 +49,34 @@ Nouns and Verbs
 * maximum achievable: curve data -> convex hull curve data
 * transformation: ROC points <-> PR points
 * vertical averaging: curves data -> curve data
-* clipping: curve data -> clipped curve data
+* clipping: curve points -> clipped curve points
 * ranking
   * data -> ranking -> curve data
   * data -> ranking -> stuff with ranks
+
+
+Formalized Nouns and Verbs
+--------------------------
+
+Nouns (Objects?)
+* curve data - information for creating a curve, list of confusion
+  matrices
+* area under curve - number (Auc?)
+* curve points - list of points (x,y) defining a curve
+* data - list of weight,label
+
+Verbs (Methods)
+* make: data -> curve data
+* make: curve data -> curve data (ie for maximum achievable using
+  convex hull)
+* make: curve points -> curve data (for transformation, needs extra
+  info like pos and neg counts)
+* calculate: curve data -> area under curve
+* plot: curve data -> curve points
+* average: curve points -> curve points? or curve data -> curve data?
+* clip: curve points -> curve points
+
+
 
 
 Design Questions
