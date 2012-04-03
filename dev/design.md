@@ -23,6 +23,8 @@ Features
 * regular PR, minimum PR
 * weighted examples (three-column input)
 * clipping of curve
+* arbitrary labels (specify what label is true)
+* multiple classes
 
 
 Future Features
