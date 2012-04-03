@@ -45,12 +45,22 @@ package mloss.roc;
  * true negatives = (total negatives) - (false positives)
  * </code>
  */
-class Curve {
+public class Curve {
 
     protected int[] truePositiveCounts;
     protected int[] falsePositiveCounts;
     protected int totalPositives;
     protected int totalNegatives;
+
+    /**
+     * Value for negative label.
+     */
+    public static final int NEG = 0;
+    
+    /**
+     * Value for positive label.
+     */
+    public static final int POS = 1;
 
     /**
      * TODO
@@ -76,11 +86,14 @@ class Curve {
 
         // Calculate the individual confusion matrices
         for (int labelIndex = 0; labelIndex < rankedLabels.length; labelIndex++) {
-            if (rankedLabels[labelIndex] == 1) {
+            if (rankedLabels[labelIndex] == POS) {
                 totalPositives++;
-            } else {
+            } else if (rankedLabels[labelIndex] == NEG) {
                 totalNegatives++;
-            }
+            } else {
+		throw new IllegalArgumentException("Invalid label, neither negative (" + NEG + ") nor positive (" + POS + ")");
+	    }
+	    
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
         }
@@ -104,9 +117,10 @@ class Curve {
     }
 
     /**
-     * TODO
+     * Calculate area under ROC curve.
+     * @return area under ROC curve
      */
-    public double rocArea() {
+    public double calculateRocArea() {
 	// TODO make work for trapezoids and convex hull
 	// There is only a new rectangle when the x-value (FPR) changes
 	double area = 0.0;
@@ -118,5 +132,53 @@ class Curve {
 	    }
 	}
         return area;
+    }
+
+    /**
+     * Calculate area under PR curve for recall between minimum and
+     * maximum recall. Uses interpolation from Davis and Goadrich
+     * 2006.
+     *
+     * @param minimumRecall lowest recall that counts towards area
+     * @param maximumRecall highest recall that counts towards area
+     * @return area under PR curve
+     */
+    public double calculatePrArea(double minimumRecall, double maximumRecall) {
+	throw new NotImplementedException();
+    }
+
+
+    /**
+     * Generate (x,y) points for ROC curve. Linear interpolation
+     * between ROC points so simply draw lines between the points.
+     *
+     * TODO - return double[][] or an object, CurvePoints or something?
+     *
+     * @return [i][0] is x-value (fpr) of ith point, [i][1] is y-value
+     * (tpr) of ith point, points are sorted by ascending x-value
+     */
+    public double[][] plotRoc() {
+	throw new NotImplementedException();
+    }
+
+    /**
+     * Generate (x,y) points for PR curve. Linear interpolation is NOT
+     * correct for PR curves, instead interpolation is done by
+     * FORMULA.
+     * 
+     * TODO - probably need a plotPr() that doesn't require specifying
+     * the numberOfSamples, what should be the default though? 100?
+     * 1000?
+     *
+     * @param numberOfSamples number of evenly spaced samples to take
+     * of the PR curve, with a sufficiently large value using a line
+     * between points is a reasonable approximation of the correct
+     * interpolation
+     * @return [i][0] is the x-value (recall) of the ith point, [i][1]
+     * is the y-value (precision) of the ith points, points are sorted
+     * by ascending x-value
+     */
+    public double[][] plotPr(int numberOfSamples) {
+	throw new NotImplementedException();
     }
 }
