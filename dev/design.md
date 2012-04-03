@@ -20,11 +20,11 @@ Features
 * aggregation (vertical averaging)
 * one-column (labels sorted according to removed key) or two-column
   input (key-label pairs to be sorted)
+  * input via a positive list and a negative list (or files)
 * regular PR, minimum PR
 * weighted examples (three-column input)
 * clipping of curve
 * arbitrary labels (specify what label is true)
-* multiple classes
 
 
 Future Features
@@ -33,6 +33,11 @@ Future Features
 * confidence intervals
 * CLI calls plotting program
 * ranking statistics/comparisons?
+* Variants of area under ROC curve (http://www.springerlink.com/content/u5h27552t1642g55/abstract/)
+  * scored ROC
+  * softROC
+  * probROC
+* multiple classes
 
 
 Nouns and Verbs
@@ -91,7 +96,7 @@ Competitors
 * Analyse-it
 * Metz group at University of Chicago: ROCKIT (ROCFIT?)
   * derivative JROCFIT
-
+* [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
 
 Copyright (c) 2012 Roc Project
 This is free software.  See LICENSE.txt for details.
