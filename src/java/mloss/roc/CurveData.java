@@ -70,7 +70,10 @@ public class CurveData {
     }
 
     /**
-     * TODO
+     * Populates local variables from an ranked list of true labels. 
+     *
+     * @param rankedLabels true labels with the first element
+     * predicted most likely to be positive
      */
     void buildCounts(int[] rankedLabels) {
         // Allocate space for n + 1 points.  There is one point after
@@ -100,7 +103,10 @@ public class CurveData {
     }
 
     /**
-     * TODO
+     * Confusion matrix from thresholding at a particular point. 
+     *      
+     * @param rankNumber 
+     * @return confusion matrix of form [TP,FP,FN,TN]
      */
     public int[] confusionMatrix(int rankNumber) {
         int truePositives = truePositiveCounts[rankNumber];
@@ -110,6 +116,12 @@ public class CurveData {
         return new int[] {truePositives, falsePositives, falseNegatives, trueNegatives};
     }
 
+    /**
+     * Roc point based on thresholding at a particular rank.
+     *
+     * @param rankNumber
+     * @return [0] = fpr (x-axis), [1] = tpr (y-axis)
+     */
     public double[] rocPoint(int rankNumber) {
 	double falsePositiveRatio = (double) falsePositiveCounts[rankNumber] / (double) totalNegatives;
 	double truePositiveRatio = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
@@ -137,7 +149,7 @@ public class CurveData {
     /**
      * Calculate area under PR curve for recall between minimum and
      * maximum recall. Uses interpolation from Davis and Goadrich
-     * 2006.
+     * 2006 (and Goadrich and Shavlik 2005?).
      *
      * @param minimumRecall lowest recall that counts towards area
      * @param maximumRecall highest recall that counts towards area
@@ -152,7 +164,7 @@ public class CurveData {
      * Generate (x,y) points for ROC curve. Linear interpolation
      * between ROC points so simply draw lines between the points.
      *
-     * TODO - return double[][] or an object, CurvePoints or something?
+     * TODO - should we return an object, CurvePoints or something?
      *
      * @return [i][0] is x-value (fpr) of ith point, [i][1] is y-value
      * (tpr) of ith point, points are sorted by ascending x-value
