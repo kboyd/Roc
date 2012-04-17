@@ -10,8 +10,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 
-/** Tests {@link Curve}. */
-public class CurveTest {
+/** Tests {@link CurveData}. */
+public class CurveDataTest {
 
     public static final double TOLERANCE = 1.0e-10;
 
@@ -29,34 +29,34 @@ public class CurveTest {
     static final int[] labelsBest_posCounts = {0, 1, 2, 2, 2, 2};
     static final int[] labelsBest_negCounts = {0, 0, 0, 1, 2, 3};
 
-    Curve curve;
+    CurveData curve;
 
     @Before public void setUp() {
-        curve = new Curve(labelsAverage);
+        curve = new CurveData(labelsAverage);
     }
 
-    /** Tests {@link Curve.buildCounts(int[])}. */
+    /** Tests {@link CurveData.buildCounts(int[])}. */
     @Test public void testBuildCountsFromHardLabels() {
-        Curve curve = new Curve(labelsWorst);
+        CurveData curve = new CurveData(labelsWorst);
         assertArrayEquals(labelsWorst_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(2, curve.totalNegatives);
 
-        curve = new Curve(labelsAverage);
+        curve = new CurveData(labelsAverage);
         assertArrayEquals(labelsAverage_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsBest);
+        curve = new CurveData(labelsBest);
         assertArrayEquals(labelsBest_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsBest_negCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
         assertEquals(3, curve.totalNegatives);
     }
 
-    /** Tests {@link Curve.confusionMatrix(int)}. */
+    /** Tests {@link CurveData.confusionMatrix(int)}. */
     @Test public void testConfusionMatrix() {
         int[][] expected = {
             {0, 0, 5, 5},
@@ -76,7 +76,7 @@ public class CurveTest {
         }
     }
 
-    /** Tests {@link Curve.rocPoint(int)}. */
+    /** Tests {@link CurveData.rocPoint(int)}. */
     @Test public void testRocPoint() {
         // Remember FPR horizontal, TPR vertical
         // Do these in fractions for human readability and floating-point precision
@@ -98,7 +98,7 @@ public class CurveTest {
         }
     }
 
-    /** Tests {@link Curve.rocArea()}. */
+    /** Tests {@link CurveData.rocArea()}. */
     @Test public void testRocArea() {
         // Points: Rectangles (w * h = area):
         // 1-2: 0.2 * 0.2 = 1.0 / 25.0

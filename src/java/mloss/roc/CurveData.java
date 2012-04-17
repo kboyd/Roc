@@ -45,7 +45,7 @@ package mloss.roc;
  * true negatives = (total negatives) - (false positives)
  * </code>
  */
-public class Curve {
+public class CurveData {
 
     protected int[] truePositiveCounts;
     protected int[] falsePositiveCounts;
