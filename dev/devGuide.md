@@ -13,15 +13,17 @@ Style
   Emacs default.  Also less ambiguous.)
 * Two empty lines between sections.
 * Abbreviations treated like words with respect to capitalization
-  etc. in identifiers, code, file names, etc. (contrary to Java style).
-  For example, "Http", "Xml", "Csv".  Abbreviations regular in other
-  text (e.g. documentation).
+  etc. in identifiers, code, file names, etc. (contrary to Java
+  style).  For example, "Http", "Xml", "Csv", "Roc", "Pr".
+  Abbreviations regular in other text (e.g. documentation).
 * Punctuation outside or inside quotation marks?  Traditional style:
   latter; my programming eyes: former.
-* Otherwise standard per-language style unless noted
-* License notice part of every file.  Bottom for docs.  Top for code.
+* Otherwise standard per-language style unless noted.
+* License notice part of every file.
   > Copyright (c) <year> Roc Project
   > This is free software.  See LICENSE.txt for details.
+  * Bottom for docs.
+  * Top for code.
 
 
 ### Pandoc / Markdown ###

@@ -45,12 +45,22 @@ package mloss.roc;
  * true negatives = (total negatives) - (false positives)
  * </code>
  */
-class Curve {
+public class CurveData {
 
     protected int[] truePositiveCounts;
     protected int[] falsePositiveCounts;
     protected int totalPositives;
     protected int totalNegatives;
+
+    /**
+     * Value for negative label.
+     */
+    public static final int NEG = 0;
+    
+    /**
+     * Value for positive label.
+     */
+    public static final int POS = 1;
 
     /**
      * TODO
@@ -60,7 +70,10 @@ class Curve {
     }
 
     /**
-     * TODO
+     * Populates local variables from an ranked list of true labels. 
+     *
+     * @param rankedLabels true labels with the first element
+     * predicted most likely to be positive
      */
     void buildCounts(int[] rankedLabels) {
         // Allocate space for n + 1 points.  There is one point after
@@ -76,18 +89,24 @@ class Curve {
 
         // Calculate the individual confusion matrices
         for (int labelIndex = 0; labelIndex < rankedLabels.length; labelIndex++) {
-            if (rankedLabels[labelIndex] == 1) {
+            if (rankedLabels[labelIndex] == POS) {
                 totalPositives++;
-            } else {
+            } else if (rankedLabels[labelIndex] == NEG) {
                 totalNegatives++;
-            }
+            } else {
+		throw new IllegalArgumentException("Invalid label, neither negative (" + NEG + ") nor positive (" + POS + ")");
+	    }
+	    
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
         }
     }
 
     /**
-     * TODO
+     * Confusion matrix from thresholding at a particular point. 
+     *      
+     * @param rankNumber 
+     * @return confusion matrix of form [TP,FP,FN,TN]
      */
     public int[] confusionMatrix(int rankNumber) {
         int truePositives = truePositiveCounts[rankNumber];
@@ -97,6 +116,12 @@ class Curve {
         return new int[] {truePositives, falsePositives, falseNegatives, trueNegatives};
     }
 
+    /**
+     * Roc point based on thresholding at a particular rank.
+     *
+     * @param rankNumber
+     * @return [0] = fpr (x-axis), [1] = tpr (y-axis)
+     */
     public double[] rocPoint(int rankNumber) {
 	double falsePositiveRatio = (double) falsePositiveCounts[rankNumber] / (double) totalNegatives;
 	double truePositiveRatio = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
@@ -104,9 +129,10 @@ class Curve {
     }
 
     /**
-     * TODO
+     * Calculate area under ROC curve.
+     * @return area under ROC curve
      */
-    public double rocArea() {
+    public double calculateRocArea() {
 	// TODO make work for trapezoids and convex hull
 	// There is only a new rectangle when the x-value (FPR) changes
 	double area = 0.0;
@@ -118,5 +144,53 @@ class Curve {
 	    }
 	}
         return area;
+    }
+
+    /**
+     * Calculate area under PR curve for recall between minimum and
+     * maximum recall. Uses interpolation from Davis and Goadrich
+     * 2006 (and Goadrich and Shavlik 2005?).
+     *
+     * @param minimumRecall lowest recall that counts towards area
+     * @param maximumRecall highest recall that counts towards area
+     * @return area under PR curve
+     */
+    public double calculatePrArea(double minimumRecall, double maximumRecall) {
+	throw new NotImplementedException();
+    }
+
+
+    /**
+     * Generate (x,y) points for ROC curve. Linear interpolation
+     * between ROC points so simply draw lines between the points.
+     *
+     * TODO - should we return an object, CurvePoints or something?
+     *
+     * @return [i][0] is x-value (fpr) of ith point, [i][1] is y-value
+     * (tpr) of ith point, points are sorted by ascending x-value
+     */
+    public double[][] plotRoc() {
+	throw new NotImplementedException();
+    }
+
+    /**
+     * Generate (x,y) points for PR curve. Linear interpolation is NOT
+     * correct for PR curves, instead interpolation is done by
+     * FORMULA.
+     * 
+     * TODO - probably need a plotPr() that doesn't require specifying
+     * the numberOfSamples, what should be the default though? 100?
+     * 1000?
+     *
+     * @param numberOfSamples number of evenly spaced samples to take
+     * of the PR curve, with a sufficiently large value using a line
+     * between points is a reasonable approximation of the correct
+     * interpolation
+     * @return [i][0] is the x-value (recall) of the ith point, [i][1]
+     * is the y-value (precision) of the ith points, points are sorted
+     * by ascending x-value
+     */
+    public double[][] plotPr(int numberOfSamples) {
+	throw new NotImplementedException();
     }
 }

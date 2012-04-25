@@ -20,11 +20,11 @@ Features
 * aggregation (vertical averaging)
 * one-column (labels sorted according to removed key) or two-column
   input (key-label pairs to be sorted)
+  * input via a positive list and a negative list (or files)
 * regular PR, minimum PR
 * weighted examples (three-column input)
 * clipping of curve
 * arbitrary labels (specify what label is true)
-* multiple classes
 
 
 Future Features
@@ -33,6 +33,11 @@ Future Features
 * confidence intervals
 * CLI calls plotting program
 * ranking statistics/comparisons?
+* Variants of area under ROC curve (http://www.springerlink.com/content/u5h27552t1642g55/abstract/)
+  * scored ROC
+  * softROC
+  * probROC
+* multiple classes
 
 
 Nouns and Verbs
@@ -44,10 +49,35 @@ Nouns and Verbs
 * maximum achievable: curve data -> convex hull curve data
 * transformation: ROC points <-> PR points
 * vertical averaging: curves data -> curve data
-* clipping: curve data -> clipped curve data
+* clipping: curve points -> clipped curve points
 * ranking
   * data -> ranking -> curve data
   * data -> ranking -> stuff with ranks
+
+
+Formalized Nouns and Verbs
+--------------------------
+
+Nouns (Objects?)
+* curve data - information for creating a curve, list of confusion
+  matrices - might want a different name for this curve may be
+  misleading
+* area under curve - number (Auc?)
+* curve points - list of points (x,y) defining a curve
+* data - list of weight,label
+
+Verbs (Methods)
+* make: data -> curve data
+* make: curve data -> curve data (ie for maximum achievable using
+  convex hull)
+* make: curve points -> curve data (for transformation, needs extra
+  info like pos and neg counts)
+* calculate: curve data -> area under curve
+* plot: curve data -> curve points
+* average: list of curve points -> curve points? or list of curve data -> curve data?
+* clip: curve points -> curve points
+
+
 
 
 Design Questions
@@ -69,7 +99,7 @@ Development Structure
 
 * How organize different languages, tests?
 * Build system?  (Probably not Ant.)
-
+* Versions - how do we want to deal with versions, or does it not matter at this point
 
 Tools and Languages
 -------------------
@@ -91,7 +121,7 @@ Competitors
 * Analyse-it
 * Metz group at University of Chicago: ROCKIT (ROCFIT?)
   * derivative JROCFIT
-
+* [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
 
 Copyright (c) 2012 Roc Project
 This is free software.  See LICENSE.txt for details.
