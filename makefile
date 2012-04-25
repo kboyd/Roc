@@ -44,14 +44,14 @@ $(javaTestDir)/%.class: $(javaTestDir)/%.java
 	cd $(javaTestDir) && javac -cp $(classpath) $*.java
 
 # List Java dependencies here
-$(javaTestDir)/$(javaPkgDir)/CurveTest.class: $(javaSrcDir)/$(javaPkgDir)/Curve.class
+$(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
 
 
 # JUnit
 
 # Run all tests
-test: $(javaTestDir)/$(javaPkgDir)/CurveTest.class
-	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveTest
+test: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class
+	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest
 
 
 # Packages

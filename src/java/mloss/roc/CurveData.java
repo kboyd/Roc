@@ -65,7 +65,7 @@ public class CurveData {
     /**
      * TODO
      */
-    public Curve(int[] rankedLabels) {
+    public CurveData(int[] rankedLabels) {
         buildCounts(rankedLabels);
     }
 
@@ -156,7 +156,7 @@ public class CurveData {
      * @return area under PR curve
      */
     public double calculatePrArea(double minimumRecall, double maximumRecall) {
-	throw new NotImplementedException();
+	throw new UnsupportedOperationException("Not yet implemented");
     }
 
 
@@ -170,7 +170,7 @@ public class CurveData {
      * (tpr) of ith point, points are sorted by ascending x-value
      */
     public double[][] plotRoc() {
-	throw new NotImplementedException();
+	throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -191,6 +191,6 @@ public class CurveData {
      * by ascending x-value
      */
     public double[][] plotPr(int numberOfSamples) {
-	throw new NotImplementedException();
+	throw new UnsupportedOperationException("Not yet implemented");
     }
 }

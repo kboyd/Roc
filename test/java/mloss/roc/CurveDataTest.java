@@ -109,6 +109,6 @@ public class CurveDataTest {
         // ---------------------------
         // Sum: 15.0 / 25.0 = 0.6
         double expected = 15.0 / 25.0;
-        assertEquals(expected, curve.rocArea(), TOLERANCE);
+        assertEquals(expected, curve.calculateRocArea(), TOLERANCE);
     }
 }
