@@ -16,14 +16,16 @@ Style
   etc. in identifiers, code, file names, etc. (contrary to Java
   style).  For example, "Http", "Xml", "Csv", "Roc", "Pr".
   Abbreviations regular in other text (e.g. documentation).
-* Punctuation outside or inside quotation marks?  Traditional style:
-  latter; my programming eyes: former.
-* Otherwise standard per-language style unless noted.
+* Punctuation outside quotation marks to mimic programming style, even
+  in prose.
 * License notice part of every file.
   > Copyright (c) <year> Roc Project
   > This is free software.  See LICENSE.txt for details.
   * Bottom for docs.
   * Top for code.
+* Spaces not tabs.
+* M-x delete-trailing-whitespace before committing.
+* Otherwise standard per-language style unless noted.
 
 
 ### Pandoc / Markdown ###
