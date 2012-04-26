@@ -53,7 +53,7 @@ public class CurveDataTest {
 
     @Before public void setUp() {
         curve = new CurveData(labelsAverage);
-	randCurve = new CurveData(random_posCounts, random_negCounts, 1);
+	randCurve = new CurveData(random_posCounts, random_negCounts);
     }
 
     /** Tests {@link CurveData.buildCounts(int[])} and {@link
@@ -215,17 +215,17 @@ public class CurveDataTest {
 	// Test a few possibly pathological cases
 
 	// No area
-	curve = new CurveData(labelsWorst_posCounts, labelsWorst_negCounts, 1);
+	curve = new CurveData(labelsWorst_posCounts, labelsWorst_negCounts);
         assertEquals(0.0, curve.rocArea(), TOLERANCE);
 
 	// Half area
 	int[] posCounts_half = {0, 1};
 	int[] negCounts_half = {0, 1};
-	curve = new CurveData(posCounts_half, negCounts_half, 1);
+	curve = new CurveData(posCounts_half, negCounts_half);
         assertEquals(0.5, curve.rocArea(), TOLERANCE);
 
 	// Full area
-	curve = new CurveData(labelsBest_posCounts, labelsBest_negCounts, 1);
+	curve = new CurveData(labelsBest_posCounts, labelsBest_negCounts);
         assertEquals(1.0, curve.rocArea(), TOLERANCE);
     }
 
@@ -303,7 +303,7 @@ public class CurveDataTest {
 	assertTrue(hull.rocArea() >= randCurve.rocArea());
 
 	// Interesting but realistic
-	curve = new CurveData(convexHull_posCounts, convexHull_negCounts, 1);
+	curve = new CurveData(convexHull_posCounts, convexHull_negCounts);
 	hull = curve.convexHull();
 	assertArrayEquals(expectedPosCounts_convexHull, hull.truePositiveCounts);
 	assertArrayEquals(expectedNegCounts_convexHull, hull.falsePositiveCounts);

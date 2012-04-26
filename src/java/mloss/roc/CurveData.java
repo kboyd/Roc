@@ -67,15 +67,13 @@ public class CurveData {
     protected int[] falsePositiveCounts;
     protected int totalPositives;
     protected int totalNegatives;
-    protected int positiveLabel;
 
     /** Direct constructor. */
-    CurveData(int[] truePositiveCounts, int[] falsePositiveCounts, int positiveLabel) {
+    CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
 	this.truePositiveCounts = truePositiveCounts;
 	this.falsePositiveCounts = falsePositiveCounts;
 	totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
 	totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
-	this.positiveLabel = positiveLabel;
     }
 
     /**
@@ -92,12 +90,11 @@ public class CurveData {
      * labels into some prespecified positive and negative signifiers.
      */
     public CurveData(int[] rankedLabels, int positiveLabel) {
-	this.positiveLabel = positiveLabel;
-        buildCounts(rankedLabels);
+        buildCounts(rankedLabels, positiveLabel);
     }
 
     /**
-     * Calls {@link CurveData(int[], int)} with positiveLabel=1 (the
+     * Calls {@link #CurveData(int[], int)} with positiveLabel=1 (the
      * default positive label).
      */
     public CurveData(int[] rankedLabels) {
@@ -111,8 +108,9 @@ public class CurveData {
      * @param rankedLabels A list containing the true label for each
      * example.  The labels are ordered (ranked) from most likely
      * positive to most likely negative.
+     * @param positiveLabel See {@link #CurveData(int[], int)}.
      */
-    void buildCounts(int[] rankedLabels) {
+    void buildCounts(int[] rankedLabels, int positiveLabel) {
         // Allocate space for n + 1 points.  There is one point after
         // each element in the ranking and a zero one to start.
         truePositiveCounts = new int[rankedLabels.length + 1];
@@ -368,6 +366,6 @@ public class CurveData {
 	// These are the new counts.
 	int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
 					      truePositiveCounts);  // TPR on y-axis
-	return new CurveData(hullPoints[1], hullPoints[0], 1);
+	return new CurveData(hullPoints[1], hullPoints[0]);
     }
 }
