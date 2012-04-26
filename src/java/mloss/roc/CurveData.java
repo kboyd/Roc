@@ -6,18 +6,33 @@ package mloss.roc;
 
 
 /**
- * Conceptually a curve is a list of confusion matrices, one for each
- * element of a ranking plus a zero one to start.  This representation
- * contains all the information needed to compute everything about ROC
- * and PR curves.  If you have n points in your ranking, you need n + 1
- * confusion matrices, one in response to each element of the ranking
- * and a "null" (zero) one to start.  A confusion matrix is a 2-by-2
- * table describing the classification result that would occur if one
- * chose the classification threshold "below" the current element of the
- * ranking.  A confusion matrix contains four numbers: the number of
- * true positives, the number of false positives, the number of false
- * negatives, and the number of true negatives.  See the following
- * table.
+ * This class is a binary classification result analysis suitable for
+ * producing ROC and PR curves.
+ *
+ * A binary (positive-negative) classifier assigns some number (score or
+ * probability) to each data point (example) in a data set.  The
+ * assigned number reflects the classifier's belief that the example is
+ * truly a positive example (as opposed to a negative example).  Each
+ * example also has a true label, its class.  The scores from the
+ * classifier and the true labels only become significant for producing
+ * ROC and PR curves once they are ranked from most-believed positive to
+ * most-believed negative.  It is then the list of true labels in this
+ * ranked order that is analyzed to produce ROC and PR curves.
+ *
+ * <h3>Technical Details</h3>
+ *
+ * Conceptually a ROC or PR curve is a list of confusion matrices, one
+ * for each element of a ranking plus a zero one to start.  This
+ * representation contains all the information needed to compute
+ * everything about ROC and PR curves.  If you have n points in your
+ * ranking, you need n + 1 confusion matrices, one in response to each
+ * element of the ranking and a "null" (zero) one to start.  A confusion
+ * matrix is a 2-by-2 table describing the classification result that
+ * would occur if one chose the classification threshold after the
+ * current element of the ranking.  A confusion matrix contains four
+ * numbers: the number of true positives, the number of false positives,
+ * the number of false negatives, and the number of true negatives.  See
+ * the following table.
  *
  * <pre>
  *            |              Actual               |
@@ -47,33 +62,55 @@ package mloss.roc;
  */
 public class CurveData {
 
+    // TODO javadocs on these
     protected int[] truePositiveCounts;
     protected int[] falsePositiveCounts;
     protected int totalPositives;
     protected int totalNegatives;
+    protected int positiveLabel;
+
+    /** Direct constructor. */
+    CurveData(int[] truePositiveCounts, int[] falsePositiveCounts, int positiveLabel) {
+	this.truePositiveCounts = truePositiveCounts;
+	this.falsePositiveCounts = falsePositiveCounts;
+	totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
+	totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
+	this.positiveLabel = positiveLabel;
+    }
 
     /**
-     * Value for negative label.
+     * Creates a classification result analysis suitable for producing
+     * ROC and PR curves.
+     *
+     * @param rankedLabels A list containing the true label for each
+     * example in the order of classified most likely positive to
+     * classified most likely negative.  (The numbers used to rank the
+     * labels are not part of the ranked labels.)
+     * @param positiveLabel The label that will be considered positive.
+     * All other labels are considered negative.  This allows for
+     * handling multiple classes without having to rewrite all the
+     * labels into some prespecified positive and negative signifiers.
      */
-    public static final int NEG = 0;
-    
-    /**
-     * Value for positive label.
-     */
-    public static final int POS = 1;
-
-    /**
-     * TODO
-     */
-    public CurveData(int[] rankedLabels) {
+    public CurveData(int[] rankedLabels, int positiveLabel) {
+	this.positiveLabel = positiveLabel;
         buildCounts(rankedLabels);
     }
 
     /**
-     * Populates local variables from an ranked list of true labels. 
+     * Calls {@link CurveData(int[], int)} with positiveLabel=1 (the
+     * default positive label).
+     */
+    public CurveData(int[] rankedLabels) {
+	this(rankedLabels, 1);
+    }
+
+    /**
+     * Counts and stores the numbers of correctly-classified positives
+     * and negatives at each threshold level.
      *
-     * @param rankedLabels true labels with the first element
-     * predicted most likely to be positive
+     * @param rankedLabels A list containing the true label for each
+     * example.  The labels are ordered (ranked) from most likely
+     * positive to most likely negative.
      */
     void buildCounts(int[] rankedLabels) {
         // Allocate space for n + 1 points.  There is one point after
@@ -89,24 +126,26 @@ public class CurveData {
 
         // Calculate the individual confusion matrices
         for (int labelIndex = 0; labelIndex < rankedLabels.length; labelIndex++) {
-            if (rankedLabels[labelIndex] == POS) {
+            if (rankedLabels[labelIndex] == positiveLabel) {
                 totalPositives++;
-            } else if (rankedLabels[labelIndex] == NEG) {
-                totalNegatives++;
             } else {
-		throw new IllegalArgumentException("Invalid label, neither negative (" + NEG + ") nor positive (" + POS + ")");
+                totalNegatives++;
 	    }
-	    
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
         }
     }
 
     /**
-     * Confusion matrix from thresholding at a particular point. 
-     *      
-     * @param rankNumber 
-     * @return confusion matrix of form [TP,FP,FN,TN]
+     * Computes the confusion matrix at a particular classification
+     * threshold.
+     *
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.  (The classification threshold is between the
+     * rankNumber-th and the (rankNumber + 1)-th label in the ranking.)
+     * @return A four-element array containing the numbers of true
+     * positives, false positives, false negatives, and true negatives
+     * ([TP, FP, FN, TN]).
      */
     public int[] confusionMatrix(int rankNumber) {
         int truePositives = truePositiveCounts[rankNumber];
@@ -117,10 +156,13 @@ public class CurveData {
     }
 
     /**
-     * Roc point based on thresholding at a particular rank.
+     * Computes the point on the ROC curve that corresponds to a
+     * particular classification threshold.
      *
-     * @param rankNumber
-     * @return [0] = fpr (x-axis), [1] = tpr (y-axis)
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return A two-element array containing the false positive rate
+     * (x-axis) and the true positive rate (y-axis) ([FPR, TPR]).
      */
     public double[] rocPoint(int rankNumber) {
 	double falsePositiveRatio = (double) falsePositiveCounts[rankNumber] / (double) totalNegatives;
@@ -129,21 +171,33 @@ public class CurveData {
     }
 
     /**
-     * Calculate area under ROC curve.
-     * @return area under ROC curve
+     * @return The area under the ROC curve.
      */
     public double calculateRocArea() {
-	// TODO make work for trapezoids and convex hull
-	// There is only a new rectangle when the x-value (FPR) changes
-	double area = 0.0;
+	// Calculate the area of each trapezoid formed by two successive
+	// (non-vertical) ROC points and sum them all up.  Non-vertical:
+	// there is only more area when the x-value (FPR) changes.
+
+	// Formula:
+	//   area += base * (height1 + height2) / 2.0
+	// where
+	//   base = (fp[i] - fp[i-1]) / totN
+	//   height1 = tp[i-1] / totP
+	//   height2 = tp[i] / totP
+	// Combine and simplify
+	//   area += ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i])) / (2.0 * totP * totN)
+	// then save denominator for last (move outside sum)
+	//   area = (sum_i ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i]))) / (2.0 * totP * totN)
+
+	int countsArea = 0;
 	for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+	    // Successive counts can never be less
 	    if (falsePositiveCounts[countIndex] > falsePositiveCounts[countIndex - 1]) {
-		double base = (double) (falsePositiveCounts[countIndex] - falsePositiveCounts[countIndex - 1]) / (double) totalNegatives;
-		double height = (double) truePositiveCounts[countIndex] / (double) totalPositives;
-		area += base * height;
+		countsArea += (falsePositiveCounts[countIndex] - falsePositiveCounts[countIndex - 1])
+		    * (truePositiveCounts[countIndex - 1] + truePositiveCounts[countIndex]);
 	    }
 	}
-        return area;
+        return (double) countsArea / (double) (2 * totalPositives * totalNegatives);
     }
 
     /**
@@ -158,7 +212,6 @@ public class CurveData {
     public double calculatePrArea(double minimumRecall, double maximumRecall) {
 	throw new UnsupportedOperationException("Not yet implemented");
     }
-
 
     /**
      * Generate (x,y) points for ROC curve. Linear interpolation
@@ -177,7 +230,7 @@ public class CurveData {
      * Generate (x,y) points for PR curve. Linear interpolation is NOT
      * correct for PR curves, instead interpolation is done by
      * FORMULA.
-     * 
+     *
      * TODO - probably need a plotPr() that doesn't require specifying
      * the numberOfSamples, what should be the default though? 100?
      * 1000?
