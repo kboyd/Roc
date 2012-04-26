@@ -1,3 +1,9 @@
+# Copyright (c) 2012 Roc Project.  See LICENSE.txt for details.
+#
+# Builds all the aspects of Roc until a better build situation comes
+# along.
+
+
 ########################################
 # Variables
 

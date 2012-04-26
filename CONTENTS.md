@@ -14,5 +14,5 @@ Directories
 * `dev`: Files pertaining to development and meta.
 
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.

@@ -19,8 +19,7 @@ Style
 * Punctuation outside quotation marks to mimic programming style, even
   in prose.
 * License notice part of every file.
-  > Copyright (c) <year> Roc Project
-  > This is free software.  See LICENSE.txt for details.
+  > Copyright (c) <year> Roc Project.  This is free software.  See LICENSE.txt for details.
   * Bottom for docs.
   * Top for code.
 * Spaces not tabs.
@@ -82,5 +81,5 @@ References
   recommended reading list.
 
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.

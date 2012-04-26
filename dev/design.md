@@ -123,5 +123,5 @@ Competitors
   * derivative JROCFIT
 * [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.

@@ -75,5 +75,5 @@ Contact
 * [Aubrey Barnard](http://github.com/afbarnard)
 
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.
