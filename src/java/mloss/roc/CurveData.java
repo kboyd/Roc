@@ -214,16 +214,23 @@ public class CurveData {
     }
 
     /**
-     * Generate (x,y) points for ROC curve. Linear interpolation
-     * between ROC points so simply draw lines between the points.
+     * Generate (x,y) points for a ROC curve.  Interpolation in ROC
+     * space is linear so the ROC curve can be plotted by simply
+     * connecting these points with lines.
      *
-     * TODO - should we return an object, CurvePoints or something?
-     *
-     * @return [i][0] is x-value (fpr) of ith point, [i][1] is y-value
-     * (tpr) of ith point, points are sorted by ascending x-value
+     * @return An array of two-element arrays.  Each two-element array
+     * is a (x,y) point.  Points are sorted by ascending x value with
+     * ties broken by ascending y value.
      */
     public double[][] plotRoc() {
-	throw new UnsupportedOperationException("Not yet implemented");
+	double[][] points = new double[truePositiveCounts.length][2];
+	double totPos = (double) totalPositives;
+	double totNeg = (double) totalNegatives;
+	for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
+	    points[pointIndex][0] = (double) falsePositiveCounts[pointIndex] / totNeg;  // FPR on x-axis
+	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex] / totPos;  // TPR on y-axis
+	}
+	return points;
     }
 
     /**
@@ -245,5 +252,122 @@ public class CurveData {
      */
     public double[][] plotPr(int numberOfSamples) {
 	throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     * Directly from
+     * http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain.
+     *
+     * Computes the cross product of vectors OA and OB, that is, the
+     * z-component of their three-dimensional cross product.  (A and B
+     * are two-dimensional vectors and O is their common origin.)  The
+     * cross product is positive if vector OAB turns counter-clockwise,
+     * negative if clockwise, and zero if collinear.
+     *
+     * This can also be more intuitively understood in the planar case
+     * as comparing the slopes/directions of the two vectors.  It
+     * essentially computes (direction(OB) - direction(OA)).  This
+     * understanding is derived as follows:
+     * <pre>
+     * direction(OB) = (B.y - O.y) / (B.x - O.x)
+     * direction(OA) = (A.y - O.y) / (A.x - O.x)
+     * d(OB) - d(OA) = ((B.y - O.y) / (B.x - O.x)) - ((A.y - O.y) / (A.x - O.x))
+     *               = ((B.y - O.y) * (A.x - O.x) - (A.y - O.y) * (B.x - O.x)) / ((B.x - O.x) * (A.x - O.x))
+     * </pre>
+     * Then throw away the denominator because it doesn't affect the
+     * comparison:
+     * <pre>
+     * (B.y - O.y) * (A.x - O.x) - (A.y - O.y) * (B.x - O.x)
+     * </pre>
+     *
+     * We only need integer vectors for ROC/PR curves so keep everything
+     * integer calculations.
+     *
+     * @param ox The x component of vector O.
+     * @param oy The y component of vector O.
+     * @param ax The x component of vector A.
+     * @param ay The y component of vector A.
+     * @param bx The x component of vector B.
+     * @param by The y component of vector B.
+     * @return The cross product of the given vectors, OAxOB.
+     */
+    static int vectorCrossProduct(int ox, int oy, int ax, int ay, int bx, int by) {
+	return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
+    }
+
+    /**
+     * Finds the convex hull of a list of integer points.  The points
+     * should already be sorted in increasing x order (ties broken by
+     * increasing y order) which is already the case for curve data
+     * counts.  Keeping separate arrays of x and y coordinates allows
+     * for easy conversion to/from negative and positive counts.
+     *
+     * Use Andrew's monotone chain convex hull algorithm (except run
+     * clockwise and only compute the upper hull).  The points are
+     * already sorted and we already know the most extreme
+     * lower-left point so the time complexity is O(n).
+     *
+     * http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain.
+     *
+     * @param xCoords The x coordinates of the points.
+     * @param yCoords The y coordinates of the points.
+     * @return A two-element array where the first element is an array
+     * of the x coordinates of the convex hull points and the second
+     * element is an array of the y coordinates of the convex hull
+     * points.  The convex hull points are an order-preserved sublist of
+     * the given points.
+     */
+    static int[][] convexHullPoints(int[] xCoords, int[] yCoords) {
+	// Point O (origin) is the second-to-last point in the hull.
+	// Point A is the last point in the hull.  Point B is the
+	// current point from the curve under consideration.
+
+	int[] hullXCoords = new int[xCoords.length];
+	int[] hullYCoords = new int[xCoords.length];
+	int numberHullPoints = 0;
+	for (int pointIndex = 0; pointIndex < xCoords.length; pointIndex++) {
+	    // Remove points (A) from the hull that lie under vector OB.
+	    // When OAxOB >= 0, OAB makes a left (counter-clockwise)
+	    // turn so drop A.  This is opposite the (OAxOB <= 0) stated
+	    // in the algorithm because here it is running clockwise
+	    // rather than counter-clockwise.  The equals causes
+	    // collinear points to be dropped as well.
+	    while (numberHullPoints >= 2 &&
+		   CurveData.vectorCrossProduct(
+						hullXCoords[numberHullPoints - 2],
+						hullYCoords[numberHullPoints - 2],
+						hullXCoords[numberHullPoints - 1],
+						hullYCoords[numberHullPoints - 1],
+						xCoords[pointIndex],
+						yCoords[pointIndex])
+		   >= 0) {
+		numberHullPoints--;
+	    }
+	    // OAB is now convex, so add B to the hull
+	    hullXCoords[numberHullPoints] = xCoords[pointIndex];
+	    hullYCoords[numberHullPoints] = yCoords[pointIndex];
+	    numberHullPoints++;
+	}
+	// Downsize arrays
+	int[] newHullXCoords = new int[numberHullPoints];
+	int[] newHullYCoords = new int[numberHullPoints];
+	System.arraycopy(hullXCoords, 0, newHullXCoords, 0, numberHullPoints);
+	System.arraycopy(hullYCoords, 0, newHullYCoords, 0, numberHullPoints);
+	return new int[][]{newHullXCoords, newHullYCoords};
+    }
+
+    /**
+     * Creates a new curve containing only the convex hull of this
+     * curve.
+     *
+     * @return A new curve, the convex hull of this curve.
+     */
+    public CurveData convexHull() {
+	// Calculate the convex hull from the points defined by the
+	// counts.  The convex hull points are also in terms of counts.
+	// These are the new counts.
+	int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
+					      truePositiveCounts);  // TPR on y-axis
+	return new CurveData(hullPoints[1], hullPoints[0], 1);
     }
 }
