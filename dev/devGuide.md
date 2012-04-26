@@ -26,6 +26,7 @@ Style
 * Spaces not tabs.
 * M-x delete-trailing-whitespace before committing.
 * Otherwise standard per-language style unless noted.
+* Specific to-do items marked with TODO and searched with `grep -R TODO *`.
 
 
 ### Pandoc / Markdown ###
@@ -46,6 +47,8 @@ Development
 
 
 ### Social and Political Model ###
+
+* All bugs, issues, enhancements, etc. on Github issue tracker.
 
 **TODO**
 
