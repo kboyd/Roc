@@ -189,7 +189,7 @@ public class CurveDataTest {
         // ---------------------------
         // Sum: 15.0 / 25.0 = 0.6
         double expected = 15.0 / 25.0;
-        assertEquals(expected, curve.calculateRocArea(), TOLERANCE);
+        assertEquals(expected, curve.rocArea(), TOLERANCE);
 
 	// Random
 	// Point, Increment Type (Curve Line), Area Calculation
@@ -210,30 +210,30 @@ public class CurveDataTest {
 	// (20/20, 16/16), -,
 	// Total: 328/640 = 41/80 = 0.5125
         expected = 41.0 / 80.0;
-        assertEquals(expected, randCurve.calculateRocArea(), TOLERANCE);
+        assertEquals(expected, randCurve.rocArea(), TOLERANCE);
 
 	// Test a few possibly pathological cases
 
 	// No area
 	curve = new CurveData(labelsWorst_posCounts, labelsWorst_negCounts, 1);
-        assertEquals(0.0, curve.calculateRocArea(), TOLERANCE);
+        assertEquals(0.0, curve.rocArea(), TOLERANCE);
 
 	// Half area
 	int[] posCounts_half = {0, 1};
 	int[] negCounts_half = {0, 1};
 	curve = new CurveData(posCounts_half, negCounts_half, 1);
-        assertEquals(0.5, curve.calculateRocArea(), TOLERANCE);
+        assertEquals(0.5, curve.rocArea(), TOLERANCE);
 
 	// Full area
 	curve = new CurveData(labelsBest_posCounts, labelsBest_negCounts, 1);
-        assertEquals(1.0, curve.calculateRocArea(), TOLERANCE);
+        assertEquals(1.0, curve.rocArea(), TOLERANCE);
     }
 
-    /** Tests {@link CurveData.plotRoc()}. */
+    /** Tests {@link CurveData.rocPoints()}. */
     @Test public void testRocPoints() {
 	// Normal
         double[][] expected = createRocPoints(labelsAverage_posCounts, labelsAverage_negCounts);
-	double[][] actual = curve.plotRoc();
+	double[][] actual = curve.rocPoints();
 	assertEquals(expected.length, actual.length);
 	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
 	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
@@ -241,7 +241,7 @@ public class CurveDataTest {
 
 	// Random
 	expected = createRocPoints(random_posCounts, random_negCounts);
-	actual = randCurve.plotRoc();
+	actual = randCurve.rocPoints();
 	assertEquals(expected.length, actual.length);
 	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
 	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
@@ -292,7 +292,7 @@ public class CurveDataTest {
 	int[] expectedNegCounts_curve = {0, 0, 1, 5};
 	assertArrayEquals(expectedPosCounts_curve, hull.truePositiveCounts);
 	assertArrayEquals(expectedNegCounts_curve, hull.falsePositiveCounts);
-	assertTrue(hull.calculateRocArea() >= curve.calculateRocArea());
+	assertTrue(hull.rocArea() >= curve.rocArea());
 
 	// Random
 	hull = randCurve.convexHull();
@@ -300,13 +300,13 @@ public class CurveDataTest {
 	int[] expectedNegCounts_random = {0, 0, 1, 2, 13, 20};
 	assertArrayEquals(expectedPosCounts_random, hull.truePositiveCounts);
 	assertArrayEquals(expectedNegCounts_random, hull.falsePositiveCounts);
-	assertTrue(hull.calculateRocArea() >= randCurve.calculateRocArea());
+	assertTrue(hull.rocArea() >= randCurve.rocArea());
 
 	// Interesting but realistic
 	curve = new CurveData(convexHull_posCounts, convexHull_negCounts, 1);
 	hull = curve.convexHull();
 	assertArrayEquals(expectedPosCounts_convexHull, hull.truePositiveCounts);
 	assertArrayEquals(expectedNegCounts_convexHull, hull.falsePositiveCounts);
-	assertTrue(hull.calculateRocArea() >= curve.calculateRocArea());
+	assertTrue(hull.rocArea() >= curve.rocArea());
     }
 }

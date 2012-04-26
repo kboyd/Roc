@@ -173,7 +173,7 @@ public class CurveData {
     /**
      * @return The area under the ROC curve.
      */
-    public double calculateRocArea() {
+    public double rocArea() {
 	// Calculate the area of each trapezoid formed by two successive
 	// (non-vertical) ROC points and sum them all up.  Non-vertical:
 	// there is only more area when the x-value (FPR) changes.
@@ -209,7 +209,7 @@ public class CurveData {
      * @param maximumRecall highest recall that counts towards area
      * @return area under PR curve
      */
-    public double calculatePrArea(double minimumRecall, double maximumRecall) {
+    public double prArea(double minimumRecall, double maximumRecall) {
 	throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -222,7 +222,7 @@ public class CurveData {
      * is a (x,y) point.  Points are sorted by ascending x value with
      * ties broken by ascending y value.
      */
-    public double[][] plotRoc() {
+    public double[][] rocPoints() {
 	double[][] points = new double[truePositiveCounts.length][2];
 	double totPos = (double) totalPositives;
 	double totNeg = (double) totalNegatives;
@@ -250,7 +250,7 @@ public class CurveData {
      * is the y-value (precision) of the ith points, points are sorted
      * by ascending x-value
      */
-    public double[][] plotPr(int numberOfSamples) {
+    public double[][] prPoints(int numberOfSamples) {
 	throw new UnsupportedOperationException("Not yet implemented");
     }
 
