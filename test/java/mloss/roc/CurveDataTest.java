@@ -248,6 +248,160 @@ public class CurveDataTest {
         assertEquals(1.0, curve.rocArea(), TOLERANCE);
     }
 
+    // x-axis: recall = tp / (tp + fn) = tp / #p
+    // y-axis: precision = tp / (tp + fp)
+
+    static final double[][] expectedRawPrPoints_curve = {
+	{0.0/5.0,     0.0},  // 0  // TODO decide what to do about this case: 0.0 / (0.0 + 0.0)
+	{1.0/5.0, 1.0/1.0},  // 1
+	{1.0/5.0, 1.0/2.0},  // 2
+	{2.0/5.0, 2.0/3.0},  // 3
+	{3.0/5.0, 3.0/4.0},  // 4
+	{3.0/5.0, 3.0/5.0},  // 5
+	{3.0/5.0, 3.0/6.0},  // 6
+	{4.0/5.0, 4.0/7.0},  // 7
+	{4.0/5.0, 4.0/8.0},  // 8
+	{4.0/5.0, 4.0/9.0},  // 9
+	{5.0/5.0, 5.0/10.0}  // 10
+    };
+
+    static final double[][] expectedRawPrPoints_randCurve = {
+	{ 0.0/16.0,       0.0},
+	{ 1.0/16.0,   1.0/1.0},
+	{ 4.0/16.0,   4.0/5.0},
+	{ 5.0/16.0,   5.0/7.0},
+	{ 5.0/16.0,  5.0/11.0},
+	{ 5.0/16.0,  5.0/14.0},
+	{ 7.0/16.0,  7.0/17.0},
+	{ 8.0/16.0,  8.0/18.0},
+	{10.0/16.0, 10.0/23.0},
+	{12.0/16.0, 12.0/25.0},
+	{12.0/16.0, 12.0/28.0},
+	{13.0/16.0, 13.0/31.0},
+	{13.0/16.0, 13.0/31.0},
+	{15.0/16.0, 15.0/35.0},
+	{16.0/16.0, 16.0/36.0}
+    };
+
+    /** Tests {@link CurveData.prPoint(int)}. */
+    @Test public void testPrPoint() {
+	// Normal
+        for (int expectedIndex = 0;
+	     expectedIndex < expectedRawPrPoints_curve.length;
+	     expectedIndex++) {
+            assertArrayEquals(expectedRawPrPoints_curve[expectedIndex],
+			      curve.prPoint(expectedIndex), TOLERANCE);
+        }
+
+	// Random
+        for (int expectedIndex = 0;
+	     expectedIndex < expectedRawPrPoints_randCurve.length;
+	     expectedIndex++) {
+            assertArrayEquals(expectedRawPrPoints_randCurve[expectedIndex],
+			      randCurve.prPoint(expectedIndex), TOLERANCE);
+        }
+    }
+
+    /** Tests {@link CurveData.rawPrPoints()}. */
+    @Test public void testRawPrPoints() {
+	// Normal
+	double[][] actual = curve.rawPrPoints();
+	assertEquals(expectedRawPrPoints_curve.length, actual.length);
+	for (int expectedIndex = 0;
+	     expectedIndex < expectedRawPrPoints_curve.length;
+	     expectedIndex++) {
+	    assertArrayEquals(expectedRawPrPoints_curve[expectedIndex],
+			      actual[expectedIndex], TOLERANCE);
+	}
+
+	// Random
+	actual = randCurve.rawPrPoints();
+	assertEquals(expectedRawPrPoints_randCurve.length, actual.length);
+	for (int expectedIndex = 0;
+	     expectedIndex < expectedRawPrPoints_randCurve.length;
+	     expectedIndex++) {
+	    assertArrayEquals(expectedRawPrPoints_randCurve[expectedIndex],
+			      actual[expectedIndex], TOLERANCE);
+	}
+    }
+
+    static final double[][] expectedPrPoints_curve = {
+	{1.0/5.0, 1.0/1.0},  //
+	{1.0/5.0, 1.0/2.0},
+	{1.0/5.0, 1.0/2.0},  //
+	{2.0/5.0, 1.0/2.0},
+	{2.0/5.0, 2.0/3.0},  //
+	{3.0/5.0, 2.0/3.0},
+	{3.0/5.0, 3.0/4.0},  //
+	{3.0/5.0, 3.0/5.0},
+	{3.0/5.0, 3.0/5.0},  //
+	{3.0/5.0, 3.0/6.0},
+	{3.0/5.0, 3.0/6.0},  //
+	{4.0/5.0, 3.0/6.0},
+	{4.0/5.0, 4.0/7.0},  //
+	{4.0/5.0, 4.0/8.0},
+	{4.0/5.0, 4.0/8.0},  //
+	{4.0/5.0, 4.0/9.0},
+	{4.0/5.0, 4.0/9.0},  //
+	{5.0/5.0, 4.0/9.0},
+	{5.0/5.0, 5.0/10.0}  //
+    };
+
+    static final double[][] expectedPrPoints_randCurve = {
+	{ 1.0/16.0,   1.0/1.0},  //
+	{ 1.0/16.0,   4.0/5.0},
+	{ 4.0/16.0,   4.0/5.0},  //
+	{ 4.0/16.0,   5.0/7.0},
+	{ 5.0/16.0,   5.0/7.0},  //
+	{ 5.0/16.0,  5.0/11.0},
+	{ 5.0/16.0,  5.0/11.0},  //
+	{ 5.0/16.0,  5.0/14.0},
+	{ 5.0/16.0,  5.0/14.0},  //
+	{ 7.0/16.0,  5.0/14.0},
+	{ 7.0/16.0,  7.0/17.0},  //
+	{ 8.0/16.0,  7.0/17.0},
+	{ 8.0/16.0,  8.0/18.0},  //
+	{ 8.0/16.0, 10.0/23.0},
+	{10.0/16.0, 10.0/23.0},  //
+	{12.0/16.0, 10.0/23.0},
+	{12.0/16.0, 12.0/25.0},  //
+	{12.0/16.0, 12.0/28.0},
+	{12.0/16.0, 12.0/28.0},  //
+	{12.0/16.0, 13.0/31.0},
+	{13.0/16.0, 13.0/31.0},  //
+	{13.0/16.0, 13.0/31.0},
+	{13.0/16.0, 13.0/31.0},  //
+	{15.0/16.0, 13.0/31.0},
+	{15.0/16.0, 15.0/35.0},  //
+	{16.0/16.0, 15.0/35.0},
+	{16.0/16.0, 16.0/36.0}   //
+    };
+
+    /** Tests {@link CurveData.prPoints()}. */
+    @Test public void testPrPoints() {
+	// Normal
+	double[][] actual = curve.prPoints();
+	assertEquals(expectedPrPoints_curve.length, actual.length);
+	for (int expectedIndex = 0;
+	     expectedIndex < expectedPrPoints_curve.length;
+	     expectedIndex++) {
+	    assertArrayEquals(expectedPrPoints_curve[expectedIndex],
+			      actual[expectedIndex], TOLERANCE);
+	    //System.out.println(java.util.Arrays.toString(actual[expectedIndex]) + ",");
+	}
+
+	// Random
+	actual = randCurve.prPoints();
+	assertEquals(expectedPrPoints_randCurve.length, actual.length);
+	for (int expectedIndex = 0;
+	     expectedIndex < expectedPrPoints_randCurve.length;
+	     expectedIndex++) {
+	    assertArrayEquals(expectedPrPoints_randCurve[expectedIndex],
+			      actual[expectedIndex], TOLERANCE);
+	    //System.out.println(java.util.Arrays.toString(actual[expectedIndex]) + ",");
+	}
+    }
+
     static final int[] convexHull_randomXs = {0, 1, 1, 2, 2, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 9, 9};
     static final int[] convexHull_randomYs = {2, 3, 5, 2, 5, 5, 7, 2, 4, 6, 7, 9, 0, 7, 7, 4, 5, 0, 2, 4};
     static final int[] convexHull_negCounts = {0, 0, 1, 3, 5, 5, 6, 7, 9, 11, 12};

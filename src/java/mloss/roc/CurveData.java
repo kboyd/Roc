@@ -219,6 +219,63 @@ public class CurveData {
     }
 
     /**
+     * Computes the point on the PR curve that corresponds to a
+     * particular classification threshold.
+     *
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return A two-element array containing the recall (x-axis) and
+     * the precision (y-axis) ([recall, precision]).
+     */
+    public double[] prPoint(int rankNumber) {
+	// TODO figure out how to handle (what to return) when (tp + fp) == 0.
+	// x-axis: recall = tp / (tp + fn) = tp / #p
+	// y-axis: precision = tp / (tp + fp)
+	double recall = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
+	int calledPositive = truePositiveCounts[rankNumber] + falsePositiveCounts[rankNumber];
+	double precision = 0.0;
+	if (calledPositive != 0)
+	    precision = (double) truePositiveCounts[rankNumber] / (double) calledPositive;
+        return new double[] {recall, precision};
+    }
+
+    /** Just the known PR points.  Not appropriate for plotting!  (Linear interpolation incorrect.) */
+    public double[][] rawPrPoints() {
+	double[][] points = new double[truePositiveCounts.length][2];
+	double totPos = (double) totalPositives;
+	for (int pointIndex = 1; pointIndex < points.length; pointIndex++) {
+	    points[pointIndex][0] = (double) truePositiveCounts[pointIndex] / totPos;
+	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex]
+		/ (double) (truePositiveCounts[pointIndex] + falsePositiveCounts[pointIndex]);
+	}
+	return points;
+    }
+
+    /** Appropriate for plotting as uses most conservative possible interpolation. */
+    public double[][] prPoints() {
+	// Skips zeroth point to avoid divide by zero problem
+	double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
+	double totPos = (double) totalPositives;
+	int countIndex;
+	for (int pointIndex = 0; pointIndex < points.length; pointIndex += 2) {
+	    countIndex = pointIndex / 2 + 1;
+	    points[pointIndex][0] = (double) truePositiveCounts[countIndex] / totPos;
+	    points[pointIndex][1] = (double) truePositiveCounts[countIndex]
+		/ (double) (truePositiveCounts[countIndex] + falsePositiveCounts[countIndex]);
+	}
+	for (int pointIndex = 1; pointIndex < points.length; pointIndex += 2) {
+	    if (points[pointIndex - 1][1] < points[pointIndex + 1][1]) {
+		points[pointIndex][0] = points[pointIndex + 1][0];
+		points[pointIndex][1] = points[pointIndex - 1][1];
+	    } else {
+		points[pointIndex][0] = points[pointIndex - 1][0];
+		points[pointIndex][1] = points[pointIndex + 1][1];
+	    }
+	}
+	return points;
+    }
+
+    /**
      * Calculate area under PR curve for recall between minimum and
      * maximum recall. Uses interpolation from Davis and Goadrich
      * 2006 (and Goadrich and Shavlik 2005?).
