@@ -177,6 +177,25 @@ public class CurveDataTest {
         }
     }
 
+    /** Tests {@link CurveData.rocPoints()}. */
+    @Test public void testRocPoints() {
+	// Normal
+        double[][] expected = createRocPoints(labelsAverage_posCounts, labelsAverage_negCounts);
+	double[][] actual = curve.rocPoints();
+	assertEquals(expected.length, actual.length);
+	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
+	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
+	}
+
+	// Random
+	expected = createRocPoints(random_posCounts, random_negCounts);
+	actual = randCurve.rocPoints();
+	assertEquals(expected.length, actual.length);
+	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
+	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
+	}
+    }
+
     /** Tests {@link CurveData.rocArea()}. */
     @Test public void testRocArea() {
 	// Normal
@@ -227,25 +246,6 @@ public class CurveDataTest {
 	// Full area
 	curve = new CurveData(labelsBest_posCounts, labelsBest_negCounts);
         assertEquals(1.0, curve.rocArea(), TOLERANCE);
-    }
-
-    /** Tests {@link CurveData.rocPoints()}. */
-    @Test public void testRocPoints() {
-	// Normal
-        double[][] expected = createRocPoints(labelsAverage_posCounts, labelsAverage_negCounts);
-	double[][] actual = curve.rocPoints();
-	assertEquals(expected.length, actual.length);
-	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
-	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
-	}
-
-	// Random
-	expected = createRocPoints(random_posCounts, random_negCounts);
-	actual = randCurve.rocPoints();
-	assertEquals(expected.length, actual.length);
-	for (int expectedIndex = 0; expectedIndex < expected.length; expectedIndex++) {
-	    assertArrayEquals(expected[expectedIndex], actual[expectedIndex], TOLERANCE);
-	}
     }
 
     static final int[] convexHull_randomXs = {0, 1, 1, 2, 2, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 9, 9};

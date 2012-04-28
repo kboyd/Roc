@@ -169,6 +169,26 @@ public class CurveData {
     }
 
     /**
+     * Generate (x,y) points for a ROC curve.  Interpolation in ROC
+     * space is linear so the ROC curve can be plotted by simply
+     * connecting these points with lines.
+     *
+     * @return An array of two-element arrays.  Each two-element array
+     * is a (x,y) point.  Points are sorted by ascending x value with
+     * ties broken by ascending y value.
+     */
+    public double[][] rocPoints() {
+	double[][] points = new double[truePositiveCounts.length][2];
+	double totPos = (double) totalPositives;
+	double totNeg = (double) totalNegatives;
+	for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
+	    points[pointIndex][0] = (double) falsePositiveCounts[pointIndex] / totNeg;  // FPR on x-axis
+	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex] / totPos;  // TPR on y-axis
+	}
+	return points;
+    }
+
+    /**
      * @return The area under the ROC curve.
      */
     public double rocArea() {
@@ -209,26 +229,6 @@ public class CurveData {
      */
     public double prArea(double minimumRecall, double maximumRecall) {
 	throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * Generate (x,y) points for a ROC curve.  Interpolation in ROC
-     * space is linear so the ROC curve can be plotted by simply
-     * connecting these points with lines.
-     *
-     * @return An array of two-element arrays.  Each two-element array
-     * is a (x,y) point.  Points are sorted by ascending x value with
-     * ties broken by ascending y value.
-     */
-    public double[][] rocPoints() {
-	double[][] points = new double[truePositiveCounts.length][2];
-	double totPos = (double) totalPositives;
-	double totNeg = (double) totalNegatives;
-	for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
-	    points[pointIndex][0] = (double) falsePositiveCounts[pointIndex] / totNeg;  // FPR on x-axis
-	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex] / totPos;  // TPR on y-axis
-	}
-	return points;
     }
 
     /**
