@@ -7,6 +7,12 @@
 ########################################
 # Variables
 
+# Java Executables
+java := java
+javac := javac
+
+
+
 # JUnit 4 JAR location
 junitJar := $(wildcard $(junit) /usr/share/java/junit4.jar ~/opt/junit4.jar junit4.jar)
 ifndef junitJar
@@ -37,17 +43,21 @@ classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaSrcDir):$(CURDIR)/$(javaTe
 # List variables and values
 listconfig:
 	@echo Variables:
-	@echo junitJar: $(junitJar)
-	@echo classpath: $(classpath)
+	@echo  junitJar: $(junitJar)
+	@echo  classpath: $(classpath)
+	@echo Commands:
+	@echo  java: $(java)
+	@echo  javac: $(javac)
+
 
 
 # Java
 
 # General Java compilation
 $(javaSrcDir)/%.class: $(javaSrcDir)/%.java
-	cd $(javaSrcDir) && javac -cp $(classpath) $*.java
+	cd $(javaSrcDir) && $(javac) -cp $(classpath) $*.java
 $(javaTestDir)/%.class: $(javaTestDir)/%.java
-	cd $(javaTestDir) && javac -cp $(classpath) $*.java
+	cd $(javaTestDir) && $(javac) -cp $(classpath) $*.java
 
 # List Java dependencies here
 $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
@@ -57,7 +67,7 @@ $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/Cu
 
 # Run all tests
 test: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class
-	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest
+	@cd $(javaTestDir) && $(java) -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest
 
 
 # Packages
