@@ -25,7 +25,7 @@ classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaSrcDir):$(CURDIR)/$(javaTe
 
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig test clean
+.PHONY: listconfig tests usertests alltests clean
 
 
 ########################################
@@ -51,13 +51,22 @@ $(javaTestDir)/%.class: $(javaTestDir)/%.java
 
 # List Java dependencies here
 $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
+$(javaTestDir)/$(javaPkgDir)/UserScenarios.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
 
 
 # JUnit
 
-# Run all tests
-test: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class
+# Run unit tests
+tests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class
 	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest
+
+# Run acceptance tests
+usertests: $(javaTestDir)/$(javaPkgDir)/UserScenarios.class
+	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.UserScenarios
+
+# Run all tests
+alltests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(javaPkgDir)/UserScenarios.class
+	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest mloss.roc.UserScenarios
 
 
 # Packages

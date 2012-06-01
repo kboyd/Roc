@@ -192,6 +192,8 @@ public class CurveData {
      * @return The area under the ROC curve.
      */
     public double rocArea() {
+	// TODO use Mann-Whitney U statistic calculation instead
+
 	// Calculate the area of each trapezoid formed by two successive
 	// (non-vertical) ROC points and sum them all up.  Non-vertical:
 	// there is only more area when the x-value (FPR) changes.
@@ -363,6 +365,8 @@ public class CurveData {
      * lower-left point so the time complexity is O(n).
      *
      * http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain.
+     *
+     * Collinear points are redundant and so are dropped.
      *
      * @param xCoords The x coordinates of the points.
      * @param yCoords The y coordinates of the points.
