@@ -29,6 +29,8 @@ public class CurveDataTest {
     static final int[] labelsBest_posCounts = {0, 1, 2, 2, 2, 2};
     static final int[] labelsBest_negCounts = {0, 0, 0, 1, 2, 3};
 
+    static final int[] staircaseLabels = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+
     /* Random positive and negative counts for testing curves that may
      * have irregular count increments (not the standard where only the
      * positive or the negative count increments by one for each
@@ -50,10 +52,12 @@ public class CurveDataTest {
 
     CurveData curve;
     CurveData randCurve;
+    CurveData staircaseCurve;
 
     @Before public void setUp() {
         curve = new CurveData(labelsAverage);
 	randCurve = new CurveData(random_posCounts, random_negCounts);
+	staircaseCurve = new CurveData(staircaseLabels);
     }
 
     /** Tests {@link CurveData.buildCounts(int[])} and {@link
@@ -462,5 +466,20 @@ public class CurveDataTest {
 	assertArrayEquals(expectedPosCounts_convexHull, hull.truePositiveCounts);
 	assertArrayEquals(expectedNegCounts_convexHull, hull.falsePositiveCounts);
 	assertTrue(hull.rocArea() >= curve.rocArea());
+    }
+
+    /** Tests {@link CurveData.mannWhitneyU()}. */
+    @Test public void testMannWhitneyU() {
+        // Formula: u = r - (n * (n + 1)) / 2
+        // Use smaller u of two samples
+
+        // u1 = (1+3+4+7+10) - 5 * 6 / 2 = 10
+        // u0 = (2+5+6+8+9) - 5 * 6 / 2 = 15
+        int[] expectedUsCurve = {10, 15};
+        assertArrayEquals(expectedUsCurve, curve.mannWhitneyU());
+        // u1 = (1+3+5+7+9+11+13) - 7 * 8 / 2 = 21
+        // u0 = (2+4+6+8+10+12+14) - 7 * 8 / 2 = 28
+        int[] expectedUsStair = {21, 28};
+        assertArrayEquals(expectedUsStair, staircaseCurve.mannWhitneyU());
     }
 }

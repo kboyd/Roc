@@ -429,4 +429,28 @@ public class CurveData {
 					      truePositiveCounts);  // TPR on y-axis
 	return new CurveData(hullPoints[1], hullPoints[0]);
     }
+
+    /**
+     * Computes the Mann-Whitney(-Wilcoxon) U statistics for the ranking
+     * of positives and negatives.
+     *
+     * @return A two-element array containing the U statistic for the
+     * positives and the U statistic for the negatives.
+     */
+    public int[] mannWhitneyU() {
+        // Sum up the ranks of the positive and negative labels
+        // The ranking of labels has to be reconstructed from the counts
+        int sumPosRanks = 0;
+        int sumNegRanks = 0;
+        // The counts arrays have one more element than the number of ranks
+        for (int rank = 1; rank < truePositiveCounts.length; rank++) {
+            if (truePositiveCounts[rank] != truePositiveCounts[rank - 1])
+                sumPosRanks += rank;
+            else
+                sumNegRanks += rank;
+        }
+        int uPos = sumPosRanks - (totalPositives * totalPositives + totalPositives) / 2;
+        int uNeg = sumNegRanks - (totalNegatives * totalNegatives + totalNegatives) / 2;
+        return new int[] {uPos, uNeg};
+    }
 }
