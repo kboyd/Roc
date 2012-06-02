@@ -218,6 +218,12 @@ public class CurveData {
             }
         }
         return (double) countsArea / (double) (2 * totalPositives * totalNegatives);
+
+        // FIXME The following does not yet work, I suspect due to M-W not handling ties.
+        // Implementation in terms of Mann-Whitney U statistic
+        // Use statistic for negatives.  I'm not yet sure why.
+        //int[] uStatistics = mannWhitneyU();
+        //return (double) uStatistics[1] / (double) (totalPositives * totalNegatives);
     }
 
     /**
