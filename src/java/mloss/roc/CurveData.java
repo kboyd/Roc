@@ -70,10 +70,10 @@ public class CurveData {
 
     /** Direct constructor. */
     CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
-	this.truePositiveCounts = truePositiveCounts;
-	this.falsePositiveCounts = falsePositiveCounts;
-	totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
-	totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
+        this.truePositiveCounts = truePositiveCounts;
+        this.falsePositiveCounts = falsePositiveCounts;
+        totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
+        totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
     }
 
     /**
@@ -98,7 +98,7 @@ public class CurveData {
      * default positive label).
      */
     public CurveData(int[] rankedLabels) {
-	this(rankedLabels, 1);
+        this(rankedLabels, 1);
     }
 
     /**
@@ -128,7 +128,7 @@ public class CurveData {
                 totalPositives++;
             } else {
                 totalNegatives++;
-	    }
+            }
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
         }
@@ -163,8 +163,8 @@ public class CurveData {
      * (x-axis) and the true positive rate (y-axis) ([FPR, TPR]).
      */
     public double[] rocPoint(int rankNumber) {
-	double falsePositiveRatio = (double) falsePositiveCounts[rankNumber] / (double) totalNegatives;
-	double truePositiveRatio = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
+        double falsePositiveRatio = (double) falsePositiveCounts[rankNumber] / (double) totalNegatives;
+        double truePositiveRatio = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
         return new double[] {falsePositiveRatio, truePositiveRatio};
     }
 
@@ -178,45 +178,45 @@ public class CurveData {
      * ties broken by ascending y value.
      */
     public double[][] rocPoints() {
-	double[][] points = new double[truePositiveCounts.length][2];
-	double totPos = (double) totalPositives;
-	double totNeg = (double) totalNegatives;
-	for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
-	    points[pointIndex][0] = (double) falsePositiveCounts[pointIndex] / totNeg;  // FPR on x-axis
-	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex] / totPos;  // TPR on y-axis
-	}
-	return points;
+        double[][] points = new double[truePositiveCounts.length][2];
+        double totPos = (double) totalPositives;
+        double totNeg = (double) totalNegatives;
+        for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
+            points[pointIndex][0] = (double) falsePositiveCounts[pointIndex] / totNeg;  // FPR on x-axis
+            points[pointIndex][1] = (double) truePositiveCounts[pointIndex] / totPos;  // TPR on y-axis
+        }
+        return points;
     }
 
     /**
      * @return The area under the ROC curve.
      */
     public double rocArea() {
-	// TODO use Mann-Whitney U statistic calculation instead
+        // TODO use Mann-Whitney U statistic calculation instead
 
-	// Calculate the area of each trapezoid formed by two successive
-	// (non-vertical) ROC points and sum them all up.  Non-vertical:
-	// there is only more area when the x-value (FPR) changes.
+        // Calculate the area of each trapezoid formed by two successive
+        // (non-vertical) ROC points and sum them all up.  Non-vertical:
+        // there is only more area when the x-value (FPR) changes.
 
-	// Formula:
-	//   area += base * (height1 + height2) / 2.0
-	// where
-	//   base = (fp[i] - fp[i-1]) / totN
-	//   height1 = tp[i-1] / totP
-	//   height2 = tp[i] / totP
-	// Combine and simplify
-	//   area += ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i])) / (2.0 * totP * totN)
-	// then save denominator for last (move outside sum)
-	//   area = (sum_i ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i]))) / (2.0 * totP * totN)
+        // Formula:
+        //   area += base * (height1 + height2) / 2.0
+        // where
+        //   base = (fp[i] - fp[i-1]) / totN
+        //   height1 = tp[i-1] / totP
+        //   height2 = tp[i] / totP
+        // Combine and simplify
+        //   area += ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i])) / (2.0 * totP * totN)
+        // then save denominator for last (move outside sum)
+        //   area = (sum_i ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i]))) / (2.0 * totP * totN)
 
-	int countsArea = 0;
-	for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
-	    // Successive counts can never be less
-	    if (falsePositiveCounts[countIndex] > falsePositiveCounts[countIndex - 1]) {
-		countsArea += (falsePositiveCounts[countIndex] - falsePositiveCounts[countIndex - 1])
-		    * (truePositiveCounts[countIndex - 1] + truePositiveCounts[countIndex]);
-	    }
-	}
+        int countsArea = 0;
+        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+            // Successive counts can never be less
+            if (falsePositiveCounts[countIndex] > falsePositiveCounts[countIndex - 1]) {
+                countsArea += (falsePositiveCounts[countIndex] - falsePositiveCounts[countIndex - 1])
+                    * (truePositiveCounts[countIndex - 1] + truePositiveCounts[countIndex]);
+            }
+        }
         return (double) countsArea / (double) (2 * totalPositives * totalNegatives);
     }
 
@@ -230,51 +230,51 @@ public class CurveData {
      * the precision (y-axis) ([recall, precision]).
      */
     public double[] prPoint(int rankNumber) {
-	// TODO figure out how to handle (what to return) when (tp + fp) == 0.
-	// x-axis: recall = tp / (tp + fn) = tp / #p
-	// y-axis: precision = tp / (tp + fp)
-	double recall = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
-	int calledPositive = truePositiveCounts[rankNumber] + falsePositiveCounts[rankNumber];
-	double precision = 0.0;
-	if (calledPositive != 0)
-	    precision = (double) truePositiveCounts[rankNumber] / (double) calledPositive;
+        // TODO figure out how to handle (what to return) when (tp + fp) == 0.
+        // x-axis: recall = tp / (tp + fn) = tp / #p
+        // y-axis: precision = tp / (tp + fp)
+        double recall = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
+        int calledPositive = truePositiveCounts[rankNumber] + falsePositiveCounts[rankNumber];
+        double precision = 0.0;
+        if (calledPositive != 0)
+            precision = (double) truePositiveCounts[rankNumber] / (double) calledPositive;
         return new double[] {recall, precision};
     }
 
     /** Just the known PR points.  Not appropriate for plotting!  (Linear interpolation incorrect.) */
     public double[][] rawPrPoints() {
-	double[][] points = new double[truePositiveCounts.length][2];
-	double totPos = (double) totalPositives;
-	for (int pointIndex = 1; pointIndex < points.length; pointIndex++) {
-	    points[pointIndex][0] = (double) truePositiveCounts[pointIndex] / totPos;
-	    points[pointIndex][1] = (double) truePositiveCounts[pointIndex]
-		/ (double) (truePositiveCounts[pointIndex] + falsePositiveCounts[pointIndex]);
-	}
-	return points;
+        double[][] points = new double[truePositiveCounts.length][2];
+        double totPos = (double) totalPositives;
+        for (int pointIndex = 1; pointIndex < points.length; pointIndex++) {
+            points[pointIndex][0] = (double) truePositiveCounts[pointIndex] / totPos;
+            points[pointIndex][1] = (double) truePositiveCounts[pointIndex]
+                / (double) (truePositiveCounts[pointIndex] + falsePositiveCounts[pointIndex]);
+        }
+        return points;
     }
 
     /** Appropriate for plotting as uses most conservative possible interpolation. */
     public double[][] prPoints() {
-	// Skips zeroth point to avoid divide by zero problem
-	double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
-	double totPos = (double) totalPositives;
-	int countIndex;
-	for (int pointIndex = 0; pointIndex < points.length; pointIndex += 2) {
-	    countIndex = pointIndex / 2 + 1;
-	    points[pointIndex][0] = (double) truePositiveCounts[countIndex] / totPos;
-	    points[pointIndex][1] = (double) truePositiveCounts[countIndex]
-		/ (double) (truePositiveCounts[countIndex] + falsePositiveCounts[countIndex]);
-	}
-	for (int pointIndex = 1; pointIndex < points.length; pointIndex += 2) {
-	    if (points[pointIndex - 1][1] < points[pointIndex + 1][1]) {
-		points[pointIndex][0] = points[pointIndex + 1][0];
-		points[pointIndex][1] = points[pointIndex - 1][1];
-	    } else {
-		points[pointIndex][0] = points[pointIndex - 1][0];
-		points[pointIndex][1] = points[pointIndex + 1][1];
-	    }
-	}
-	return points;
+        // Skips zeroth point to avoid divide by zero problem
+        double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
+        double totPos = (double) totalPositives;
+        int countIndex;
+        for (int pointIndex = 0; pointIndex < points.length; pointIndex += 2) {
+            countIndex = pointIndex / 2 + 1;
+            points[pointIndex][0] = (double) truePositiveCounts[countIndex] / totPos;
+            points[pointIndex][1] = (double) truePositiveCounts[countIndex]
+                / (double) (truePositiveCounts[countIndex] + falsePositiveCounts[countIndex]);
+        }
+        for (int pointIndex = 1; pointIndex < points.length; pointIndex += 2) {
+            if (points[pointIndex - 1][1] < points[pointIndex + 1][1]) {
+                points[pointIndex][0] = points[pointIndex + 1][0];
+                points[pointIndex][1] = points[pointIndex - 1][1];
+            } else {
+                points[pointIndex][0] = points[pointIndex - 1][0];
+                points[pointIndex][1] = points[pointIndex + 1][1];
+            }
+        }
+        return points;
     }
 
     /**
@@ -287,7 +287,7 @@ public class CurveData {
      * @return area under PR curve
      */
     public double prArea(double minimumRecall, double maximumRecall) {
-	throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -308,7 +308,7 @@ public class CurveData {
      * by ascending x-value
      */
     public double[][] prPoints(int numberOfSamples) {
-	throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -349,7 +349,7 @@ public class CurveData {
      * @return The cross product of the given vectors, OAxOB.
      */
     static int vectorCrossProduct(int ox, int oy, int ax, int ay, int bx, int by) {
-	return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
+        return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
     }
 
     /**
@@ -377,42 +377,42 @@ public class CurveData {
      * the given points.
      */
     static int[][] convexHullPoints(int[] xCoords, int[] yCoords) {
-	// Point O (origin) is the second-to-last point in the hull.
-	// Point A is the last point in the hull.  Point B is the
-	// current point from the curve under consideration.
+        // Point O (origin) is the second-to-last point in the hull.
+        // Point A is the last point in the hull.  Point B is the
+        // current point from the curve under consideration.
 
-	int[] hullXCoords = new int[xCoords.length];
-	int[] hullYCoords = new int[xCoords.length];
-	int numberHullPoints = 0;
-	for (int pointIndex = 0; pointIndex < xCoords.length; pointIndex++) {
-	    // Remove points (A) from the hull that lie under vector OB.
-	    // When OAxOB >= 0, OAB makes a left (counter-clockwise)
-	    // turn so drop A.  This is opposite the (OAxOB <= 0) stated
-	    // in the algorithm because here it is running clockwise
-	    // rather than counter-clockwise.  The equals causes
-	    // collinear points to be dropped as well.
-	    while (numberHullPoints >= 2 &&
-		   CurveData.vectorCrossProduct(
-						hullXCoords[numberHullPoints - 2],
-						hullYCoords[numberHullPoints - 2],
-						hullXCoords[numberHullPoints - 1],
-						hullYCoords[numberHullPoints - 1],
-						xCoords[pointIndex],
-						yCoords[pointIndex])
-		   >= 0) {
-		numberHullPoints--;
-	    }
-	    // OAB is now convex, so add B to the hull
-	    hullXCoords[numberHullPoints] = xCoords[pointIndex];
-	    hullYCoords[numberHullPoints] = yCoords[pointIndex];
-	    numberHullPoints++;
-	}
-	// Downsize arrays
-	int[] newHullXCoords = new int[numberHullPoints];
-	int[] newHullYCoords = new int[numberHullPoints];
-	System.arraycopy(hullXCoords, 0, newHullXCoords, 0, numberHullPoints);
-	System.arraycopy(hullYCoords, 0, newHullYCoords, 0, numberHullPoints);
-	return new int[][]{newHullXCoords, newHullYCoords};
+        int[] hullXCoords = new int[xCoords.length];
+        int[] hullYCoords = new int[xCoords.length];
+        int numberHullPoints = 0;
+        for (int pointIndex = 0; pointIndex < xCoords.length; pointIndex++) {
+            // Remove points (A) from the hull that lie under vector OB.
+            // When OAxOB >= 0, OAB makes a left (counter-clockwise)
+            // turn so drop A.  This is opposite the (OAxOB <= 0) stated
+            // in the algorithm because here it is running clockwise
+            // rather than counter-clockwise.  The equals causes
+            // collinear points to be dropped as well.
+            while (numberHullPoints >= 2 &&
+                   CurveData.vectorCrossProduct(
+                                                hullXCoords[numberHullPoints - 2],
+                                                hullYCoords[numberHullPoints - 2],
+                                                hullXCoords[numberHullPoints - 1],
+                                                hullYCoords[numberHullPoints - 1],
+                                                xCoords[pointIndex],
+                                                yCoords[pointIndex])
+                   >= 0) {
+                numberHullPoints--;
+            }
+            // OAB is now convex, so add B to the hull
+            hullXCoords[numberHullPoints] = xCoords[pointIndex];
+            hullYCoords[numberHullPoints] = yCoords[pointIndex];
+            numberHullPoints++;
+        }
+        // Downsize arrays
+        int[] newHullXCoords = new int[numberHullPoints];
+        int[] newHullYCoords = new int[numberHullPoints];
+        System.arraycopy(hullXCoords, 0, newHullXCoords, 0, numberHullPoints);
+        System.arraycopy(hullYCoords, 0, newHullYCoords, 0, numberHullPoints);
+        return new int[][]{newHullXCoords, newHullYCoords};
     }
 
     /**
@@ -422,12 +422,12 @@ public class CurveData {
      * @return A new curve, the convex hull of this curve.
      */
     public CurveData convexHull() {
-	// Calculate the convex hull from the points defined by the
-	// counts.  The convex hull points are also in terms of counts.
-	// These are the new counts.
-	int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
-					      truePositiveCounts);  // TPR on y-axis
-	return new CurveData(hullPoints[1], hullPoints[0]);
+        // Calculate the convex hull from the points defined by the
+        // counts.  The convex hull points are also in terms of counts.
+        // These are the new counts.
+        int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
+                                              truePositiveCounts);  // TPR on y-axis
+        return new CurveData(hullPoints[1], hullPoints[0]);
     }
 
     /**
