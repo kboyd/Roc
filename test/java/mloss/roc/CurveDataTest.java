@@ -471,15 +471,31 @@ public class CurveDataTest {
     /** Tests {@link CurveData.mannWhitneyU()}. */
     @Test public void testMannWhitneyU() {
         // Formula: u = r - (n * (n + 1)) / 2
-        // Use smaller u of two samples
+        // r1 + r0 = N * (N + 1) / 2,  N = n1 + n0
+        // u1 + u0 = n1 * n0
+
+        // Expected arrays are {posU, negU}
 
         // u1 = (1+3+4+7+10) - 5 * 6 / 2 = 10
         // u0 = (2+5+6+8+9) - 5 * 6 / 2 = 15
-        int[] expectedUsCurve = {10, 15};
-        assertArrayEquals(expectedUsCurve, curve.mannWhitneyU());
+        double[] expectedUsCurve = {10.0, 15.0};  // sum: 25 (= 5 * 5)
+        assertArrayEquals(expectedUsCurve, curve.mannWhitneyU(), TOLERANCE);
         // u1 = (1+3+5+7+9+11+13) - 7 * 8 / 2 = 21
         // u0 = (2+4+6+8+10+12+14) - 7 * 8 / 2 = 28
-        int[] expectedUsStair = {21, 28};
-        assertArrayEquals(expectedUsStair, staircaseCurve.mannWhitneyU());
+        double[] expectedUsStair = {21.0, 28.0};  // sum: 49 (= 7 * 7)
+        assertArrayEquals(expectedUsStair, staircaseCurve.mannWhitneyU(), TOLERANCE);
+        // u1 = (1*1+3*3.5+1*6.5+0*9.5+0*13+2*16+1*18+2*21+2*24.5+0*27+1*30+2*33.5+1*36) - 16 * 17 / 2 = 156
+        // u0 = (0*1+1*3.5+1*6.5+4*9.5+3*13+1*16+0*18+3*21+0*24.5+3*27+2*30+2*33.5+0*36) - 20 * 21 / 2 = 164
+        double[] expectedUsRandom = {156.0, 164.0};  // sum: 320 (= 16 * 20)
+        assertArrayEquals(expectedUsRandom, randCurve.mannWhitneyU(), TOLERANCE);
+
+        // The individual U statistics can come out non-integer
+        int[] posCounts = {0, 1, 3, 5, 6};
+        int[] negCounts = {0, 0, 1, 3, 4};
+        curve = new CurveData(posCounts, negCounts);
+        // u1 = (1*1+2*3+2*6.5+1*9.5) - 6 * 7 / 2 = 8.5
+        // u0 = (0*1+1*3+2*6.5+1*9.5) - 4 * 5 / 2 = 15.5
+        double[] expectedUsNonInt = {8.5, 15.5};  // sum: 24 (= 6 * 4)
+        assertArrayEquals(expectedUsNonInt, curve.mannWhitneyU(), TOLERANCE);
     }
 }

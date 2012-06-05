@@ -438,25 +438,82 @@ public class CurveData {
 
     /**
      * Computes the Mann-Whitney(-Wilcoxon) U statistics for the ranking
-     * of positives and negatives.
+     * of positives and negatives.  The canonical U statistic is the
+     * lesser of the two values.
      *
      * @return A two-element array containing the U statistic for the
      * positives and the U statistic for the negatives.
      */
-    public int[] mannWhitneyU() {
-        // Sum up the ranks of the positive and negative labels
-        // The ranking of labels has to be reconstructed from the counts
-        int sumPosRanks = 0;
-        int sumNegRanks = 0;
-        // The counts arrays have one more element than the number of ranks
-        for (int rank = 1; rank < truePositiveCounts.length; rank++) {
-            if (truePositiveCounts[rank] != truePositiveCounts[rank - 1])
-                sumPosRanks += rank;
-            else
-                sumNegRanks += rank;
+    public double[] mannWhitneyU() {
+        /* We don't know which U statistic will be less apriori so we
+         * might as well compute and report both (although for
+         * efficiency one could just do subtraction, but that doesn't
+         * matter much here).  The other reason for reporting both
+         * statistics is that ROC area can be calculated using the U
+         * statistic for the negative examples.  Thus we need to know
+         * both statistics, or at least which is which, not just the
+         * minimum one.
+         *
+         * The individual U statistics are not necessarily integers, so
+         * we need to return a pair of doubles.
+         *
+         * The ranking of the labels has to be reconstructed from the
+         * counts so that the U statistics can be calculated.  The
+         * difference of confusion matrices gives the numbers of
+         * positives and negatives between thresholds.  The sum of the
+         * true/false positives in a confusion matrix gives the total
+         * number of labels above a particular threshold which is also
+         * the maximum rank for those labels.  In general, we need to
+         * sum up the ranks for the positive and negative labels, but
+         * tied labels get a fractional, mean rank.  The mean rank is
+         * just the mean of all the "raw" ranks of the labels that are
+         * tied.  So if labels with "raw" ranks of 2, 3, 4, 5 are tied
+         * they each get a fractional rank of 3.5.  In order to
+         * calculate the rank each label gets, we need to know the
+         * minimum and maximum "raw" ranks of the group, or,
+         * alternatively, the maximum "raw" rank and the numbers of
+         * positives and negatives in the group.  (All labels in a group
+         * are tied and correspond to a single confusion matrix.)  The
+         * mean rank is calculated as (((min-raw-rank) + (max-raw-rank))
+         * / 2).  The quantity (min-raw-rank) is the same as the
+         * ((max-raw-rank) + 1) from the previous group/confusion matrix
+         * and can therefore be calculated as ((max-raw-rank) -
+         * (pos-count) - (neg-count) + 1).
+         *
+         * The formula for an individual U statistic is
+         *
+         * u = r - n * (n + 1) / 2
+         *
+         * where r is the sum of fractional ranks for the sample and n
+         * is the sample size.  Relationships between the U statistics
+         * of the two samples:
+         *
+         * N = n1 + n2
+         * r1 + r2 = N * (N + 1) / 2
+         * u1 + u2 = n1 * n2
+         */
+
+        int posCount;
+        int negCount;
+        int maxRawRank;
+        double rank;
+        double sumPosRanks = 0.0;
+        double sumNegRanks = 0.0;
+        // Start with the first non-zero counts (index 1)
+        for (int countsIndex = 1; countsIndex < truePositiveCounts.length; countsIndex++) {
+            // Get the numbers of positives and negatives for this group
+            posCount = truePositiveCounts[countsIndex] - truePositiveCounts[countsIndex - 1];
+            negCount = falsePositiveCounts[countsIndex] - falsePositiveCounts[countsIndex - 1];
+            // Get the max raw rank
+            maxRawRank = truePositiveCounts[countsIndex] + falsePositiveCounts[countsIndex];
+            // Calculate the (fractional) rank each label in this group gets
+            rank = (double) (maxRawRank - posCount - negCount + 1 + maxRawRank) / 2.0;
+            // Add the rank of each label to the sum
+            sumPosRanks += rank * (double) posCount;
+            sumNegRanks += rank * (double) negCount;
         }
-        int uPos = sumPosRanks - (totalPositives * totalPositives + totalPositives) / 2;
-        int uNeg = sumNegRanks - (totalNegatives * totalNegatives + totalNegatives) / 2;
-        return new int[] {uPos, uNeg};
+        double uPos = sumPosRanks - (double) (totalPositives * totalPositives + totalPositives) / 2.0;
+        double uNeg = sumNegRanks - (double) (totalNegatives * totalNegatives + totalNegatives) / 2.0;
+        return new double[] {uPos, uNeg};
     }
 }
