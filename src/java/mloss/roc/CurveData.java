@@ -47,11 +47,10 @@ package mloss.roc;
  * Although each confusion matrix involves four numbers, each can
  * actually be represented by two numbers plus two totals (shared among
  * all matrices): the number of true positives so far in the ranking,
- * the number of false positives so far in the ranking,
- * the total number of positives in the ranking, and the total
- * number of negatives in the ranking.  This is possible
- * because the following identities allow one to recover each confusion
- * matrix.
+ * the number of false positives (negatives) so far in the ranking, the
+ * total number of positives in the ranking, and the total number of
+ * negatives in the ranking.  This is possible because the following
+ * identities allow one to recover each confusion matrix.
  *
  * <code>
  * true positives = (true positive counts list)[ranking index]
@@ -192,38 +191,13 @@ public class CurveData {
      * @return The area under the ROC curve.
      */
     public double rocArea() {
-        // TODO use Mann-Whitney U statistic calculation instead
-
-        // Calculate the area of each trapezoid formed by two successive
-        // (non-vertical) ROC points and sum them all up.  Non-vertical:
-        // there is only more area when the x-value (FPR) changes.
-
-        // Formula:
-        //   area += base * (height1 + height2) / 2.0
-        // where
-        //   base = (fp[i] - fp[i-1]) / totN
-        //   height1 = tp[i-1] / totP
-        //   height2 = tp[i] / totP
-        // Combine and simplify
-        //   area += ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i])) / (2.0 * totP * totN)
-        // then save denominator for last (move outside sum)
-        //   area = (sum_i ((fp[i] - fp[i-1]) * (tp[i-1] + tp[i]))) / (2.0 * totP * totN)
-
-        int countsArea = 0;
-        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
-            // Successive counts can never be less
-            if (falsePositiveCounts[countIndex] > falsePositiveCounts[countIndex - 1]) {
-                countsArea += (falsePositiveCounts[countIndex] - falsePositiveCounts[countIndex - 1])
-                    * (truePositiveCounts[countIndex - 1] + truePositiveCounts[countIndex]);
-            }
-        }
-        return (double) countsArea / (double) (2 * totalPositives * totalNegatives);
-
-        // FIXME The following does not yet work, I suspect due to M-W not handling ties.
-        // Implementation in terms of Mann-Whitney U statistic
-        // Use statistic for negatives.  I'm not yet sure why.
-        //int[] uStatistics = mannWhitneyU();
-        //return (double) uStatistics[1] / (double) (totalPositives * totalNegatives);
+        /* This implementation is in terms of the Mann-Whitney U
+         * statistic rather than trapezoids.  Formula: auc-roc = u0 /
+         * (n1 * n0).  The statistic for the negatives is the one that
+         * corresponds to the area under the curve.  (I'm not sure why.)
+         */
+        double[] uStatistics = mannWhitneyU();
+        return uStatistics[1] / (double) (totalPositives * totalNegatives);
     }
 
     /**
