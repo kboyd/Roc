@@ -144,14 +144,6 @@ public class CurveData {
     }
 
     /**
-     * Calls {@link #CurveData(Collection<Integer>, Integer)} with
-     * positiveLabel=1 (the default positive label).
-     */
-    public CurveData(List<Integer> rankedLabels) {
-        this(rankedLabels, 1);
-    }
-
-    /**
      * Counts and stores the numbers of correctly-classified positives
      * and negatives at each threshold level.
      *
