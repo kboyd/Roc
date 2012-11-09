@@ -5,6 +5,9 @@
 package mloss.roc;
 
 
+import java.util.List;
+
+
 // TODO: handle case where classifier output is a weak ranking, e.g. class labels
 
 /**
@@ -111,6 +114,40 @@ public class CurveData {
      * default positive label).
      */
     public CurveData(int[] rankedLabels) {
+        this(rankedLabels, 1);
+    }
+
+    /**
+     * Creates a classification result analysis suitable for producing
+     * ROC and PR curves.  Version for collections of number objects.
+     *
+     * @param rankedLabels A list containing the true label for each
+     * example in the order of classified most likely positive to
+     * classified most likely negative.  (The numbers used to rank the
+     * labels are not part of the ranked labels.)
+     * @param positiveLabel The label that will be considered positive.
+     * All other labels are considered negative.  This allows for
+     * handling multiple classes without having to rewrite all the
+     * labels into some prespecified positive and negative signifiers.
+     */
+    public <T> CurveData(List<T> rankedLabels, T positiveLabel) {
+        // Convert the collection to an int[] for internal use
+        //int[] newRankedLabels = new int[rankedLabels.size()];
+        //int rankedLabelsIndex = 0;
+        // We don't know if the collection is random access, so iterate
+        // over it sequentially
+        //for (Integer label : rankedLabels) {
+        //    newRankedLabels[rankedLabelsIndex] = label;
+        //    ++rankedLabelsIndex;
+        //}
+        //buildCounts(newRankedLabels, positiveLabel);
+    }
+
+    /**
+     * Calls {@link #CurveData(Collection<Integer>, Integer)} with
+     * positiveLabel=1 (the default positive label).
+     */
+    public CurveData(List<Integer> rankedLabels) {
         this(rankedLabels, 1);
     }
 

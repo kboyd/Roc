@@ -45,9 +45,9 @@ listconfig:
 
 # General Java compilation
 $(javaSrcDir)/%.class: $(javaSrcDir)/%.java
-	cd $(javaSrcDir) && javac -cp $(classpath) $*.java
+	cd $(javaSrcDir) && javac -cp $(classpath) -source 5 -Xlint $*.java
 $(javaTestDir)/%.class: $(javaTestDir)/%.java
-	cd $(javaTestDir) && javac -cp $(classpath) $*.java
+	cd $(javaTestDir) && javac -cp $(classpath) -source 5 -Xlint $*.java
 
 # List Java dependencies here
 $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
