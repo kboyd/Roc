@@ -5,34 +5,42 @@
 package mloss.roc;
 
 
+// TODO: handle case where classifier output is a weak ranking, e.g. class labels
+
 /**
  * This class is a binary classification result analysis suitable for
  * producing ROC and PR curves.
  *
  * A binary (positive-negative) classifier assigns some number (score or
- * probability) to each data point (example) in a data set.  The
- * assigned number reflects the classifier's belief that the example is
- * truly a positive example (as opposed to a negative example).  Each
- * example also has a true label, its class.  The scores from the
- * classifier and the true labels only become significant for producing
- * ROC and PR curves once they are ranked from most-believed positive to
- * most-believed negative.  It is then the list of true labels in this
- * ranked order that is analyzed to produce ROC and PR curves.
+ * probability or class label) to each data point (example) in a data
+ * set.  The assigned number reflects the classifier's belief that the
+ * example is truly a positive example (as opposed to a negative
+ * example).  Each example also has a true label, its class.  Therefore,
+ * to test a classifier, one uses it to classify unseen examples (a test
+ * set) and compares those classification results with the true labels.
+ *
+ * To classify new examples, one must first choose a threshold.  Then,
+ * all the examples with scores higher than the threshold are classified
+ * positive and all other examples are classified negative.  In
+ * practice, considering only a single threshold is restrictive.  ROC
+ * and PR curves consider performance at all possible thresholds.  To do
+ * that, the scores are ranked from most-believed positive to
+ * most-believed negative and then the list of true labels in the ranked
+ * order is analyzed to produce ROC and PR curves.
  *
  * <h3>Technical Details</h3>
  *
  * Conceptually a ROC or PR curve is a list of confusion matrices, one
- * for each element of a ranking plus a zero one to start.  This
- * representation contains all the information needed to compute
- * everything about ROC and PR curves.  If you have n points in your
- * ranking, you need n + 1 confusion matrices, one in response to each
- * element of the ranking and a "null" (zero) one to start.  A confusion
- * matrix is a 2-by-2 table describing the classification result that
- * would occur if one chose the classification threshold after the
- * current element of the ranking.  A confusion matrix contains four
- * numbers: the number of true positives, the number of false positives,
- * the number of false negatives, and the number of true negatives.  See
- * the following table.
+ * for each possible threshold of a ranking.  This representation
+ * contains all the information needed to compute everything about ROC
+ * and PR curves.  If you have n points in your ranking, you need n + 1
+ * confusion matrices, one between each element of the ranking and one
+ * on each of the ends.  A confusion matrix is a 2-by-2 table describing
+ * the classification result that would occur if one chose the
+ * classification threshold after the current element of the ranking.  A
+ * confusion matrix contains four numbers: the number of true positives,
+ * the number of false positives, the number of false negatives, and the
+ * number of true negatives.  See the following table.
  *
  * <pre>
  *            |              Actual               |
@@ -61,13 +69,19 @@ package mloss.roc;
  */
 public class CurveData {
 
-    // TODO javadocs on these
+    /** The number of true positives at an index in the ranking. */
     protected int[] truePositiveCounts;
+
+    /** The number of false positives at an index in the ranking. */
     protected int[] falsePositiveCounts;
+
+    /** The total number of positive labels/examples. */
     protected int totalPositives;
+
+    /** The total number of negative labels/examples. */
     protected int totalNegatives;
 
-    /** Direct constructor. */
+    /** Direct constructor, mainly for testing and internal use. */
     CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
         this.truePositiveCounts = truePositiveCounts;
         this.falsePositiveCounts = falsePositiveCounts;
