@@ -75,6 +75,15 @@ import java.util.List;
  * </code>
  */
 public class CurveData {
+    /* This class is implemented in terms of arrays of primitives.
+     * Avoid converting to/from arrays of primitives and lists of
+     * objects if possible.  Internally, this should not be a problem as
+     * any anticipated conversions only concern construction and, hence,
+     * are in the purvey of the builders, leaving this class as simple
+     * as possible.  (There is just one case of equivalent code paths
+     * for supporting arrays and collections which seems like a decent
+     * trade-off for unnecessary overhead.)
+     */
 
     /** The number of true positives at an index in the ranking. */
     protected int[] truePositiveCounts;
@@ -87,6 +96,24 @@ public class CurveData {
 
     /** The total number of negative labels/examples. */
     protected int totalNegatives;
+
+    /**
+     * Initializes the fields of this class.
+     *
+     * @param rankingSize The length of the ranking of labels.
+     */
+    private void initFields(int rankingSize) {
+        // Allocate space for n + 1 points.  There is one point after
+        // each element in the ranking and a zero one to start.
+        truePositiveCounts = new int[rankingSize + 1];
+        falsePositiveCounts = new int[rankingSize + 1];
+
+        // Initial values
+        truePositiveCounts[0] = 0;
+        falsePositiveCounts[0] = 0;
+        totalPositives = 0;
+        totalNegatives = 0;
+    }
 
     /** Direct constructor, mainly for testing and internal use. */
     CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
@@ -110,12 +137,13 @@ public class CurveData {
      * labels into some prespecified positive and negative signifiers.
      */
     public CurveData(int[] rankedLabels, int positiveLabel) {
+        initFields(rankedLabels.length);
         buildCounts(rankedLabels, positiveLabel);
     }
 
     /**
      * Calls {@link #CurveData(int[], int)} with positiveLabel=1 (the
-     * default positive label).
+     * default positive label for integers).
      */
     public CurveData(int[] rankedLabels) {
         this(rankedLabels, 1);
@@ -135,16 +163,8 @@ public class CurveData {
      * labels into some prespecified positive and negative signifiers.
      */
     public <T> CurveData(List<T> rankedLabels, T positiveLabel) {
-        // Convert the collection to an int[] for internal use
-        //int[] newRankedLabels = new int[rankedLabels.size()];
-        //int rankedLabelsIndex = 0;
-        // We don't know if the collection is random access, so iterate
-        // over it sequentially
-        //for (Integer label : rankedLabels) {
-        //    newRankedLabels[rankedLabelsIndex] = label;
-        //    ++rankedLabelsIndex;
-        //}
-        //buildCounts(newRankedLabels, positiveLabel);
+        initFields(rankedLabels.size());
+        buildCounts(rankedLabels, positiveLabel);
     }
 
     /**
@@ -152,22 +172,11 @@ public class CurveData {
      * and negatives at each threshold level.
      *
      * @param rankedLabels A list containing the true label for each
-     * example.  The labels are ordered (ranked) from most likely
-     * positive to most likely negative.
+     * example.  The labels must already be ordered (ranked) from most
+     * likely positive to most likely negative.
      * @param positiveLabel See {@link #CurveData(int[], int)}.
      */
     void buildCounts(int[] rankedLabels, int positiveLabel) {
-        // Allocate space for n + 1 points.  There is one point after
-        // each element in the ranking and a zero one to start.
-        truePositiveCounts = new int[rankedLabels.length + 1];
-        falsePositiveCounts = new int[rankedLabels.length + 1];
-
-        // Initial values
-        truePositiveCounts[0] = 0;
-        falsePositiveCounts[0] = 0;
-        totalPositives = 0;
-        totalNegatives = 0;
-
         // Calculate the individual confusion matrices
         for (int labelIndex = 0; labelIndex < rankedLabels.length; labelIndex++) {
             if (rankedLabels[labelIndex] == positiveLabel) {
@@ -177,6 +186,24 @@ public class CurveData {
             }
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
+        }
+    }
+
+    /**
+     * Generic collections version of {@link #buildCounts(int[], int)}.
+     */
+    <T> void buildCounts(Iterable<T> rankedLabels, T positiveLabel) {
+        // Calculate the individual confusion matrices
+        int labelIndex = 0;
+        for (T label : rankedLabels) {
+            if (label.equals(positiveLabel)) {
+                totalPositives++;
+            } else {
+                totalNegatives++;
+            }
+            truePositiveCounts[labelIndex + 1] = totalPositives;
+            falsePositiveCounts[labelIndex + 1] = totalNegatives;
+            labelIndex++;
         }
     }
 
