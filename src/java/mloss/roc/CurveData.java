@@ -7,6 +7,7 @@ package mloss.roc;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -615,39 +616,15 @@ public class CurveData {
          * order.
          */
 
-        // TODO accept a comparator for ranking
-
-        /** Basic container to hold a score, label, and weight. */
-        private class Tuple {
-            /* While you generally want a static inner class, this one
-             * can't be static because it needs to "inherit" the type
-             * parameters from the outer class.
-             */
-
-            public TScore score;
-            public TLabel label;
-            public Double weight;
-
-            public Tuple(TScore score, TLabel label, Double weight) {
-                this.score = score;
-                this.label = label;
-                this.weight = weight;
-            }
-
-            public Tuple(TScore score, TLabel label) {
-                this.score = score;
-                this.label = label;
-            }
-        }
-
         // The following are default access to allow subclassing within
         // this package.  All the lists should be the same length and
         // kept in the same order.
-        List<TLabel> rankedLabels = null;
-        List<TScore> predicteds = null;
-        List<TLabel> actuals = null;
-        List<Double> weights = null;
-        TLabel positiveLabel = null;
+        List<TLabel> rankedLabels;
+        List<TScore> predicteds;
+        List<TLabel> actuals;
+        List<Double> weights;
+        TLabel positiveLabel;
+        Comparator<? super TScore> comparator;
 
         /** No-op constructor. */
         public Builder() {}
@@ -739,6 +716,21 @@ public class CurveData {
         }
 
         /**
+         * Specifies a comparator to use for sorting scores.  The
+         * comparator should sort scores in ascending order; it will be
+         * reversed internally to produce a ranking.  If a comparator is
+         * not specified (or it is specified as null), the natural
+         * ordering will be used (in which case the scores must be
+         * {@link Comparable}).
+         *
+         * @param comparator A comparator for scores
+         */
+        public Builder comparator(Comparator<? super TScore> comparator) {
+            this.comparator = comparator;
+            return this;
+        }
+
+        /**
          * Does the work of checking for valid builder state.  To be
          * called by {@link #build()} before building.
          */
@@ -792,7 +784,7 @@ public class CurveData {
                     }
                 }
                 // Sort in reverse order to make a ranking
-                Collections.sort(sorted, null);  // TODO need comparator
+                Collections.sort(sorted, new TupleScoreReverseComparator(comparator));
                 rankedLabels = new ArrayList<TLabel>(sorted.size());
                 for (Tuple tuple : sorted) {
                     rankedLabels.add(tuple.label);
@@ -807,7 +799,7 @@ public class CurveData {
                 }
             }
 
-            // TODO handle weights, comparator
+            // TODO pass weights if specified
             return new CurveData(rankedLabels, positiveLabel);
         }
 
@@ -824,6 +816,54 @@ public class CurveData {
                 list.add(element);
             }
             return list;
+        }
+
+        /** Basic container to hold a score, label, and weight. */
+        private class Tuple {
+            /* While you generally want a static inner class, this one
+             * can't be static because it needs to "inherit" the type
+             * parameters from the outer class.
+             */
+
+            public TScore score;
+            public TLabel label;
+            public Double weight;
+
+            public Tuple(TScore score, TLabel label, Double weight) {
+                this.score = score;
+                this.label = label;
+                this.weight = weight;
+            }
+
+            public Tuple(TScore score, TLabel label) {
+                this.score = score;
+                this.label = label;
+            }
+        }
+
+        /**
+         * Comparator for tuples that orders tuples in reverse order by
+         * their score.
+         */
+        private class TupleScoreReverseComparator implements Comparator<Tuple> {
+            /* Non-static due to type parameters. */
+
+            private Comparator<? super TScore> scoreComparator;
+
+            public TupleScoreReverseComparator(Comparator<? super TScore> scoreComparator) {
+                this.scoreComparator = scoreComparator;
+            }
+
+            public int compare(Tuple tuple1, Tuple tuple2) {
+                // Reverse the ordering of the given comparator.  Use
+                // the "natural ordering" (interface Comparable) if
+                // comparator not specified.
+                if (scoreComparator == null) {
+                    return -1 * tuple1.score.compareTo(tuple2.score);
+                } else {
+                    return -1 * scoreComparator.compare(tuple1.score, tuple2.score);
+                }
+            }
         }
     }
 
