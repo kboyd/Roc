@@ -5,8 +5,6 @@
 package mloss.roc;
 
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -31,14 +29,16 @@ public class UserScenarios {
         // Sorted (Python dict syntax):
         // {0.86:1, 0.84:1, 0.80:1, 0.78:1, 0.71:1, 0.70:0, 0.69:0,
         //  0.67:0, 0.54:1, 0.51:0, 0.35:0, 0.15:0, 0.06:1}
-        // This creates a curve that is the following points:
+        // This creates a curve that is (minimally) the following points:
         // [(0, 0), (0, 5/7), (3/6, 5/7), (3/6, 6/7), (6/6, 6/7), (6/6, 7/7)]
+        // The convex hull is the following points:
         double[][] maxPoints = {{0.0, 0.0}, {0.0, 5.0 / 7.0}, {1.0, 1.0}};
 
-        // Sort the actual labels by the values of the predicted labels
-        //Sort.sort(predictedLabels, actualLabels);
-        // Create the ROC analysis
-        CurveData rocAnalysis = new CurveData(actualLabels);
+        // Create the ROC analysis (The ranking is computed automatically.)
+        CurveData rocAnalysis = new CurveData.PrimitivesBuilder()
+            .predicteds(predictedLabels)
+            .actuals(actualLabels)
+            .build();
         // Get the convex hull
         CurveData convexHull = rocAnalysis.convexHull();
         // Calculate the AUC ROCs
@@ -48,7 +48,9 @@ public class UserScenarios {
         double[][] rocPoints = convexHull.rocPoints();
 
         // Check the results
-        assertEquals(9.0 / 14.0, area, CurveDataTest.TOLERANCE);
+        // 2 rectangles: 3/6 * 5/7 + 3/6 * 6/7 = 11/14
+        assertEquals(11.0 / 14.0, area, CurveDataTest.TOLERANCE);
+        // 1 trapezoid: (5 / 7 + 1) * 1 / 2 = 6/7
         assertEquals(6.0 / 7.0, maxArea, CurveDataTest.TOLERANCE);
         assertEquals(maxPoints.length, rocPoints.length);
         for (int pointIndex = 0; pointIndex < maxPoints.length; pointIndex++) {

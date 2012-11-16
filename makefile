@@ -10,7 +10,7 @@
 # JUnit 4 JAR location
 junitJar := $(wildcard $(junit) /usr/share/java/junit4.jar ~/opt/junit4.jar junit4.jar)
 ifndef junitJar
-$(error Cannot find the JUnit 4 JAR.  Add some alternative locations to the makefile or assign 'junit' on the command line)
+$(error Cannot find the JUnit 4 JAR.  Add some alternative locations to the makefile or assign variable 'junit' on the command line)
 else
 junitJar := $(firstword $(junitJar))
 endif

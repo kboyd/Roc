@@ -641,7 +641,7 @@ public class CurveData {
          * to most negative.
          * @return This builder
          */
-        public Builder rankedLabels(Iterable<TLabel> labels) {
+        public Builder<TScore, TLabel> rankedLabels(Iterable<TLabel> labels) {
             if (labels instanceof List) {
                 rankedLabels = (List<TLabel>) labels;
             } else {
@@ -660,7 +660,7 @@ public class CurveData {
          * @param predicteds A sequence of scores
          * @return This builder
          */
-        public Builder predicteds(Iterable<TScore> predicteds) {
+        public Builder<TScore, TLabel> predicteds(Iterable<TScore> predicteds) {
             if (predicteds instanceof List) {
                 this.predicteds = (List<TScore>) predicteds;
             } else {
@@ -678,7 +678,7 @@ public class CurveData {
          * @param actuals A sequence of labels
          * @return This builder
          */
-        public Builder actuals(Iterable<TLabel> actuals) {
+        public Builder<TScore, TLabel> actuals(Iterable<TLabel> actuals) {
             if (actuals instanceof List) {
                 this.actuals = (List<TLabel>) actuals;
             } else {
@@ -695,7 +695,7 @@ public class CurveData {
          * @param weights A sequence of doubles
          * @return This builder
          */
-        public Builder weights(Iterable<Double> weights) {
+        public Builder<TScore, TLabel> weights(Iterable<Double> weights) {
             if (weights instanceof List) {
                 this.weights = (List<Double>) weights;
             } else {
@@ -710,7 +710,7 @@ public class CurveData {
          * @param label The positive label
          * @return This builder
          */
-        public Builder positiveLabel(TLabel label) {
+        public Builder<TScore, TLabel> positiveLabel(TLabel label) {
             positiveLabel = label;
             return this;
         }
@@ -725,7 +725,7 @@ public class CurveData {
          *
          * @param comparator A comparator for scores
          */
-        public Builder comparator(Comparator<? super TScore> comparator) {
+        public Builder<TScore, TLabel> comparator(Comparator<? super TScore> comparator) {
             this.comparator = comparator;
             return this;
         }
@@ -879,8 +879,10 @@ public class CurveData {
      */
     public static class PrimitivesBuilder extends Builder<Double, Integer> {
 
-        /** No-op constructor. */
-        public PrimitivesBuilder() {}
+        /** Creates a builder with a default positive label of 1. */
+        public PrimitivesBuilder() {
+            positiveLabel = Integer.valueOf(1);
+        }
 
         /**
          * @param labels A sequence of labels ranked from most positive
