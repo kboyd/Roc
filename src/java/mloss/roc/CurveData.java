@@ -749,6 +749,10 @@ public class CurveData {
                 if (weights != null && weights.size() != predicteds.size()) {
                     throw new IllegalStateException("The size of 'weights' must agree with those of 'predicteds' and 'actuals'.");
                 }
+            } else {
+                if (weights != null && weights.size() != rankedLabels.size()) {
+                    throw new IllegalStateException("The sizes of 'rankedLabels' and 'weights' must agree.");
+                }
             }
             // Builder state OK
         }

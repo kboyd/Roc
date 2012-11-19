@@ -6,7 +6,6 @@ package mloss.roc;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -60,7 +59,8 @@ public class CurveDataTest {
         staircaseCurve = new CurveData(staircaseLabels);
     }
 
-    /** Tests {@link CurveData.buildCounts(int[])} and {@link
+    /**
+     * Tests {@link CurveData.buildCounts(int[])} and {@link
      * CurveData.buildCounts(int[], int)}.
      */
     @Test public void testBuildCountsFromHardLabels() {
@@ -215,7 +215,10 @@ public class CurveDataTest {
         assertEquals(expected, curve.rocArea(), TOLERANCE);
 
         // Random
-        // Point, Increment Type (Curve Line), Area Calculation
+        // Fields: point, increment type, area calculation
+        // Think of the increment type as ASCII art for an ROC plot
+        // rotated 90 degrees clockwise, which corresponds to the TPR
+        // points along the left, as they are below.
         // ( 0/20,  0/16), .,
         // ( 0/20,  1/16), -,
         // ( 1/20,  4/16), \, 1/20 * (1/16 + 4/16)/2 = 5/640
@@ -470,9 +473,16 @@ public class CurveDataTest {
 
     /** Tests {@link CurveData.mannWhitneyU()}. */
     @Test public void testMannWhitneyU() {
-        // Formula: u = r - (n * (n + 1)) / 2
-        // r1 + r0 = N * (N + 1) / 2,  N = n1 + n0
-        // u1 + u0 = n1 * n0
+        /* There are 2 samples; rank them all together.  For each
+         * sample, r is the sum of ranks for that sample, n is the
+         * sample size, u is the statistic.
+         *
+         * Formula:
+         * u = r - (n * (n + 1)) / 2
+         * Identities:
+         * r1 + r0 = N * (N + 1) / 2,  N = n1 + n0
+         * u1 + u0 = n1 * n0
+         */
 
         // Expected arrays are {posU, negU}
 
