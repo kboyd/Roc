@@ -823,7 +823,7 @@ public class CurveData {
         }
 
         /** Basic container to hold a score, label, and weight. */
-        private class Tuple {
+        class Tuple {
             /* While you generally want a static inner class, this one
              * can't be static because it needs to "inherit" the type
              * parameters from the outer class.
@@ -849,10 +849,12 @@ public class CurveData {
          * Comparator for tuples that orders tuples in reverse order by
          * their score.
          */
-        private class TupleScoreReverseComparator implements Comparator<Tuple> {
+        class TupleScoreReverseComparator implements Comparator<Tuple> {
             /* Non-static due to type parameters. */
 
             private Comparator<? super TScore> scoreComparator;
+
+            public TupleScoreReverseComparator() {}
 
             public TupleScoreReverseComparator(Comparator<? super TScore> scoreComparator) {
                 this.scoreComparator = scoreComparator;
@@ -863,9 +865,9 @@ public class CurveData {
                 // the "natural ordering" (interface Comparable) if
                 // comparator not specified.
                 if (scoreComparator == null) {
-                    return -1 * tuple1.score.compareTo(tuple2.score);
+                    return -tuple1.score.compareTo(tuple2.score);
                 } else {
-                    return -1 * scoreComparator.compare(tuple1.score, tuple2.score);
+                    return -scoreComparator.compare(tuple1.score, tuple2.score);
                 }
             }
         }
