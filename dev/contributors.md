@@ -13,5 +13,5 @@ constitute the Roc Project for purposes of copyright.
 * Aubrey Barnard
 
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.

@@ -16,14 +16,16 @@ Style
   etc. in identifiers, code, file names, etc. (contrary to Java
   style).  For example, "Http", "Xml", "Csv", "Roc", "Pr".
   Abbreviations regular in other text (e.g. documentation).
-* Punctuation outside or inside quotation marks?  Traditional style:
-  latter; my programming eyes: former.
-* Otherwise standard per-language style unless noted.
+* Punctuation outside quotation marks to mimic programming style, even
+  in prose.
 * License notice part of every file.
-  > Copyright (c) <year> Roc Project
-  > This is free software.  See LICENSE.txt for details.
+  > Copyright (c) <year> Roc Project.  This is free software.  See LICENSE.txt for details.
   * Bottom for docs.
   * Top for code.
+* Spaces not tabs.
+* M-x delete-trailing-whitespace before committing.
+* Otherwise standard per-language style unless noted.
+* Specific to-do items marked with TODO and searched with `grep -R TODO *`.
 
 
 ### Pandoc / Markdown ###
@@ -44,6 +46,21 @@ Development
 
 
 ### Social and Political Model ###
+
+* Be mindful of reducing barriers to entry (poor documentation,
+  difficult setup) and making people feel welcome.  You never know who
+  you alienate (users or developers) because they just go away.
+
+**TODO**
+
+
+### Communication Model ###
+
+* All bugs, issues, enhancements, etc. on Github issue tracker.
+* Mailing list.  Do on Github or accomplished via other Github features?
+* Tips from Producing Open Source Software:
+  * Public discussions
+  * Civility, keeping discussions friendly, polite
 
 **TODO**
 
@@ -77,5 +94,5 @@ References
   recommended reading list.
 
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.

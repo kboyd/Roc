@@ -13,31 +13,45 @@ Features
 --------
 
 * library
-* CLI
 * curve points
-* curve area
+* measures
+  * curve area
+  * accuracy? (at a particular threshold)
+  * Mann-Whitney U
+  * Kendall's Tau
+  * Kruskal-Wallis?
+  * F1?
 * convex hull (or not)
-* aggregation (vertical averaging)
 * one-column (labels sorted according to removed key) or two-column
   input (key-label pairs to be sorted)
   * input via a positive list and a negative list (or files)
 * regular PR, minimum PR
-* weighted examples (three-column input)
-* clipping of curve
 * arbitrary labels (specify what label is true)
+* utilities
+  * read labels (and weights) from file
+  * write points to file
+  * sort actual labels by predicted labels
+  * input/output conversions (e.g. int[] -> double[])
+  * zip/unzip conversions (transpose data)
+* one-line analysis, i.e. one function call to read input and write
+  output points and areas
+* ties in ranking
 
 
 Future Features
 ---------------
 
+* CLI
+* aggregation (vertical averaging)
+* weighted examples (three-column input)
+* clipping of curve
 * confidence intervals
+* multiple classes
 * CLI calls plotting program
-* ranking statistics/comparisons?
 * Variants of area under ROC curve (http://www.springerlink.com/content/u5h27552t1642g55/abstract/)
   * scored ROC
   * softROC
   * probROC
-* multiple classes
 
 
 Nouns and Verbs
@@ -78,8 +92,6 @@ Verbs (Methods)
 * clip: curve points -> curve points
 
 
-
-
 Design Questions
 ----------------
 
@@ -100,6 +112,7 @@ Development Structure
 * How organize different languages, tests?
 * Build system?  (Probably not Ant.)
 * Versions - how do we want to deal with versions, or does it not matter at this point
+
 
 Tools and Languages
 -------------------
@@ -123,5 +136,6 @@ Competitors
   * derivative JROCFIT
 * [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
 
-Copyright (c) 2012 Roc Project
-This is free software.  See LICENSE.txt for details.
+
+Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+for details.
