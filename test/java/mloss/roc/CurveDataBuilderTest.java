@@ -20,18 +20,33 @@ import org.junit.Test;
 /** Tests {@link CurveData.Builder}. */
 public class CurveDataBuilderTest {
     // Ranked labels in various forms
-    public static final String[] rankedLabelsArray = {"1", "2", "3", "1", "2", "2", "1", "1", "3", "1", "1"};
-    public static final Iterable<String> rankedLabelsSequence = new ArrayIterable<String>(rankedLabelsArray);
-    public static final List<String> rankedLabelsList = Collections.unmodifiableList(Arrays.asList(rankedLabelsArray));
+    public static final String[] rankedLabelsArray = {
+        "1", "2", "3", "1", "2", "2", "1", "1", "3", "1", "1"
+    };
+    public static final Iterable<String> rankedLabelsSequence =
+        new ArrayIterable<String>(rankedLabelsArray);
+    public static final List<String> rankedLabelsList =
+        Collections.unmodifiableList(Arrays.asList(rankedLabelsArray));
 
     // Predicteds and actuals in various forms
-    public static final Double[] predictedsArray = {0.47341896085274016, 0.018859285548017635, 0.9315716230462066, 0.9335304877912131, 0.7290329817040795, 0.9838470565991855, 0.9819062711720467, 0.5422121795480975, 0.5023282102530746, 0.13125000483509008, 0.04172635518302947};
+    public static final Double[] predictedsArray = {
+        0.47341896085274016, 0.018859285548017635, 0.9315716230462066,
+        0.9335304877912131, 0.7290329817040795, 0.9838470565991855,
+        0.9819062711720467, 0.5422121795480975, 0.5023282102530746,
+        0.13125000483509008, 0.04172635518302947
+    };
     // ranks: {8, 11, 4, 3, 5, 1, 2, 6, 7, 9, 10}
-    public static final String[] actualsArray = {"1", "1", "1", "3", "2", "1", "2", "2", "1", "3", "1"};
-    public static final Iterable<Double> predictedsSequence = new ArrayIterable<Double>(predictedsArray);
-    public static final Iterable<String> actualsSequence = new ArrayIterable<String>(actualsArray);
-    public static final List<Double> predictedsList = Collections.unmodifiableList(Arrays.asList(predictedsArray));
-    public static final List<String> actualsList = Collections.unmodifiableList(Arrays.asList(actualsArray));
+    public static final String[] actualsArray = {
+        "1", "1", "1", "3", "2", "1", "2", "2", "1", "3", "1"
+    };
+    public static final Iterable<Double> predictedsSequence =
+        new ArrayIterable<Double>(predictedsArray);
+    public static final Iterable<String> actualsSequence =
+        new ArrayIterable<String>(actualsArray);
+    public static final List<Double> predictedsList =
+        Collections.unmodifiableList(Arrays.asList(predictedsArray));
+    public static final List<String> actualsList =
+        Collections.unmodifiableList(Arrays.asList(actualsArray));
 
     // An object different than any of the labels but that will compare equal
     public static final String positiveLabel = new String("1");
@@ -280,5 +295,5 @@ public class CurveDataBuilderTest {
                 fail("Iterable 'actuals' has more elements than expected.");
             }
         }
-   }
+    }
 }
