@@ -52,22 +52,23 @@ $(javaTestDir)/%.class: $(javaTestDir)/%.java
 # List Java dependencies here
 $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
 $(javaTestDir)/$(javaPkgDir)/CurveDataBuilderTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
+$(javaTestDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
 $(javaTestDir)/$(javaPkgDir)/UserScenarios.class: $(javaSrcDir)/$(javaPkgDir)/CurveData.class
 
 
 # JUnit
 
 # Run unit tests
-tests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataBuilderTest.class
-	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest mloss.roc.CurveDataBuilderTest
+tests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataBuilderTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class
+	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest mloss.roc.CurveDataBuilderTest mloss.roc.CurveDataPrimitivesBuilderTest
 
 # Run acceptance tests
 usertests: $(javaTestDir)/$(javaPkgDir)/UserScenarios.class
 	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.UserScenarios
 
 # Run all tests
-alltests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataBuilderTest.class $(javaTestDir)/$(javaPkgDir)/UserScenarios.class
-	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest mloss.roc.CurveDataBuilderTest mloss.roc.UserScenarios
+alltests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataBuilderTest.class $(javaTestDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class $(javaTestDir)/$(javaPkgDir)/UserScenarios.class
+	@cd $(javaTestDir) && java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.CurveDataTest mloss.roc.CurveDataBuilderTest mloss.roc.CurveDataPrimitivesBuilderTest mloss.roc.UserScenarios
 
 
 # Packages
