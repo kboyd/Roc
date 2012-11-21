@@ -16,15 +16,19 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import static mloss.roc.util.Assert.*;
+import mloss.roc.util.IterableArray;
+
 
 /** Tests {@link CurveData.Builder}. */
 public class CurveDataBuilderTest {
+
     // Ranked labels in various forms
     public static final String[] rankedLabelsArray = {
         "1", "2", "3", "1", "2", "2", "1", "1", "3", "1", "1"
     };
     public static final Iterable<String> rankedLabelsSequence =
-        new ArrayIterable<String>(rankedLabelsArray);
+        new IterableArray<String>(rankedLabelsArray);
     public static final List<String> rankedLabelsList =
         Collections.unmodifiableList(Arrays.asList(rankedLabelsArray));
 
@@ -40,9 +44,9 @@ public class CurveDataBuilderTest {
         "1", "1", "1", "3", "2", "1", "2", "2", "1", "3", "1"
     };
     public static final Iterable<Double> predictedsSequence =
-        new ArrayIterable<Double>(predictedsArray);
+        new IterableArray<Double>(predictedsArray);
     public static final Iterable<String> actualsSequence =
-        new ArrayIterable<String>(actualsArray);
+        new IterableArray<String>(actualsArray);
     public static final List<Double> predictedsList =
         Collections.unmodifiableList(Arrays.asList(predictedsArray));
     public static final List<String> actualsList =
@@ -188,7 +192,7 @@ public class CurveDataBuilderTest {
         for (int sequenceIndex = 0; sequenceIndex < sequenceSize; sequenceIndex++) {
             array[sequenceIndex] = Long.valueOf(random.nextLong());
         }
-        Iterable<Long> sequence = new ArrayIterable<Long>(array);
+        Iterable<Long> sequence = new IterableArray<Long>(array);
         List<Long> list = CurveData.Builder.instantiateSequence(sequence);
         assertNotSame(sequence, list);
         assertIterablesEqual(sequence, list);
@@ -240,60 +244,5 @@ public class CurveDataBuilderTest {
         assertEquals(1, comparator.compare(tuple1, tuple2));
         assertEquals(-1, comparator.compare(tuple2, tuple1));
         assertEquals(0, comparator.compare(tuple2, tuple3));
-    }
-
-
-    ////////////////////////////////////////
-
-
-    public static class ArrayIterator<E> implements Iterator<E> {
-        private E[] array;
-        private int index;
-        public ArrayIterator(E[] array) {
-            this.array = array;
-            index = 0;
-        }
-        public boolean hasNext() {
-            return index < array.length;
-        }
-        public E next() {
-            return array[index++];
-        }
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    public static class ArrayIterable<E> implements Iterable<E> {
-        private E[] array;
-        public ArrayIterable(E[] array) {
-            this.array = array;
-        }
-        public Iterator<E> iterator() {
-            return new ArrayIterator<E>(array);
-        }
-    }
-
-    public static <E> void assertIterablesEqual(Iterable<E> expecteds, Iterable<E> actuals) {
-        int index = 0;
-        E expected;
-        E actual;
-        Iterator<E> iterExpecteds = expecteds.iterator();
-        Iterator<E> iterActuals = actuals.iterator();
-        while (iterExpecteds.hasNext() && iterActuals.hasNext()) {
-            expected = iterExpecteds.next();
-            actual = iterActuals.next();
-            if ((expected == null && actual != null) || (expected != null && !expected.equals(actual))) {
-                fail("Iterables first differ at index " + index + ": expected <" + expected + "> but was <" + actual + ">.");
-            }
-            index++;
-        }
-        if (iterExpecteds.hasNext() != iterActuals.hasNext()) {
-            if (iterExpecteds.hasNext()) {
-                fail("Iterable 'actuals' has fewer elements than expected.");
-            } else {
-                fail("Iterable 'actuals' has more elements than expected.");
-            }
-        }
     }
 }

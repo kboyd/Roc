@@ -11,6 +11,10 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import static mloss.roc.util.Assert.*;
+import mloss.roc.util.Arrays;
+import mloss.roc.util.IterableArray;
+
 
 public class CurveDataPrimitivesBuilderTest {
 
@@ -106,10 +110,9 @@ public class CurveDataPrimitivesBuilderTest {
         assertEquals(0, list.size());
         list = CurveData.PrimitivesBuilder.primitiveArrayToList(actuals);
         assertEquals(17, list.size());
-        CurveDataBuilderTest.ArrayIterable<Integer> iterable =
-            new CurveDataBuilderTest
-            .ArrayIterable<Integer>(intArrayToIntegerArray(actuals));
-        CurveDataBuilderTest.assertIterablesEqual(iterable, list);
+        IterableArray<Integer> iterable = new IterableArray<Integer>
+            (Arrays.intArrayToIntegerArray(actuals));
+        assertIterablesEqual(iterable, list);
     }
 
     /**
@@ -122,29 +125,8 @@ public class CurveDataPrimitivesBuilderTest {
         assertEquals(0, list.size());
         list = CurveData.PrimitivesBuilder.primitiveArrayToList(predicteds);
         assertEquals(17, list.size());
-        CurveDataBuilderTest.ArrayIterable<Double> iterable =
-            new CurveDataBuilderTest
-            .ArrayIterable<Double>(doubleArrayToDoubleArray(predicteds));
-        CurveDataBuilderTest.assertIterablesEqual(iterable, list);
-    }
-
-
-    ////////////////////////////////////////
-
-
-    public static Integer[] intArrayToIntegerArray(int[] array) {
-        Integer[] objectArray = new Integer[array.length];
-        for (int index = 0; index < array.length; ++index) {
-            objectArray[index] = Integer.valueOf(array[index]);
-        }
-        return objectArray;
-    }
-
-    public static Double[] doubleArrayToDoubleArray(double[] array) {
-        Double[] objectArray = new Double[array.length];
-        for (int index = 0; index < array.length; ++index) {
-            objectArray[index] = Double.valueOf(array[index]);
-        }
-        return objectArray;
+        IterableArray<Double> iterable = new IterableArray<Double>
+            (Arrays.doubleArrayToDoubleArray(predicteds));
+        assertIterablesEqual(iterable, list);
     }
 }

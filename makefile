@@ -25,7 +25,7 @@ classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaSrcDir):$(CURDIR)/$(javaTe
 
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig tests usertests alltests clean
+.PHONY: listconfig tests usertests alltests clean allclean
 
 
 ########################################
@@ -80,3 +80,6 @@ alltests: $(javaTestDir)/$(javaPkgDir)/CurveDataTest.class $(javaTestDir)/$(java
 # Remove all derived files
 clean:
 	@find -name '*.class' -delete
+
+allclean: clean
+	@find -name '*~' -delete
