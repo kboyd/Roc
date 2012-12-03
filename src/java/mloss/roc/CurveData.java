@@ -239,6 +239,57 @@ public class CurveData {
         return new double[] {recall, precision};
     }
 
+    
+    /**
+     * Computes the point on the PR curve for a particular recall,
+     * using interpolation if necessary.
+     *
+     * @param recall x-value for the PR point
+     * @return A two-element array containing the recall (x-axis) and
+     * the precision (y-axis) ([recall,precision]).
+     */    
+    public double[] interpolatePrPoint(double recall) {
+	return new double[]{recall,interpolatePrecision(recall)};
+    }
+
+    /**
+     * Compute the precision for a particular recall, using
+     * interpolating if necessary.
+     *
+     * Basic formula (from Davis and Goadrich 2006) for interpolating
+     * between two points with TP_A,FPA and TP_B,FP_B true positives
+     * and false positives, respectively. This really works for
+     * 0 \leq x \leq TP_B-TP_A, contrary to what is stated in the paper.
+     *
+     * recall = (TP_A + x)/#P
+     * precision = (TP_A + x)/(TP_A + x + FP_A + ((FP_B - FP_A)/(TP_B-TP_A))*x)
+     *
+     * TODO - check that the math is all correct
+     * TODO - figure out details for recall=0 and recall=1
+     *
+     * @param recall x-value for the PR point
+     * @return precision using appropriate interpolation
+     */
+    public double interpolatePrecision(double recall) {
+	/*
+	final double PRECISION = 1e-10; // TODO - where to put this variable?
+	if (recall < -PRECISION || recall > 1+PRECISION)
+	    throw new IllegalArgumentException("recall not in [0,1]");
+	
+	// number of true positives needed to generate this recall
+	double neededTp = totalPositives*recall;
+
+	for (int rankNumber=0;rankNumber<truePositiveCounts.length;rankNumber++) {
+	    if (Math.abs(neededTp-truePositiveCounts[rankNumber]) < PRECISION) {
+		// no interpolation neeeded
+		return prPoint(rankNumber)[1];
+	    }
+	    
+	}
+	*/
+	throw new UnsupportedOperationException("Not yet implemented");
+    }
+
     /** Just the known PR points.  Not appropriate for plotting!  (Linear interpolation incorrect.) */
     public double[][] rawPrPoints() {
 	double[][] points = new double[truePositiveCounts.length][2];
