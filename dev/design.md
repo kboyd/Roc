@@ -135,6 +135,7 @@ Competitors
 * Metz group at University of Chicago: ROCKIT (ROCFIT?)
   * derivative JROCFIT
 * [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
+* [ROCR](http://rocr.bioinf.mpi-sb.mpg.de/)
 
 
 Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
