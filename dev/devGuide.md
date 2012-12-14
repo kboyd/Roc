@@ -67,9 +67,11 @@ Development
 
 ### Project Layout ###
 
-* Have `src` and `test` directories
-* Different pieces as directories under `src`.
-* `doc` for generated or documentation sources?
+* Top-level directories organized by language or other high-level needs
+  (e.g. tools)
+* Organize subdirectories of languages by convention
+  * Java has `src` and `test` directories, perhaps `doc`
+* `doc` for general (language-agnostic) documentation, tutorials, etc.
 * `build` for build storage.  Can be removed to "clean".
 * High-level ideas documented in file CONTENTS.md.  (Maintain it!)
 
