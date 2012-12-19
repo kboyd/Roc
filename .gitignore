@@ -4,3 +4,4 @@ build
 
 # Java
 *.class
+java/doc
