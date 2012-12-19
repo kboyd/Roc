@@ -5,6 +5,40 @@
 
 
 ########################################
+# Documentation
+# =============
+#
+# Useful Targets and their Descriptions
+# -------------------------------------
+#
+# javadoc: Generate the Java API documentation for this software.
+#
+# tests: Compile, run core JUnit tests.
+#
+# usertests: Compile, run JUnit user scenarios (functionality/acceptance
+#   tests).
+#
+# alltests: Combines all above tests.
+#
+# clean-java: Removes the Java build directory containing all compiled
+#   Java classes.
+#
+# clean-javadoc: Remove generated Java documentation.
+#
+# clean: Same as clean-java for now.
+#
+# allclean: Combines all above clean targets as well as removing editor
+#   backups (*~) and the base build directory.
+#
+# listconfig: Lists all internal variables and their values.
+#
+# Individual Java files can be compiled by making *.class files, e.g.
+#     make build/java/mloss/roc/CurveData.class
+#
+########################################
+
+
+########################################
 # Variables
 
 # JUnit 4 JAR location.  Allow local files to override system ones.
@@ -19,6 +53,7 @@ endif
 buildBaseDir := build
 javaSrcDir := java/src
 javaTestDir := java/test
+javaDocDir := java/doc
 javaBuildDir := $(buildBaseDir)/java
 javaPkgDir := mloss/roc
 
@@ -26,8 +61,8 @@ javaPkgDir := mloss/roc
 classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaBuildDir)
 
 # Java sources
-javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java')
-javaTestFiles := $(shell find $(javaTestDir) -name '*.java')
+javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' | sort)
+javaTestFiles := $(shell find $(javaTestDir) -name '*.java' | sort)
 
 # Java classes
 javaSrcClasses := $(subst $(javaSrcDir),$(javaBuildDir),$(javaSrcFiles:.java=.class))
@@ -35,7 +70,7 @@ javaTestClasses := $(subst $(javaTestDir),$(javaBuildDir),$(javaTestFiles:.java=
 javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig tests usertests alltests clean javaclean allclean
+.PHONY: listconfig tests usertests alltests javadoc clean clean-java clean-javadoc allclean
 
 
 ########################################
@@ -44,14 +79,26 @@ javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # Make-related, meta
 
+# Variables for string substitution
+emptyString :=
+space := $(emptyString) $(emptyString)
+indent := $(emptyString)    $(emptyString)
+
 # List variables and values
 listconfig:
 	@echo Variables:
 	@echo junitJar: $(junitJar)
 	@echo classpath: $(classpath)
-	@echo javaSrcClasses: $(javaSrcClasses)
-	@echo javaTestClasses: $(javaTestClasses)
-	@echo javaUnitTestClasses: $(javaUnitTestClasses)
+	@echo javaSrcFiles:
+	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaSrcFiles))"
+	@echo javaSrcClasses:
+	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaSrcClasses))"
+	@echo javaTestFiles:
+	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaTestFiles))"
+	@echo javaTestClasses:
+	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaTestClasses))"
+	@echo javaUnitTestClasses:
+	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaUnitTestClasses))"
 
 
 # General targets
@@ -86,6 +133,12 @@ $(javaBuildDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class: $(javaBuildD
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
+# Java documentation for just the API, not the tests
+javadoc: $(javaDocDir)/index.html
+
+$(javaDocDir)/index.html: $(javaSrcFiles)
+	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) $^
+
 
 # JUnit
 
@@ -109,11 +162,15 @@ alltests: $(javaUnitTestClasses) $(javaBuildDir)/$(javaPkgDir)/UserScenarios.cla
 # Cleanup
 
 # Remove all derived files
-clean: javaclean
+clean: clean-java
 
-javaclean:
+clean-java:
 	@rm -Rf $(javaBuildDir)
 
-allclean: javaclean
+clean-javadoc:
+	@rm -Rf $(javaDocDir)
+
+# Named allclean to distinguish from clean* when typing
+allclean: clean-java clean-javadoc
 	@find -name '*~' -delete
 	@rm -Rf $(buildBaseDir)
