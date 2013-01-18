@@ -22,6 +22,7 @@ Style
   > Copyright (c) <year> Roc Project.  This is free software.  See LICENSE.txt for details.
   * Bottom for docs.
   * Top for code.
+  * Update year when edit file.
 * Spaces not tabs.
 * M-x delete-trailing-whitespace before committing.
 * Otherwise standard per-language style unless noted.
@@ -96,5 +97,5 @@ References
   recommended reading list.
 
 
-Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt
 for details.

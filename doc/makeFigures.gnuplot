@@ -1,3 +1,6 @@
+# Copyright (c) 2013 Roc Project.  This is free software.  See
+# LICENSE.txt for details.
+
 # Produce "crisp" output for the web
 set terminal png font "sans,10" size 250,220
 
