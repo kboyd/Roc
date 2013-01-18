@@ -18,7 +18,7 @@ import java.util.Iterator;
 public class IterableArray<E> implements Iterable<E> {
 
     /** Array to iterate over. */
-    E[] array;
+    private E[] array;
 
     /**
      * <p>Constructs an iterable version of the given array so it can be

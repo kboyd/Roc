@@ -127,16 +127,16 @@ public class CurveData {
      */
 
     /** The number of true positives at an index in the ranking. */
-    protected int[] truePositiveCounts;
+    int[] truePositiveCounts;
 
     /** The number of false positives at an index in the ranking. */
-    protected int[] falsePositiveCounts;
+    int[] falsePositiveCounts;
 
     /** The total number of positive labels/examples. */
-    protected int totalPositives;
+    int totalPositives;
 
     /** The total number of negative labels/examples. */
-    protected int totalNegatives;
+    int totalNegatives;
 
     /**
      * Initializes the fields of this class.
