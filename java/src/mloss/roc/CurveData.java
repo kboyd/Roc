@@ -16,30 +16,70 @@ import java.util.List;
 // TODO: handle case where classifier output is a weak ranking, e.g. class labels
 
 /**
- * This class is a binary classification result analysis suitable for
- * producing ROC and PR curves.
+ * <p>This class is a binary classification result analysis suitable for
+ * producing ROC and PR curves.  It represents a ranking from which ROC
+ * and PR curves are computed.</p>
  *
- * A binary (positive-negative) classifier assigns some number (score or
- * probability or class label) to each data point (example) in a data
- * set.  The assigned number reflects the classifier's belief that the
- * example is truly a positive example (as opposed to a negative
- * example).  Each example also has a true label, its class.  Therefore,
- * to test a classifier, one uses it to classify unseen examples (a test
- * set) and compares those classification results with the true labels.
+ * <h3>Brief Background: Classification</h3>
  *
- * To classify new examples, one must first choose a threshold.  Then,
- * all the examples with scores higher than the threshold are classified
- * positive and all other examples are classified negative.  In
- * practice, considering only a single threshold is restrictive.  ROC
+ * <p>A binary (positive-negative) classifier assigns some number (a
+ * score or probability or class label) to each data point (example) in
+ * a data set.  The assigned number reflects the classifier's belief
+ * that the example is truly a positive example (as opposed to a
+ * negative example).  Each example also has a true label, its class.
+ * Therefore, to test a classifier, one uses it to classify unseen
+ * examples (a test set) and compares those classification results with
+ * the true labels.</p>
+ *
+ * <p>To classify new examples, one must first choose a threshold.
+ * Then, all the examples with scores higher than the threshold are
+ * classified positive and all other examples are classified negative.
+ * In practice, considering only a single threshold is restrictive.  ROC
  * and PR curves consider performance at all possible thresholds.  To do
  * that, the scores are ranked from most-believed positive to
  * most-believed negative and then the list of true labels in the ranked
- * order is analyzed to produce ROC and PR curves.
+ * order is analyzed to produce ROC and PR curves.</p>
+ *
+ * <p>For more information consult the Wikipedia pages on <a
+ * href="http://en.wikipedia.org/wiki/Binary_classification">binary
+ * classification</a>, <a
+ * href="http://en.wikipedia.org/wiki/Receiver_operating_characteristic">ROC
+ * analysis</a>, <a
+ * href="http://en.wikipedia.org/wiki/Precision_and_recall">PR
+ * analysis</a>, and your favorite book on machine learning.</p>
+ *
+ * <h3>Usage</h3>
+ *
+ * <p>This is the central class for creating and working with ROC and PR
+ * curves.</p>
+ *
+ * <p>To create a ROC or PR curve, one only needs the ranking of true
+ * labels from most positive to most negative.  This is because the
+ * scores become immaterial after ranking: the number of labels assigned
+ * correctly can be counted for any threshold in the ranking, regardless
+ * of any scores.  (After choosing a threshold between two labels, all
+ * examples above the threshold are classified positive and all others
+ * below are negative.)  Once the ranking is obtained, one can use it to
+ * compute curves, areas, statistics, etc.  That is what this class
+ * does.  It holds a ranking and uses it to compute curves and other
+ * information.</p>
+ *
+ * <p>One can construct this class directly from a ranking of labels,
+ * but it is more convenient to use a builder to compute the ranking and
+ * construct this class.  There are two builders.  The regular {@link
+ * CurveData.Builder} accepts collections of objects and the {@link
+ * CurveData.PrimitivesBuilder} accepts arrays of primitive numbers.
+ * (You can use the class {@link mloss.roc.util.IterableArray} to treat
+ * arrays of objects as iterable collections suitable for the regular
+ * builder.)  You give a builder a list of scores (from your classifier)
+ * and a corresponding list of labels and the builder does the rest.
+ * See the <a href="{@docRoot}/overview-summary.html">overview</a> for a
+ * code example.</p>
  *
  * <h3>Technical Details</h3>
  *
- * Conceptually a ROC or PR curve is a list of confusion matrices, one
- * for each possible threshold of a ranking.  This representation
+ * <p>Conceptually a ROC or PR curve is a list of confusion matrices,
+ * one for each possible threshold of a ranking.  This representation
  * contains all the information needed to compute everything about ROC
  * and PR curves.  If you have n points in your ranking, you need n + 1
  * confusion matrices, one between each element of the ranking and one
@@ -48,7 +88,7 @@ import java.util.List;
  * classification threshold after the current element of the ranking.  A
  * confusion matrix contains four numbers: the number of true positives,
  * the number of false positives, the number of false negatives, and the
- * number of true negatives.  See the following table.
+ * number of true negatives.  See the following table.</p>
  *
  * <pre>
  *            |              Actual               |
@@ -60,20 +100,20 @@ import java.util.List;
  *            | Total Positives | Total Negatives |
  * </pre>
  *
- * Although each confusion matrix involves four numbers, each can
+ * <p>Although each confusion matrix involves four numbers, each can
  * actually be represented by two numbers plus two totals (shared among
  * all matrices): the number of true positives so far in the ranking,
  * the number of false positives (negatives) so far in the ranking, the
  * total number of positives in the ranking, and the total number of
  * negatives in the ranking.  This is possible because the following
- * identities allow one to recover each confusion matrix.
+ * identities allow one to recover each confusion matrix.</p>
  *
- * <code>
+ * <pre><code>
  * true positives = (true positive counts list)[ranking index]
  * false positives = (false positive counts list)[ranking index]
  * false negatives = (total positives) - (true positives)
  * true negatives = (total negatives) - (false positives)
- * </code>
+ * </code></pre>
  */
 public class CurveData {
     /* This class is implemented in terms of arrays of primitives.
@@ -152,7 +192,8 @@ public class CurveData {
 
     /**
      * Creates a classification result analysis suitable for producing
-     * ROC and PR curves.  Version for collections of number objects.
+     * ROC and PR curves.  This is the version to use for collections of
+     * number objects.
      *
      * @param rankedLabels A list containing the true label for each
      * example in the order of classified most likely positive to
@@ -296,7 +337,10 @@ public class CurveData {
         return new double[] {recall, precision};
     }
 
-    /** Just the known PR points.  Not appropriate for plotting!  (Linear interpolation incorrect.) */
+    /**
+     * Just the known PR points.  Not appropriate for plotting!
+     * (Linear interpolation is incorrect.)
+     */
     public double[][] rawPrPoints() {
         double[][] points = new double[truePositiveCounts.length][2];
         double totPos = (double) totalPositives;
@@ -308,7 +352,10 @@ public class CurveData {
         return points;
     }
 
-    /** Appropriate for plotting as uses most conservative possible interpolation. */
+    /**
+     * Appropriate for plotting as uses most conservative possible
+     * interpolation.
+     */
     public double[][] prPoints() {
         // Skips zeroth point to avoid divide by zero problem
         double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
@@ -346,13 +393,13 @@ public class CurveData {
     }
 
     /**
-     * Generate (x,y) points for PR curve. Linear interpolation is NOT
+     * <p>Generate (x,y) points for PR curve. Linear interpolation is NOT
      * correct for PR curves, instead interpolation is done by
-     * FORMULA.
+     * FORMULA.</p>
      *
-     * TODO - probably need a plotPr() that doesn't require specifying
+     * <p>TODO - probably need a plotPr() that doesn't require specifying
      * the numberOfSamples, what should be the default though? 100?
-     * 1000?
+     * 1000?</p>
      *
      * @param numberOfSamples number of evenly spaced samples to take
      * of the PR curve, with a sufficiently large value using a line
@@ -367,33 +414,38 @@ public class CurveData {
     }
 
     /**
-     * Directly from
-     * http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain.
+     * <p>Directly from the <a
+     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">monotone
+     * chain computational geometry</a> section from the Wikibook on
+     * Algorithm Implementation.<p>
      *
-     * Computes the cross product of vectors OA and OB, that is, the
+     * <p>Computes the cross product of vectors OA and OB, that is, the
      * z-component of their three-dimensional cross product.  (A and B
      * are two-dimensional vectors and O is their common origin.)  The
      * cross product is positive if vector OAB turns counter-clockwise,
-     * negative if clockwise, and zero if collinear.
+     * negative if clockwise, and zero if collinear.<p>
      *
-     * This can also be more intuitively understood in the planar case
-     * as comparing the slopes/directions of the two vectors.  It
+     * <p>This can also be more intuitively understood in the planar
+     * case as comparing the slopes/directions of the two vectors.  It
      * essentially computes (direction(OB) - direction(OA)).  This
-     * understanding is derived as follows:
-     * <pre>
+     * understanding is derived as follows:<p>
+     *
+     * <pre><code>
      * direction(OB) = (B.y - O.y) / (B.x - O.x)
      * direction(OA) = (A.y - O.y) / (A.x - O.x)
      * d(OB) - d(OA) = ((B.y - O.y) / (B.x - O.x)) - ((A.y - O.y) / (A.x - O.x))
      *               = ((B.y - O.y) * (A.x - O.x) - (A.y - O.y) * (B.x - O.x)) / ((B.x - O.x) * (A.x - O.x))
-     * </pre>
-     * Then throw away the denominator because it doesn't affect the
-     * comparison:
+     * </code></pre>
+     *
+     * <p>Then throw away the denominator because it doesn't affect the
+     * comparison:<p>
+     *
      * <pre>
      * (B.y - O.y) * (A.x - O.x) - (A.y - O.y) * (B.x - O.x)
      * </pre>
      *
-     * We only need integer vectors for ROC/PR curves so keep everything
-     * integer calculations.
+     * <p>We only need integer vectors for ROC/PR curves so keep
+     * everything integer calculations.<p>
      *
      * @param ox The x component of vector O.
      * @param oy The y component of vector O.
@@ -402,26 +454,27 @@ public class CurveData {
      * @param bx The x component of vector B.
      * @param by The y component of vector B.
      * @return The cross product of the given vectors, OAxOB.
+     * @see #convexHullPoints(int[], int[])
      */
     static int vectorCrossProduct(int ox, int oy, int ax, int ay, int bx, int by) {
         return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
     }
 
     /**
-     * Finds the convex hull of a list of integer points.  The points
+     * <p>Finds the convex hull of a list of integer points.  The points
      * should already be sorted in increasing x order (ties broken by
      * increasing y order) which is already the case for curve data
      * counts.  Keeping separate arrays of x and y coordinates allows
-     * for easy conversion to/from negative and positive counts.
+     * for easy conversion to/from negative and positive counts.<p>
      *
-     * Use Andrew's monotone chain convex hull algorithm (except run
-     * clockwise and only compute the upper hull).  The points are
-     * already sorted and we already know the most extreme
-     * lower-left point so the time complexity is O(n).
+     * <p>This implementation uses <a
+     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">Andrew's
+     * monotone chain convex hull algorithm</a> (except it runs
+     * clockwise and only computes the upper hull).  The points are
+     * already sorted and we already know the most extreme lower-left
+     * point so the time complexity is O(n).<p>
      *
-     * http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain.
-     *
-     * Collinear points are redundant and so are dropped.
+     * <p>Collinear points are redundant and so are dropped.<p>
      *
      * @param xCoords The x coordinates of the points.
      * @param yCoords The y coordinates of the points.
@@ -571,24 +624,42 @@ public class CurveData {
 
 
     /**
-     * Builds CurveData objects in multiple, flexible ways.  To build a
-     * CurveData from primitives see {@link PrimitivesBuilder}.
+     * <p>Builds {@code CurveData} objects in multiple, flexible ways.
+     * The methods in this class independently specify each piece of
+     * requisite information and can be chained together into a single,
+     * self-documenting expression.  (This class is a <a
+     * href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a> <a
+     * href="http://en.wikipedia.org/wiki/Builder_pattern">builder
+     * pattern</a>.)</p>
      *
-     * Fundamentally, a curve is built from a ranking of labels and a
-     * label to consider positive (see {@link
-     * CurveData#CurveData(List<T>, T)}).  However, curves are often
-     * constructed from lists of predictions (scores) and the
-     * corresponding actual labels.  In this case, the actual labels are
-     * ranked by sorting the scores in descending order.
+     * <p>This builder works with iterable sequences of objects.  To
+     * build a CurveData from arrays of primitive numbers see {@link
+     * PrimitivesBuilder}.<p>
      *
-     * Therefore, in order to build a curve one must provide (1) a
-     * ranking of labels or (2) corresponding lists of predictions and
-     * actual labels.  A positive label must also be provided.  A list
-     * of weights may be given.  The list must correspond to the lists
-     * of predicteds and actuals (if given) or correspond to the list of
+     * <p>Fundamentally, a curve is built from a ranking of labels and a
+     * label to consider positive.  This approach is "pure" but often
+     * inconvenient (see {@link CurveData#CurveData(List, Object)}).
+     * Therefore, curves are often constructed from lists of predictions
+     * (scores) and the corresponding actual labels, which are typically
+     * conveniently available.  In this case, the actual labels are
+     * ranked by sorting the scores in descending order.<p>
+     *
+     * <p>Thus, in order to build a curve one must provide (1) a ranking
+     * of labels or (2) corresponding lists of predictions and actual
+     * labels.  A positive label must also be provided in either case.
+     * (This class allows arbitrary labels for flexibility, such as
+     * easily handling multiclass tasks, but then the user must say what
+     * label is positive in a given situation.)</p>
+     *
+     * <p>There are also additional options.  A list of weights may be
+     * given.  The list of weights must correspond to the lists of
+     * predicteds and actuals (if given) or correspond to the list of
      * ranked labels.  A comparator may be given which will be used for
      * sorting the scores.  Otherwise the natural ordering of the scores
-     * will be used.
+     * will be used.<p>
+     *
+     * <h3>Notes</h3>
      *
      * <ul>
      * <li>All inputs will be left unmodified.</li>
@@ -596,8 +667,8 @@ public class CurveData {
      * already lists.</li>
      * <li>If providing a comparator, provide one for ascending order as
      * all comparators are reversed internally.</li>
-     * <li>This builder works for multiple creations.  Just keep calling
-     * build.</li>
+     * <li>This builder works for multiple creations.  Just keep
+     * updating parameters and calling build.</li>
      * </ul>
      *
      * @param <TScore> Type of score/prediction
@@ -878,10 +949,13 @@ public class CurveData {
 
 
     /**
-     * The same as {@link Builder} except takes arrays of primitives as
-     * input.  Scores must be doubles and labels must be integers.
-     * (Labels must compare exactly.)  All arrays of primitives are
-     * converted to lists of number objects.
+     * <p>This class is the same as {@link Builder} except this takes
+     * arrays of primitives as input (instead of sequences of objects).
+     * Scores must be doubles and labels must be integers.  (Labels must
+     * compare exactly.)  The default positive label is 1.</p>
+     *
+     * <p>All arrays of primitives are converted to lists of number
+     * objects.</p>
      */
     public static class PrimitivesBuilder extends Builder<Double, Integer> {
 

@@ -10,7 +10,7 @@ import java.util.Iterator;
 
 /**
  * An iterator for arrays so that arrays can be used as iterables
- * alongside collections and the like.
+ * alongside collections and the like.  This is a read-only iterator.
  *
  * @param <E> Type of array element
  * @see IterableArray

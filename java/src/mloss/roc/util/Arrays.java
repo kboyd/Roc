@@ -6,9 +6,18 @@ package mloss.roc.util;
 
 
 /**
- * All the array utilities we wished Java included.
+ * <p>All the array utilities we wished Java included.</p>
+ *
+ * <p>So far this includes functions for converting arrays of primitive
+ * numbers to arrays of number objects.</p>
  */
 public class Arrays {
+
+    /**
+     * Unconstructable (no-op).  (A private constructor is necessary
+     * because otherwise Java inserts a default public constructor.)
+     */
+    private Arrays() {}
 
     /**
      * Converts an int array to an Integer array.  Creates an Integer
@@ -25,7 +34,7 @@ public class Arrays {
     }
 
     /**
-     * Converts a double array to a Double array.  Creates an Double
+     * Converts a double array to a Double array.  Creates a Double
      * array that is a copy of the values in the given double array.
      *
      * @param array Any double array.

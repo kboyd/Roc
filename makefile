@@ -61,8 +61,9 @@ javaPkgDir := mloss/roc
 classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaBuildDir)
 
 # Java sources
-javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' | sort)
+javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' -not -name 'package-info.java' | sort)
 javaTestFiles := $(shell find $(javaTestDir) -name '*.java' | sort)
+javaDocFiles := $(shell find $(javaSrcDir) -name 'package-info.java' | sort)
 
 # Java classes
 javaSrcClasses := $(subst $(javaSrcDir),$(javaBuildDir),$(javaSrcFiles:.java=.class))
@@ -114,6 +115,7 @@ $(javaBuildDir)/.exists:
 	@touch $@
 
 
+########################################
 # Java
 
 # General Java compilation
@@ -136,8 +138,18 @@ $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 # Java documentation for just the API, not the tests
 javadoc: $(javaDocDir)/index.html
 
-$(javaDocDir)/index.html: $(javaSrcFiles)
-	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) $^
+$(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
+	mkdir -p $(javaSrcDir)/doc-files
+	cp $< $@
+
+# Javadoc level private
+$(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
+	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
+# Work around javadoc bug where content is put in div with footer class
+	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html
+
+
+# TODO javadoc for packaging
 
 
 # JUnit
