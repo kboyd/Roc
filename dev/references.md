@@ -17,7 +17,9 @@ Tools & Languages
 
 * JUnit 4 Documentation: http://kentbeck.github.com/junit/javadoc/latest/
 
-* javadoc: http://docs.oracle.com/javase/7/docs/technotes/tools/windows/javadoc.html
+* javadoc: http://docs.oracle.com/javase/7/docs/technotes/guides/javadoc/
+
+* JAR: http://docs.oracle.com/javase/7/docs/technotes/guides/jar/
 
 * Make Manual: http://www.gnu.org/software/make/manual/html_node/index.html
 

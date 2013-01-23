@@ -12,14 +12,19 @@
 # Useful Targets and their Descriptions
 # -------------------------------------
 #
-# javadoc: Generate the Java API documentation for this software.
-#
 # tests: Compile, run core JUnit tests.
 #
 # usertests: Compile, run JUnit user scenarios (functionality/acceptance
 #   tests).
 #
 # alltests: Combines all above tests.
+#
+# javadoc: Generate the Java API documentation for this software.
+#
+# release-javadoc: Generate the public Java API documentation for this
+#   software.
+#
+# jar: Create a Java archive (package) for this software.
 #
 # clean-java: Removes the Java build directory containing all compiled
 #   Java classes.
@@ -50,6 +55,9 @@ else
 junitJar := $(firstword $(junitJar))
 endif
 
+# Version
+version := 1.0.0
+
 # Project layout
 buildBaseDir := build
 javaSrcDir := java/src
@@ -65,14 +73,16 @@ classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaBuildDir)
 javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' -not -name 'package-info.java' | sort)
 javaTestFiles := $(shell find $(javaTestDir) -name '*.java' | sort)
 javaDocFiles := $(shell find $(javaSrcDir) -name 'package-info.java' | sort)
+javaReleaseSrcFiles := $(subst $(javaSrcDir),$(javaBuildDir),$(javaSrcFiles))
 
 # Java classes
 javaSrcClasses := $(subst $(javaSrcDir),$(javaBuildDir),$(javaSrcFiles:.java=.class))
 javaTestClasses := $(subst $(javaTestDir),$(javaBuildDir),$(javaTestFiles:.java=.class))
+# Limit 'javaTestClasses' to actual unit tests (omit helper classes).
 javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig tests usertests alltests javadoc clean clean-java clean-javadoc allclean
+.PHONY: listconfig tests usertests alltests javadoc release-javadoc jar clean clean-java clean-javadoc allclean
 
 
 ########################################
@@ -136,23 +146,7 @@ $(javaBuildDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class: $(javaBuildD
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
-# Java documentation for just the API, not the tests
-javadoc: $(javaDocDir)/index.html
-
-$(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
-	mkdir -p $(javaSrcDir)/doc-files
-	cp $< $@
-
-# Javadoc level private
-$(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
-	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
-# Work around javadoc bug where content is put in div with footer class
-	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html
-
-
-# TODO javadoc for packaging
-
-
+#####
 # JUnit
 
 # Run unit tests
@@ -167,11 +161,48 @@ usertests: $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class
 alltests: $(javaUnitTestClasses) $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class
 	java -cp $(classpath) org.junit.runner.JUnitCore $(subst /,.,$(subst $(javaBuildDir)/,,$(^:.class=)))
 
+#####
+# Javadoc for internal reading
 
-# Packages
+# Java documentation for the full API (including private) but not the tests
+javadoc: $(javaDocDir)/index.html
+
+$(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
+	mkdir -p $(javaSrcDir)/doc-files
+	cp $< $@
+
+# Javadoc level private
+$(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
+	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
+# Work around javadoc bug where content is put in div with footer class
+	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html
+
+#####
+# Javadoc for release.  Same as 'javadoc' above but level public.
+
+release-javadoc: $(javaBuildDir)/doc/index.html
+
+$(javaBuildDir)/doc/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
+	javadoc -d $(javaBuildDir)/doc -sourcepath $(javaSrcDir) @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
+# Work around javadoc bug where content is put in div with footer class
+	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaBuildDir)/doc/overview-summary.html
+
+#####
+# JAR package of library source, bytecode, and docs; a distribution for use, not for development
+
+# Redirect to a JAR for the current version
+jar: $(javaBuildDir)/roc-$(version).jar
+
+# Copy files from src to build for packaging
+$(javaBuildDir)/%.java: $(javaSrcDir)/%.java
+	cp $< $@
+
+# Build a JAR for the current version
+$(javaBuildDir)/roc-$(version).jar: README.md LICENSE.txt $(javaReleaseSrcFiles) $(javaSrcClasses) release-javadoc
+	jar cf $@ README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
 
 
-
+########################################
 # Cleanup
 
 # Remove all derived files
