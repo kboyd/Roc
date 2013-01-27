@@ -22,6 +22,7 @@ Style
   > Copyright (c) <year> Roc Project.  This is free software.  See LICENSE.txt for details.
   * Bottom for docs.
   * Top for code.
+  * Update year when edit file.
 * Spaces not tabs.
 * M-x delete-trailing-whitespace before committing.
 * Otherwise standard per-language style unless noted.
@@ -67,9 +68,11 @@ Development
 
 ### Project Layout ###
 
-* Have `src` and `test` directories
-* Different pieces as directories under `src`.
-* `doc` for generated or documentation sources?
+* Top-level directories organized by language or other high-level needs
+  (e.g. tools)
+* Organize subdirectories of languages by convention
+  * Java has `src` and `test` directories, perhaps `doc`
+* `doc` for general (language-agnostic) documentation, tutorials, etc.
 * `build` for build storage.  Can be removed to "clean".
 * High-level ideas documented in file CONTENTS.md.  (Maintain it!)
 
@@ -94,5 +97,5 @@ References
   recommended reading list.
 
 
-Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt
 for details.

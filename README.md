@@ -42,21 +42,21 @@ features.  Features are "not applicable", "planned", "implemented",
 
 <table>
   <thead>
-    <tr><th>Feature Description</th><th>Library Status</th><th>CLI Status</th></tr>
+    <tr><th>Feature Description</th> <th>Library Status</th> <th>CLI Status</th></tr>
   </thead>
   <tbody>
-    <tr><td>Calculate curve points</td><td>P</td><td>P</td></tr>
-    <tr><td>Calculate curve area</td><td>P</td><td>P</td></tr>
-    <tr><td>Maximum achievable area (convex hull)</td><td>P</td><td>P</td></tr>
-    <tr><td>Curve aggregation (vertical averaging)</td><td>P</td><td>P</td></tr>
-    <tr><td>Curve clipping</td><td>P</td><td>P</td></tr>
-    <tr><td>Minimum-aware PR</td><td>P</td><td>P</td></tr>
-    <tr><td>Label column input</td><td>P</td><td>P</td></tr>
-    <tr><td>Predicted-actual pairs columns input</td><td>P</td><td>P</td></tr>
-    <tr><td>Weighted examples</td><td>P</td><td>P</td></tr>
-    <tr><td>Confidence intervals</td><td>P</td><td>P</td></tr>
-    <tr><td>Plotting</td><td>NA</td><td>P</td></tr>
-    <tr><td>Ranking statistics</td><td>P</td><td>P</td></tr>
+    <tr><td>Calculate curve points</td>                 <td>P</td>  <td>P</td></tr>
+    <tr><td>Calculate curve area</td>                   <td>P</td>  <td>P</td></tr>
+    <tr><td>Maximum achievable area (convex hull)</td>  <td>P</td>  <td>P</td></tr>
+    <tr><td>Curve aggregation (vertical averaging)</td> <td>P</td>  <td>P</td></tr>
+    <tr><td>Curve clipping</td>                         <td>P</td>  <td>P</td></tr>
+    <tr><td>Minimum-aware PR</td>                       <td>P</td>  <td>P</td></tr>
+    <tr><td>Label column input</td>                     <td>T</td>  <td>P</td></tr>
+    <tr><td>Predicted-actual pairs columns input</td>   <td>T</td>  <td>P</td></tr>
+    <tr><td>Weighted examples</td>                      <td>P</td>  <td>P</td></tr>
+    <tr><td>Confidence intervals</td>                   <td>P</td>  <td>P</td></tr>
+    <tr><td>Plotting</td>                               <td>NA</td> <td>P</td></tr>
+    <tr><td>Ranking statistics</td>                     <td>P</td>  <td>P</td></tr>
   </tbody>
 </table>
 
@@ -64,8 +64,20 @@ features.  Features are "not applicable", "planned", "implemented",
 Requirements
 ------------
 
-* Java 5 if using the Java library
-* Python 2.5 if using the command line interface
+* Java 5 (or later) if using the Java library
+* Python 2.5 (or later, but not 3.x) if using the command line interface
+
+
+Java Library and JAR
+--------------------
+
+The Java library provides an API for working with ROC and PR curves in
+your Java programs.  It is distributed as a Java archive (JAR)
+containing source code, bytecode, and documentation.  The JAR can be
+obtained at TODO.  To include the library in your Java project, just
+place the JAR in a convenient location and include it in your classpath.
+You can browse the documentation by extracting it from the JAR or by
+viewing the latest version on GitHub (TODO).
 
 
 Contact
@@ -75,5 +87,5 @@ Contact
 * [Aubrey Barnard](http://github.com/afbarnard)
 
 
-Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt
 for details.

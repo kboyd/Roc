@@ -8,9 +8,10 @@ Wondering what's around here?  Here's what.
 Directories
 -----------
 
-* `src`: Source code files for the various implementations.
-* `test`: Unit test files for above.
-* `build`: Temporary staging directory for builds.  (May not exist.)
+* `java`: Java source code and tests, split according by `src` and
+  `test` subdirectories.
+* `build`: Working directory for builds that can always be safely
+  deleted.  (May not exist.)
 * `dev`: Files pertaining to development and meta.
 
 

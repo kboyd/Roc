@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012 Roc Project.  See LICENSE.txt for details.
+ * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * LICENSE.txt for details.
  */
 
 package mloss.roc.util;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 
 /**
  * An iterator for arrays so that arrays can be used as iterables
- * alongside collections and the like.
+ * alongside collections and the like.  This is a read-only iterator.
  *
  * @param <E> Type of array element
  * @see IterableArray

@@ -1,0 +1,166 @@
+<!-- Copyright (c) 2013 Roc Project.  This is free software.  See
+  LICENSE.txt for details. -->
+<!-- If I understand correctly, javadoc ignores everything except the body content. -->
+<html>
+<head/>
+<body>
+
+<p>Roc is software for generating and working with ROC and PR curves.
+<a href="http://en.wikipedia.org/wiki/Receiver_operating_characteristic">Receiver
+operating characteristic (ROC)</a>
+and <a href="http://en.wikipedia.org/wiki/Precision_and_recall">precision-recall
+(PR)</a> curves are typically used to evaluate supervised classification
+approaches in areas such as Machine Learning and Epidemiology.
+Scientists and researchers are the target audience of this software.</p>
+
+<p>This is the Java version of the software.  The Java version is a
+library that provides an API for computing ROC and PR curves and their
+statistics.  (See the Python version for a command line utility that
+includes plotting.)  This library is intended to be used with Java 5 or
+later.</p>
+
+
+<h2>License</h2>
+
+<p>Roc is free, open source
+software, <a href="https://github.com/kboyd/Roc">available on GitHub</a>
+under the BSD 2-clause (FreeBSD) license.
+See <a href="doc-files/LICENSE.txt">LICENSE.txt</a> for details.</p>
+
+
+<h2>Introduction</h2>
+
+<p>We assume you are reasonably familiar with ROC and/or PR curves and
+the basics of supervised classification before using this software.  If
+not, consult your favorite text or online source on machine learning or
+statistics.</p>
+
+<p>The <strong>general idea</strong> is that accuracy is an inadequate
+measure of classification performance because it describes a single
+point in a space of trade-offs.  A better evaluation would describe the
+whole space.  Indeed, this is what ROC and PR curves do.  They describe
+how performance varies as trade-offs vary.  In ROC space, the trade-off
+is between true positives and false positives, and in PR space the
+trade-off is between precision and recall.  While not a perfect
+evaluation of classification performance, these curves provide a much
+more thorough view than accuracy alone.  Still, people often desire a
+single summary number and so report the area under the curve.</p>
+
+<p>A <strong>ROC curve</strong> describes the true positive rate as a
+function of the false positive rate across all choices of a
+classification threshold.  ROC curves go from (0,0) to (1,1) and are
+monotone increasing.  Better ROC curves approach the point (0,1) and
+have larger areas.  The ROC curve for the average performance of random
+classification is a line from (0,0) to (1,1).  The maximum ROC curve
+(perfect classification) is (0,0)-(0,1)-(1,1).  The minimum ROC curve
+(worst classification) is (0,0)-(1,0)-(1,1).  Points in ROC space can be
+linearly interpolated.</p>
+
+<p>A <strong>PR curve</strong> describes precision as a function of
+recall across all thresholds.  Typical PR curves go from (0,y1) to
+(1,y2) and are decreasing.  Better PR curves approach the point (1,1)
+and have larger areas.  The PR curve for the average performance of
+random classification is a line from (0,y2) to (1,y2).  The maximum PR
+curve is (0,1)-(1,1)-(1,y2).  The minimum PR curve is a curve from (0,0)
+to (1,y2).  Points in PR space <em>cannot</em> be linearly
+interpolated.</p>
+
+<p>The <strong>core idea</strong> of ROC/PR analysis is ranking the test
+examples from most-positive to most-negative (according to some score)
+and then comparing the ranking against the true labels.  A threshold can
+be chosen between any two neighboring examples.  A threshold represents
+a single, achievable classification accuracy: all the examples ranked
+higher are classified positive and all the examples ranked lower are
+classified negative.  (The classification according to the threshold is
+compared to the true labels to determine accuracy.)  It is in this
+manner that picking thresholds trades off classification
+performance. Each threshold defines
+a <a href="http://en.wikipedia.org/wiki/Confusion_matrix">confusion
+matrix</a> and hence a point in ROC/PR space.</p>
+
+
+<h2>Notable Features</h2>
+
+<h3>Scientific Features</h3>
+
+<ul>
+<li>Both ROC and PR curves</li>
+<li>Curve points</li>
+<li>Area under the curve (AUC)</li>
+<li>Maximum achievable area (convex hull)</li>
+<li>Weighted examples</li>
+</ul>
+
+<h3>Library Features</h3>
+
+<ul>
+<li>Carefully designed for intuitive usability</li>
+<li>Thoroughly tested</li>
+</ul>
+
+
+<h2>Usage</h2>
+
+<p>ROC and PR analysis centers around the class {@link
+mloss.roc.CurveData}, which represents a ranking of the true labels from
+most positive to most negative.  A ranking contains all the information
+needed to construct ROC and PR curves.  Typically, a classifier assigns
+a score to each test example.  The score reflects how positive the
+classifier considers the example.  The test examples can then be ranked
+from most positive to most negative and the true labels analyzed to
+produce ROC and PR curves.</p>
+
+<p>If you already have a ranking, you can construct a {@code CurveData}
+directly using the {@link mloss.roc.CurveData#CurveData(List, Object)}
+or {@link mloss.roc.CurveData#CurveData(int[])} constructors.
+Typically, you will only have the output of the classifier and will want
+to use one of the builders to construct the analysis.</p>
+
+<p>Builders exist to give you an intuitive and user-friendly way to
+construct rankings for ROC/PR analysis.  You provide a builder the
+outputs of your classifier and the corresponding true labels, and it
+computes the ranking and gives you back an analysis object ({@code
+CurveData}).  Builders come in two flavors, one for collections ({@link
+mloss.roc.CurveData.Builder}) and one for arrays of primitives ({@link
+mloss.roc.CurveData.PrimitivesBuilder}).  (You can use the {@link
+mloss.roc.util.IterableArray} class to treat arrays of objects as
+iterable collections.)</p>
+
+<p>Here is some example code to help you get started.</p>
+
+<h2>Example Code</h2>
+
+<pre><code>
+// These are the true labels of your test set
+int[] trueLabels = ...
+
+// These are the predictions from your classifier that match,
+// index-wise, the true labels
+double[] scores = ...
+
+// Create the analysis.  The ranking is computed automatically.
+CurveData analysis = new CurveData.PrimitivesBuilder()
+    .predicteds(scores)
+    .actuals(trueLabels)
+    .build();
+
+// Calculate AUC ROC
+double area = analysis.rocArea();
+
+// Convex hull
+CurveData hull = analysis.convexHull();
+double maxArea = hull.rocArea();
+
+// Points for plotting the curve
+double[][] points = hull.rocPoints();
+</code></pre>
+
+
+<h2>Administrative</h2>
+
+<p>See the <a href="https://github.com/kboyd/Roc">project on GitHub
+(github.com/kboyd/Roc)</a> to contact the authors or contribute.</p>
+
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+--- overview-summary.html	2013-01-03 23:26:18.778017966 -0600
++++ overview-summary.fixed.html	2013-01-03 23:27:16.177836261 -0600
+@@ -93,7 +93,7 @@
+ </tbody>
+ </table>
+ </div>
+-<div class="footer"><a name="overview_description">
++<div class="contentContainer"><a name="overview_description">
+ <!--   -->
+ </a>
+ <div class="subTitle">
