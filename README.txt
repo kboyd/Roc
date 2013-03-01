@@ -43,33 +43,33 @@ features.
 Features are NP="not planned", P="planned", I="implemented", T="tested",
 S="stable".  Languages are J="Java", P2="Python 2.x".
 
-    Feature Description           Library Status  CLI Status (P2)
-    -------------------           --------------  ---------------
-    ROC curves
-    . Points                      J:T  P2:P       P
-    . Area                        J:T  P2:P       P
-    . Maximum area (convex hull)  J:T  P2:P       P
-    . Aggregation (averaging)     J:P  P2:P       P
-    . Confidence bounds           J:P  P2:P       P
-    . Clipping                    J:P  P2:P       P
-    PR curves
-    . Points                      J:P  P2:P       P
-    . Area                        J:P  P2:P       P
-    . Maximum area (convex hull)  J:P  P2:P       P
-    . Aggregation (averaging)     J:P  P2:P       P
-    . Confidence bounds           J:P  P2:P       P
-    . Clipping                    J:P  P2:P       P
-    . Minimum awareness           J:P  P2:P       P
-    Plotting                      J:NP P2:P       P
-    Inputs
-    . Ranking                     J:T  P2:P       P
-    . Predicteds, actuals         J:T  P2:P       P
-    . Predicted-actual pairs      J:P  P2:P       P
-    . Example weights             J:P  P2:P       P
-    Convenience
-    . File I/O                    J:P  P2:P       P
-    Ranking Statistics
-    . Mann-Whitney-U              J:T  P2:P       P
+Feature Description           Library Status  CLI Status (P2)
+-------------------           --------------  ---------------
+ROC curves
+. Points                      J:T  P2:P       P
+. Area                        J:T  P2:P       P
+. Maximum area (convex hull)  J:T  P2:P       P
+. Aggregation (averaging)     J:P  P2:P       P
+. Confidence bounds           J:P  P2:P       P
+. Clipping                    J:P  P2:P       P
+PR curves
+. Points                      J:P  P2:P       P
+. Area                        J:P  P2:P       P
+. Maximum area (convex hull)  J:P  P2:P       P
+. Aggregation (averaging)     J:P  P2:P       P
+. Confidence bounds           J:P  P2:P       P
+. Clipping                    J:P  P2:P       P
+. Minimum awareness           J:P  P2:P       P
+Plotting                      J:NP P2:P       P
+Inputs
+. Ranking                     J:T  P2:P       P
+. Predicteds, actuals         J:T  P2:P       P
+. Predicted-actual pairs      J:P  P2:P       P
+. Example weights             J:P  P2:P       P
+Convenience
+. File I/O                    J:P  P2:P       P
+Ranking Statistics
+. Mann-Whitney-U              J:T  P2:P       P
 
 
 Requirements
