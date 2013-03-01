@@ -125,14 +125,6 @@ $(javaBuildDir)/.exists:
 	mkdir -p $(@D)
 	@touch $@
 
-# Create a Markdown representation of the Pandoc README (by embedding
-# preformatted tables) so that GitHub looks good but we can still read
-# the original.  If only Markdown supported non-HTML tables.
-README.md: README.txt
-	sed -e '/Feature Description/,/\. Mann-Whitney-U/ s/^/    /' $< > $@
-# with pandoc1.9.x: pandoc -t markdown $< | sed -e 's/^\(  .\)/  \1/' > $@
-# with pandoc1.10.x: pandoc -t markdown_github $< > $@
-
 
 ########################################
 # Java
@@ -206,8 +198,8 @@ $(javaBuildDir)/%.java: $(javaSrcDir)/%.java
 	cp $< $@
 
 # Build a JAR for the current version
-$(javaBuildDir)/roc-$(version).jar: README.txt LICENSE.txt $(javaReleaseSrcFiles) $(javaSrcClasses) release-javadoc
-	jar cf $@ README.txt LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
+$(javaBuildDir)/roc-$(version).jar: README.md LICENSE.txt $(javaReleaseSrcFiles) $(javaSrcClasses) release-javadoc
+	jar cf $@ README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
 
 
 ########################################
