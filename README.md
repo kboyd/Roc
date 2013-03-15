@@ -10,8 +10,9 @@ Characteristic](http://en.wikipedia.org/wiki/Receiver_operating_characteristic))
 and PR
 ([Precision-Recall](http://en.wikipedia.org/wiki/Precision_and_recall))
 curves.  These curves are typically used to evaluate classification
-approaches in areas such as Machine Learning and Epidemiology.
-Scientists and researchers are the target audience of this software.
+approaches in areas such as Machine Learning, Statistics, Medicine, and
+Epidemiology.  Students, scientists, and researchers are the target
+audience of this software.
 
 The goal of this project is to provide software for evaluating ROC and
 PR curves that correctly implements the traditional and recent
@@ -19,7 +20,7 @@ approaches using languages allowing for flexibility in each
 investigator's environment.
 
 Roc, the name of the software, is pronounced "rock" like its namesake,
-roc, an [enormous, legendary bird of
+roc, an enormous, legendary [bird of
 prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
 
 
@@ -37,28 +38,38 @@ Features and Project Maturity
 This software is in the early design and development stages.  It is
 planned to be released as a library and as a command-line interface
 (CLI) front-end for the library.  The table below contains a summary of
-features.  Features are "not applicable", "planned", "implemented",
-"tested", or "stable".
+features.
 
-<table>
-  <thead>
-    <tr><th>Feature Description</th> <th>Library Status</th> <th>CLI Status</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>Calculate curve points</td>                 <td>P</td>  <td>P</td></tr>
-    <tr><td>Calculate curve area</td>                   <td>P</td>  <td>P</td></tr>
-    <tr><td>Maximum achievable area (convex hull)</td>  <td>P</td>  <td>P</td></tr>
-    <tr><td>Curve aggregation (vertical averaging)</td> <td>P</td>  <td>P</td></tr>
-    <tr><td>Curve clipping</td>                         <td>P</td>  <td>P</td></tr>
-    <tr><td>Minimum-aware PR</td>                       <td>P</td>  <td>P</td></tr>
-    <tr><td>Label column input</td>                     <td>T</td>  <td>P</td></tr>
-    <tr><td>Predicted-actual pairs columns input</td>   <td>T</td>  <td>P</td></tr>
-    <tr><td>Weighted examples</td>                      <td>P</td>  <td>P</td></tr>
-    <tr><td>Confidence intervals</td>                   <td>P</td>  <td>P</td></tr>
-    <tr><td>Plotting</td>                               <td>NA</td> <td>P</td></tr>
-    <tr><td>Ranking statistics</td>                     <td>P</td>  <td>P</td></tr>
-  </tbody>
-</table>
+Features are NP="not planned", P="planned", I="implemented", T="tested",
+S="stable".  Languages are J="Java", P2="Python 2.x".
+
+    Feature Description           Library Status  CLI Status (P2)
+    -------------------           --------------  ---------------
+    ROC curves
+    . Points                      J:T  P2:P       P
+    . Area                        J:T  P2:P       P
+    . Maximum area (convex hull)  J:T  P2:P       P
+    . Aggregation (averaging)     J:P  P2:P       P
+    . Confidence bounds           J:P  P2:P       P
+    . Clipping                    J:P  P2:P       P
+    PR curves
+    . Points                      J:P  P2:P       P
+    . Area                        J:P  P2:P       P
+    . Maximum area (convex hull)  J:P  P2:P       P
+    . Aggregation (averaging)     J:P  P2:P       P
+    . Confidence bounds           J:P  P2:P       P
+    . Clipping                    J:P  P2:P       P
+    . Minimum awareness           J:P  P2:P       P
+    Plotting                      J:NP P2:P       P
+    Inputs
+    . Ranking                     J:T  P2:P       P
+    . Predicteds, actuals         J:T  P2:P       P
+    . Predicted-actual pairs      J:P  P2:P       P
+    . Example weights             J:P  P2:P       P
+    Convenience
+    . File I/O                    J:P  P2:P       P
+    Ranking Statistics
+    . Mann-Whitney-U              J:T  P2:P       P
 
 
 Requirements
@@ -66,6 +77,7 @@ Requirements
 
 * Java 5 (or later) if using the Java library
 * Python 2.5 (or later, but not 3.x) if using the command line interface
+  or Python library
 
 
 Java Library and JAR
@@ -77,7 +89,8 @@ containing source code, bytecode, and documentation.  The JAR can be
 obtained at TODO.  To include the library in your Java project, just
 place the JAR in a convenient location and include it in your classpath.
 You can browse the documentation by extracting it from the JAR or by
-viewing the latest version on GitHub (TODO).
+viewing the [latest version on
+GitHub](http://kboyd.github.com/Roc/javadoc/).
 
 
 Contact
