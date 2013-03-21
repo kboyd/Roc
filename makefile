@@ -195,6 +195,7 @@ jar: $(javaBuildDir)/roc-$(version).jar
 
 # Copy files from src to build for packaging
 $(javaBuildDir)/%.java: $(javaSrcDir)/%.java
+	mkdir -p $(@D) # Make sure the destination directory exists
 	cp $< $@
 
 # Build a JAR for the current version
