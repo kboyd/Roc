@@ -285,13 +285,14 @@ public class CurveData {
     }
 
     /**
-     * Generate (x,y) points for a ROC curve.  Interpolation in ROC
-     * space is linear so the ROC curve can be plotted by simply
-     * connecting these points with lines.
+     * Generates (x,y)=(FPR,TPR) points for plotting a ROC curve with
+     * connecting lines.  Interpolation in ROC space is linear so
+     * connecting consecutive points with lines gives the exact ROC
+     * curve.
      *
      * @return An array of two-element arrays.  Each two-element array
-     * is a (x,y) point.  Points are sorted by ascending x value with
-     * ties broken by ascending y value.
+     * is a (x,y) point in ROC space.  Points are provided in plotting
+     * order.
      */
     public double[][] rocPoints() {
         double[][] points = new double[truePositiveCounts.length][2];
@@ -350,43 +351,72 @@ public class CurveData {
     }
 
     /**
-     * Just the known PR points.  Not appropriate for plotting!
-     * (Linear interpolation is incorrect.)
-     */
-    public double[][] rawPrPoints() {
-        double[][] points = new double[truePositiveCounts.length][2];
-        double[] point;
-        for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
-            point = prPoint(pointIndex);
-            points[pointIndex][0] = point[0];
-            points[pointIndex][1] = point[1];
-        }
-        return points;
-    }
-
-    /**
-     * Appropriate for plotting as uses most conservative possible
-     * interpolation.
+     * Generates (x,y)=(recall,precision) points for plotting a PR curve
+     * with connecting lines.  Interpolation in PR space is generally
+     * not linear, so the returned points are the closest linear
+     * underestimate of the actual PR curve.  Plot the PR curve by
+     * connecting consecutive points with lines.
+     *
+     * Technically, a closer linear underestimate could be achieved by
+     * introducing intermediate points (samples), but this method
+     * achieves the closest underestimate without samples.
+     *
+     * See TODO:REFERENCE for more information.
+     *
+     * @return An array of two-element arrays.  Each two-element array
+     * is a (x,y) point in PR space.  Points are provided in plotting
+     * order.
      */
     public double[][] prPoints() {
-        // Skips zeroth point to avoid divide by zero problem
-        double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
-        double totPos = (double) totalPositives;
-        int countIndex;
-        for (int pointIndex = 0; pointIndex < points.length; pointIndex += 2) {
-            countIndex = pointIndex / 2 + 1;
-            points[pointIndex][0] = (double) truePositiveCounts[countIndex] / totPos;
-            points[pointIndex][1] = (double) truePositiveCounts[countIndex]
-                / (double) (truePositiveCounts[countIndex] + falsePositiveCounts[countIndex]);
-        }
-        for (int pointIndex = 1; pointIndex < points.length; pointIndex += 2) {
-            if (points[pointIndex - 1][1] < points[pointIndex + 1][1]) {
-                points[pointIndex][0] = points[pointIndex + 1][0];
-                points[pointIndex][1] = points[pointIndex - 1][1];
-            } else {
-                points[pointIndex][0] = points[pointIndex - 1][0];
-                points[pointIndex][1] = points[pointIndex + 1][1];
+        // As long as there are no ties (no thresholds where both true
+        // and false positives increase), the raw PR points suffice and
+        // can be linearly interpolated for an underestimate of the
+        // actual curve.  In the case of a tie, linear interpolation
+        // overestimates, which this method handles by creating a
+        // lower-left bounding "box" that underestimates.  Each tie
+        // requires introducing a single point, the lower-left corner of
+        // the bounding "box".
+
+        // Count the number of ties to know the number of extra points.
+        int ties = 0;
+        int prevIndex;
+        for (int pointIndex = 1; pointIndex < truePositiveCounts.length; pointIndex++) {
+            // A tie is when both counts increase between thresholds
+            prevIndex = pointIndex - 1;
+            if (truePositiveCounts[pointIndex] > truePositiveCounts[prevIndex] &&
+                falsePositiveCounts[pointIndex] > falsePositiveCounts[prevIndex]) {
+                ties++;
             }
+        }
+
+        // Calculate the PR points adding "lower-left" points for ties
+        double[][] points = new double[truePositiveCounts.length + ties][2];
+        double[] point = prPoint(0);
+        // Add the zeroth point by hand
+        points[0][0] = point[0];
+        points[0][1] = point[1];
+        // Add the remaining points
+        int pointIndex = 1;
+        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+            // Get the current PR point
+            point = prPoint(countIndex);
+            // If this is a "tie" point, add a point to make a
+            // lower-left bounding "box".  A tie is when both counts
+            // increase between thresholds.
+            prevIndex = countIndex - 1;
+            if (truePositiveCounts[countIndex] > truePositiveCounts[prevIndex] &&
+                falsePositiveCounts[countIndex] > falsePositiveCounts[prevIndex]) {
+                // Add a "lower-left" point which has x/recall from the
+                // previous point and y/precision from the current
+                // point.
+                points[pointIndex][0] = points[pointIndex - 1][0];
+                points[pointIndex][1] = point[1];
+                pointIndex++;
+            }
+            // Add in the current PR point
+            points[pointIndex][0] = point[0];
+            points[pointIndex][1] = point[1];
+            pointIndex++;
         }
         return points;
     }
@@ -401,27 +431,6 @@ public class CurveData {
      * @return area under PR curve
      */
     public double prArea(double minimumRecall, double maximumRecall) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * <p>Generate (x,y) points for PR curve. Linear interpolation is NOT
-     * correct for PR curves, instead interpolation is done by
-     * FORMULA.</p>
-     *
-     * <p>TODO - probably need a plotPr() that doesn't require specifying
-     * the numberOfSamples, what should be the default though? 100?
-     * 1000?</p>
-     *
-     * @param numberOfSamples number of evenly spaced samples to take
-     * of the PR curve, with a sufficiently large value using a line
-     * between points is a reasonable approximation of the correct
-     * interpolation
-     * @return [i][0] is the x-value (recall) of the ith point, [i][1]
-     * is the y-value (precision) of the ith points, points are sorted
-     * by ascending x-value
-     */
-    public double[][] prPoints(int numberOfSamples) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 

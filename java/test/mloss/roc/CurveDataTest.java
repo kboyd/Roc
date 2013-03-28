@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Roc Project.  See LICENSE.txt for details.
+ * Copyright (c) 2013 Roc Project.  See LICENSE.txt for details.
  */
 
 package mloss.roc;
@@ -272,6 +272,8 @@ public class CurveDataTest {
         {5.0/5.0, 5.0/10.0}  // 10
     };
 
+    static final double[][] expectedPrPoints_curve = expectedRawPrPoints_curve;
+
     static final double[][] expectedRawPrPoints_randCurve = {
         { 0.0/16.0,   1.0/1.0},
         { 1.0/16.0,   1.0/1.0},
@@ -286,6 +288,30 @@ public class CurveDataTest {
         {12.0/16.0, 12.0/28.0},
         {13.0/16.0, 13.0/31.0},
         {13.0/16.0, 13.0/31.0},
+        {15.0/16.0, 15.0/35.0},
+        {16.0/16.0, 16.0/36.0}
+    };
+
+    static final double[][] expectedPrPoints_randCurve = {
+        { 0.0/16.0,   1.0/1.0},
+        { 1.0/16.0,   1.0/1.0},
+        { 1.0/16.0,   4.0/5.0}, // "lower-left" addition
+        { 4.0/16.0,   4.0/5.0},
+        { 4.0/16.0,   5.0/7.0}, // "lower-left" addition
+        { 5.0/16.0,   5.0/7.0},
+        { 5.0/16.0,  5.0/11.0},
+        { 5.0/16.0,  5.0/14.0},
+        { 5.0/16.0,  7.0/17.0}, // "lower-left" addition
+        { 7.0/16.0,  7.0/17.0},
+        { 8.0/16.0,  8.0/18.0},
+        { 8.0/16.0, 10.0/23.0}, // "lower-left" addition
+        {10.0/16.0, 10.0/23.0},
+        {12.0/16.0, 12.0/25.0},
+        {12.0/16.0, 12.0/28.0},
+        {12.0/16.0, 13.0/31.0}, // "lower-left" addition
+        {13.0/16.0, 13.0/31.0},
+        {13.0/16.0, 13.0/31.0},
+        {13.0/16.0, 15.0/35.0}, // "lower-left" addition
         {15.0/16.0, 15.0/35.0},
         {16.0/16.0, 16.0/36.0}
     };
@@ -308,81 +334,6 @@ public class CurveDataTest {
                               randCurve.prPoint(expectedIndex), TOLERANCE);
         }
     }
-
-    /** Tests {@link CurveData.rawPrPoints()}. */
-    @Test public void testRawPrPoints() {
-        // Normal
-        double[][] actual = curve.rawPrPoints();
-        assertEquals(expectedRawPrPoints_curve.length, actual.length);
-        for (int expectedIndex = 0;
-             expectedIndex < expectedRawPrPoints_curve.length;
-             expectedIndex++) {
-            assertArrayEquals(expectedRawPrPoints_curve[expectedIndex],
-                              actual[expectedIndex], TOLERANCE);
-        }
-
-        // Random
-        actual = randCurve.rawPrPoints();
-        assertEquals(expectedRawPrPoints_randCurve.length, actual.length);
-        for (int expectedIndex = 0;
-             expectedIndex < expectedRawPrPoints_randCurve.length;
-             expectedIndex++) {
-            assertArrayEquals(expectedRawPrPoints_randCurve[expectedIndex],
-                              actual[expectedIndex], TOLERANCE);
-        }
-    }
-
-    static final double[][] expectedPrPoints_curve = {
-        {1.0/5.0, 1.0/1.0},  //
-        {1.0/5.0, 1.0/2.0},
-        {1.0/5.0, 1.0/2.0},  //
-        {2.0/5.0, 1.0/2.0},
-        {2.0/5.0, 2.0/3.0},  //
-        {3.0/5.0, 2.0/3.0},
-        {3.0/5.0, 3.0/4.0},  //
-        {3.0/5.0, 3.0/5.0},
-        {3.0/5.0, 3.0/5.0},  //
-        {3.0/5.0, 3.0/6.0},
-        {3.0/5.0, 3.0/6.0},  //
-        {4.0/5.0, 3.0/6.0},
-        {4.0/5.0, 4.0/7.0},  //
-        {4.0/5.0, 4.0/8.0},
-        {4.0/5.0, 4.0/8.0},  //
-        {4.0/5.0, 4.0/9.0},
-        {4.0/5.0, 4.0/9.0},  //
-        {5.0/5.0, 4.0/9.0},
-        {5.0/5.0, 5.0/10.0}  //
-    };
-
-    static final double[][] expectedPrPoints_randCurve = {
-        { 1.0/16.0,   1.0/1.0},  //
-        { 1.0/16.0,   4.0/5.0},
-        { 4.0/16.0,   4.0/5.0},  //
-        { 4.0/16.0,   5.0/7.0},
-        { 5.0/16.0,   5.0/7.0},  //
-        { 5.0/16.0,  5.0/11.0},
-        { 5.0/16.0,  5.0/11.0},  //
-        { 5.0/16.0,  5.0/14.0},
-        { 5.0/16.0,  5.0/14.0},  //
-        { 7.0/16.0,  5.0/14.0},
-        { 7.0/16.0,  7.0/17.0},  //
-        { 8.0/16.0,  7.0/17.0},
-        { 8.0/16.0,  8.0/18.0},  //
-        { 8.0/16.0, 10.0/23.0},
-        {10.0/16.0, 10.0/23.0},  //
-        {12.0/16.0, 10.0/23.0},
-        {12.0/16.0, 12.0/25.0},  //
-        {12.0/16.0, 12.0/28.0},
-        {12.0/16.0, 12.0/28.0},  //
-        {12.0/16.0, 13.0/31.0},
-        {13.0/16.0, 13.0/31.0},  //
-        {13.0/16.0, 13.0/31.0},
-        {13.0/16.0, 13.0/31.0},  //
-        {15.0/16.0, 13.0/31.0},
-        {15.0/16.0, 15.0/35.0},  //
-        {16.0/16.0, 15.0/35.0},
-        {16.0/16.0, 16.0/36.0}   //
-    };
 
     /** Tests {@link CurveData.prPoints()}. */
     @Test public void testPrPoints() {
