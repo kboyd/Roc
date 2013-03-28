@@ -259,7 +259,7 @@ public class CurveDataTest {
     // y-axis: precision = tp / (tp + fp)
 
     static final double[][] expectedRawPrPoints_curve = {
-        {0.0/5.0,     0.0},  // 0  // TODO decide what to do about this case: 0.0 / (0.0 + 0.0)
+        {0.0/5.0, 1.0/1.0},  // 0  // This is undefined, so we choose to extend the first point to the left.  (Copy the vertical value of the first point.)
         {1.0/5.0, 1.0/1.0},  // 1
         {1.0/5.0, 1.0/2.0},  // 2
         {2.0/5.0, 2.0/3.0},  // 3
@@ -273,7 +273,7 @@ public class CurveDataTest {
     };
 
     static final double[][] expectedRawPrPoints_randCurve = {
-        { 0.0/16.0,       0.0},
+        { 0.0/16.0,   1.0/1.0},
         { 1.0/16.0,   1.0/1.0},
         { 4.0/16.0,   4.0/5.0},
         { 5.0/16.0,   5.0/7.0},

@@ -321,20 +321,31 @@ public class CurveData {
      * Computes the point on the PR curve that corresponds to a
      * particular classification threshold.
      *
+     * The precision is undefined (due to division by zero) for the
+     * zeroth point.  We choose to handle this as a special case and
+     * define the zeroth point as (0, y1) where y1 is the vertical value
+     * (precision) of the point with rank 1.  That is, the zeroth point
+     * extends the curve horizontally left from the first defined point
+     * (rank 1) to the vertical axis.
+     *
      * @param rankNumber The number of elements in the ranking to treat
      * as positive.
      * @return A two-element array containing the recall (x-axis) and
      * the precision (y-axis) ([recall, precision]).
      */
     public double[] prPoint(int rankNumber) {
-        // TODO figure out how to handle (what to return) when (tp + fp) == 0.
         // x-axis: recall = tp / (tp + fn) = tp / #p
         // y-axis: precision = tp / (tp + fp)
-        double recall = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
-        int calledPositive = truePositiveCounts[rankNumber] + falsePositiveCounts[rankNumber];
-        double precision = 0.0;
-        if (calledPositive != 0)
-            precision = (double) truePositiveCounts[rankNumber] / (double) calledPositive;
+        // Recall is the same computation for all ranks
+        double recall = (double) truePositiveCounts[rankNumber] /
+            (double) totalPositives;
+        // Precision uses the value of rank 1 as the value for rank 0
+        if (rankNumber == 0) {
+            rankNumber++;
+        }
+        double precision = (double) truePositiveCounts[rankNumber] /
+            (double) (truePositiveCounts[rankNumber]
+                      + falsePositiveCounts[rankNumber]);
         return new double[] {recall, precision};
     }
 
@@ -344,11 +355,11 @@ public class CurveData {
      */
     public double[][] rawPrPoints() {
         double[][] points = new double[truePositiveCounts.length][2];
-        double totPos = (double) totalPositives;
-        for (int pointIndex = 1; pointIndex < points.length; pointIndex++) {
-            points[pointIndex][0] = (double) truePositiveCounts[pointIndex] / totPos;
-            points[pointIndex][1] = (double) truePositiveCounts[pointIndex]
-                / (double) (truePositiveCounts[pointIndex] + falsePositiveCounts[pointIndex]);
+        double[] point;
+        for (int pointIndex = 0; pointIndex < points.length; pointIndex++) {
+            point = prPoint(pointIndex);
+            points[pointIndex][0] = point[0];
+            points[pointIndex][1] = point[1];
         }
         return points;
     }
