@@ -306,7 +306,8 @@ public class CurveData {
     }
 
     /**
-     * @return The area under the ROC curve.
+     * @return Area under the ROC curve (as defined by {@link
+     * #rocPoints()}).
      */
     public double rocArea() {
         /* This implementation is in terms of the Mann-Whitney U
@@ -316,6 +317,33 @@ public class CurveData {
          */
         double[] uStatistics = mannWhitneyU();
         return uStatistics[1] / (double) (totalPositives * totalNegatives);
+    }
+
+    /**
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return Recall at the given threshold.
+     */
+    public double recall(int rankNumber) {
+        // recall = tp / (tp + fn) = tp / #p
+        return (double) truePositiveCounts[rankNumber] /
+            (double) totalPositives;
+    }
+
+    /**
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return Precision at the given threshold.
+     */
+    public double precision(int rankNumber) {
+        // precision = tp / (tp + fp)
+        // Precision uses the value of rank 1 as the value for rank 0
+        if (rankNumber == 0) {
+            rankNumber++;
+        }
+        return (double) truePositiveCounts[rankNumber] /
+            (double) (truePositiveCounts[rankNumber] +
+                      falsePositiveCounts[rankNumber]);
     }
 
     /**
@@ -335,19 +363,8 @@ public class CurveData {
      * the precision (y-axis) ([recall, precision]).
      */
     public double[] prPoint(int rankNumber) {
-        // x-axis: recall = tp / (tp + fn) = tp / #p
-        // y-axis: precision = tp / (tp + fp)
-        // Recall is the same computation for all ranks
-        double recall = (double) truePositiveCounts[rankNumber] /
-            (double) totalPositives;
-        // Precision uses the value of rank 1 as the value for rank 0
-        if (rankNumber == 0) {
-            rankNumber++;
-        }
-        double precision = (double) truePositiveCounts[rankNumber] /
-            (double) (truePositiveCounts[rankNumber]
-                      + falsePositiveCounts[rankNumber]);
-        return new double[] {recall, precision};
+        // (x/recall, y/precision)
+        return new double[] {recall(rankNumber), precision(rankNumber)};
     }
 
     /**
@@ -422,16 +439,48 @@ public class CurveData {
     }
 
     /**
-     * Calculate area under PR curve for recall between minimum and
-     * maximum recall. Uses interpolation from Davis and Goadrich
-     * 2006 (and Goadrich and Shavlik 2005?).
+     * Calculates the area under the PR curve estimate defined by {@link
+     * #prPoints()}.  The area is an underestimate of the area under the
+     * actual PR curve.
      *
-     * @param minimumRecall lowest recall that counts towards area
-     * @param maximumRecall highest recall that counts towards area
-     * @return area under PR curve
+     * @return Area under the PR curve (as defined by {@link
+     * #prPoints()}).
      */
-    public double prArea(double minimumRecall, double maximumRecall) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public double prArea() {
+        double area = 0.0;
+        int posCount, prevPosCount;
+        double base, height, prevHeight;
+        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+            // There are 3 cases:
+            // 1. Positive count increased: trapezoid between current
+            //    height and previous height.  (This case handles the
+            //    first point and it just so happens both heights are
+            //    the same.)
+            // 2. Negative count increased: height decreased and there
+            //    is no area
+            // 3. Positive and negative counts increased: rectangle at
+            //    current height (to lower-bound curve)
+
+            // Only calculate an area if the positives have increased
+            posCount = truePositiveCounts[countIndex];
+            prevPosCount = truePositiveCounts[countIndex - 1];
+            if (posCount > prevPosCount) {
+                base = (double) (posCount - prevPosCount);
+                height = precision(countIndex);
+                if (falsePositiveCounts[countIndex] > // Neg counts
+                    falsePositiveCounts[countIndex - 1]) {
+                    // Rectangle
+                    area += base * height;
+                } else {
+                    // Trapezoid
+                    prevHeight = precision(countIndex - 1);
+                    area += base * (prevHeight + height) / 2.0;
+                }
+            }
+        }
+        // The number of positives was factored out of all the base
+        // computations.  Put it back in and return.
+        return area / (double) totalPositives;
     }
 
     /**

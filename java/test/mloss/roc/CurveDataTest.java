@@ -216,7 +216,7 @@ public class CurveDataTest {
 
         // Random
         // Fields: point, increment type, area calculation
-        // Think of the increment type as ASCII art for an ROC plot
+        // Think of the increment type as ASCII art for a ROC plot
         // rotated 90 degrees clockwise, which corresponds to the TPR
         // points along the left, as they are below.
         // ( 0/20,  0/16), .,
@@ -358,6 +358,54 @@ public class CurveDataTest {
                               actual[expectedIndex], TOLERANCE);
             //System.out.println(java.util.Arrays.toString(actual[expectedIndex]) + ",");
         }
+    }
+
+    /** Tests {@link CurveData.prArea()}. */
+    @Test public void testPrArea() {
+        // Normal
+        // Fields: point, increment type, area calculation
+        // Think of the increment type as ASCII art for the line
+        // connecting the previous and current point in a PR plot
+        // (0/5,  1/1), .,
+        // (1/5,  1/1), -, 1/5 * 1 = 1/5
+        // (1/5,  1/2), |,
+        // (2/5,  2/3), /, 1/5 * (1/2 + 2/3)/2 = 7/60
+        // (3/5,  3/4), /, 1/5 * (2/3 + 3/4)/2 = 17/120
+        // (3/5,  3/5), |,
+        // (3/5,  3/6), |,
+        // (4/5,  4/7), /, 1/5 * (3/6 + 4/7)/2 = 1/5 * 45/84 = 3/28
+        // (4/5,  4/8), |,
+        // (4/5,  4/9), |,
+        // (5/5, 5/10), /, 1/5 * (4/9 + 5/10)/2 = 1/5 * 85/180 = 17/180
+        // Total: 1663/2520 = 0.6599
+        double expected = 1663.0 / 2520.0;
+        assertEquals(expected, curve.prArea(), TOLERANCE);
+
+        // Random
+        // ( 0/16,   1/1}, .,
+        // ( 1/16,   1/1}, -, 1/16 * 1 = 1/16
+        // ( 1/16,   4/5}, |,
+        // ( 4/16,   4/5}, -, 3/16 * 4/5 = 12/80 = 3/20
+        // ( 4/16,   5/7}, |,
+        // ( 5/16,   5/7}, -, 1/16 * 5/7 = 5/112
+        // ( 5/16,  5/11}, |,
+        // ( 5/16,  5/14}, |,
+        // ( 5/16,  7/17}, |,
+        // ( 7/16,  7/17}, -, 2/16 * 7/17 = 14/272 = 7/136
+        // ( 8/16,  8/18}, /, 1/16 * (7/17 + 8/18)/2 = 1/16 * 131/306 = 131/4896
+        // ( 8/16, 10/23}, |,
+        // (10/16, 10/23}, -, 2/16 * 10/23 = 10/184 = 5/92
+        // (12/16, 12/25}, /, 2/16 * (10/23 + 12/25)/2 = 1/8 * 263/575 = 263/4600
+        // (12/16, 12/28}, |,
+        // (12/16, 13/31}, |,
+        // (13/16, 13/31}, -, 1/16 * 13/31 = 13/496
+        // (13/16, 13/31}, .,
+        // (13/16, 15/35}, |,
+        // (15/16, 15/35}, -, 2/16 * 15/35 = 15/280 = 3/56
+        // (16/16, 16/36}, /, 1/16 * (15/35 + 16/36)/2 = 1/16 * 55/126 = 55/2016
+        // Total (Thanks Maxima!): 169204981/305449200 = 0.553954572478828
+        expected = 169204981.0 / 305449200.0;
+        assertEquals(expected, randCurve.prArea(), TOLERANCE);
     }
 
     static final int[] convexHull_randomXs = {0, 1, 1, 2, 2, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 9, 9};
