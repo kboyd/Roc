@@ -35,6 +35,8 @@ LICENSE.txt for details.
 Features and Project Maturity
 -----------------------------
 
+Roc is version 0.1.0.
+
 This software is in the early design and development stages.  It is
 planned to be released as a library and as a command-line interface
 (CLI) front-end for the library.  The table below contains a summary of

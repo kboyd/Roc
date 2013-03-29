@@ -55,8 +55,9 @@ else
 junitJar := $(firstword $(junitJar))
 endif
 
-# Version
-version := 1.0.0
+# Version (anything in the README after the identifying phrase that
+# consists of digits and periods with digits on the ends)
+version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
 
 # Project layout
 buildBaseDir := build
@@ -99,6 +100,7 @@ indent := $(emptyString)    $(emptyString)
 # List variables and values
 listconfig:
 	@echo Variables:
+	@echo version: $(version)
 	@echo junitJar: $(junitJar)
 	@echo classpath: $(classpath)
 	@echo javaSrcFiles:
