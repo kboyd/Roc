@@ -170,19 +170,19 @@ public class CurveDataBuilderTest {
             .positiveLabel(positiveLabel).build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStatePAWSize() {
-        List<Double> weights = Collections.emptyList();
-        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
-            .positiveLabel(positiveLabel).build();
-    }
+//    @Test(expected=IllegalStateException.class)
+//    public void testInvalidStatePAWSize() {
+//        List<Double> weights = Collections.emptyList();
+//        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
+//            .positiveLabel(positiveLabel).build();
+//    }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateRLWSize() {
-        List<Double> weights = Collections.emptyList();
-        builder.rankedLabels(rankedLabelsList).weights(weights)
-            .positiveLabel(positiveLabel).build();
-    }
+//    @Test(expected=IllegalStateException.class)
+//    public void testInvalidStateRLWSize() {
+//        List<Double> weights = Collections.emptyList();
+//        builder.rankedLabels(rankedLabelsList).weights(weights)
+//            .positiveLabel(positiveLabel).build();
+//    }
 
     /** Tests {@link CurveData.Builder.instantiateSequence(Iterable)}. */
     @Test public void instantiateSequence() {

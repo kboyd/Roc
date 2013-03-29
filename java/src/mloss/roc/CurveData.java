@@ -833,22 +833,22 @@ public class CurveData {
             return this;
         }
 
-        /**
-         * Specifies a sequence of weights that correspond to the actual
-         * labels.  Completely optional.  The iterable is instantiated
-         * as a list if necessary.
-         *
-         * @param weights A sequence of doubles
-         * @return This builder
-         */
-        public Builder<TScore, TLabel> weights(Iterable<Double> weights) {
-            if (weights instanceof List) {
-                this.weights = (List<Double>) weights;
-            } else {
-                this.weights = Builder.instantiateSequence(weights);
-            }
-            return this;
-        }
+//        /**
+//         * Specifies a sequence of weights that correspond to the actual
+//         * labels.  Completely optional.  The iterable is instantiated
+//         * as a list if necessary.
+//         *
+//         * @param weights A sequence of doubles
+//         * @return This builder
+//         */
+//        public Builder<TScore, TLabel> weights(Iterable<Double> weights) {
+//            if (weights instanceof List) {
+//                this.weights = (List<Double>) weights;
+//            } else {
+//                this.weights = Builder.instantiateSequence(weights);
+//            }
+//            return this;
+//        }
 
         /**
          * Specifies the object to use as a positive label.
@@ -1070,15 +1070,15 @@ public class CurveData {
             return this;
         }
 
-        /**
-         * @param weights A sequence of doubles
-         * @return This builder
-         * @see Builder#weights(Iterable)
-         */
-        public PrimitivesBuilder weights(double[] weights) {
-            this.weights = PrimitivesBuilder.primitiveArrayToList(weights);
-            return this;
-        }
+//        /**
+//         * @param weights A sequence of doubles
+//         * @return This builder
+//         * @see Builder#weights(Iterable)
+//         */
+//        public PrimitivesBuilder weights(double[] weights) {
+//            this.weights = PrimitivesBuilder.primitiveArrayToList(weights);
+//            return this;
+//        }
 
         /**
          * @param label The positive label
