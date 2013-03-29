@@ -306,8 +306,10 @@ public class CurveData {
     }
 
     /**
-     * @return Area under the ROC curve (as defined by {@link
-     * #rocPoints()}).
+     * Computes the area under the ROC curve.  (The curve is defined by
+     * {@link #rocPoints()}.)
+     *
+     * @return Area under the ROC curve
      */
     public double rocArea() {
         /* This implementation is in terms of the Mann-Whitney U
@@ -320,6 +322,8 @@ public class CurveData {
     }
 
     /**
+     * Computes recall at a particular classification threshold.
+     *
      * @param rankNumber The number of elements in the ranking to treat
      * as positive.
      * @return Recall at the given threshold.
@@ -331,6 +335,8 @@ public class CurveData {
     }
 
     /**
+     * Computes precision at a particular classification threshold.
+     *
      * @param rankNumber The number of elements in the ranking to treat
      * as positive.
      * @return Precision at the given threshold.
@@ -439,12 +445,11 @@ public class CurveData {
     }
 
     /**
-     * Calculates the area under the PR curve estimate defined by {@link
-     * #prPoints()}.  The area is an underestimate of the area under the
-     * actual PR curve.
+     * Calculates an estimate of the area under the PR curve.  (The
+     * curve is defined by {@link #prPoints()}.)  The area is an
+     * underestimate of the area under the actual PR curve.
      *
-     * @return Area under the PR curve (as defined by {@link
-     * #prPoints()}).
+     * @return Area under the PR curve
      */
     public double prArea() {
         double area = 0.0;
@@ -484,11 +489,6 @@ public class CurveData {
     }
 
     /**
-     * <p>Directly from the <a
-     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">monotone
-     * chain computational geometry</a> section from the Wikibook on
-     * Algorithm Implementation.<p>
-     *
      * <p>Computes the cross product of vectors OA and OB, that is, the
      * z-component of their three-dimensional cross product.  (A and B
      * are two-dimensional vectors and O is their common origin.)  The
@@ -516,6 +516,11 @@ public class CurveData {
      *
      * <p>We only need integer vectors for ROC/PR curves so keep
      * everything integer calculations.<p>
+     *
+     * <p>Directly from the <a
+     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">monotone
+     * chain computational geometry</a> section from the Wikibook on
+     * Algorithm Implementation.<p>
      *
      * @param ox The x component of vector O.
      * @param oy The y component of vector O.
