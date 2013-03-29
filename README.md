@@ -55,9 +55,9 @@ S="stable".  Languages are J="Java", P2="Python 2.x".
     . Confidence bounds           J:P  P2:P       P
     . Clipping                    J:P  P2:P       P
     PR curves
-    . Points                      J:P  P2:P       P
-    . Area                        J:P  P2:P       P
-    . Maximum area (convex hull)  J:P  P2:P       P
+    . Points                      J:T  P2:P       P
+    . Area                        J:T  P2:P       P
+    . Maximum area (convex hull)  J:I  P2:P       P
     . Aggregation (averaging)     J:P  P2:P       P
     . Confidence bounds           J:P  P2:P       P
     . Clipping                    J:P  P2:P       P
