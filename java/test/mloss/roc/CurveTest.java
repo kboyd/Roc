@@ -9,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 
-/** Tests {@link CurveData}. */
-public class CurveDataTest {
+/** Tests {@link Curve}. */
+public class CurveTest {
 
     public static final double TOLERANCE = 1.0e-10;
 
@@ -49,52 +49,52 @@ public class CurveDataTest {
     static final int[] random_posCounts = {0, 1, 4, 5, 5, 5, 7, 8, 10, 12, 12, 13, 13, 15, 16};
     static final int[] random_negCounts = {0, 0, 1, 2, 6, 9, 10, 10, 13, 13, 16, 18, 18, 20, 20};
 
-    CurveData curve;
-    CurveData randCurve;
-    CurveData staircaseCurve;
+    Curve curve;
+    Curve randCurve;
+    Curve staircaseCurve;
 
     @Before public void setUp() {
-        curve = new CurveData(labelsAverage);
-        randCurve = new CurveData(random_posCounts, random_negCounts);
-        staircaseCurve = new CurveData(staircaseLabels);
+        curve = new Curve(labelsAverage);
+        randCurve = new Curve(random_posCounts, random_negCounts);
+        staircaseCurve = new Curve(staircaseLabels);
     }
 
     /**
-     * Tests {@link CurveData.buildCounts(int[])} and {@link
-     * CurveData.buildCounts(int[], int)}.
+     * Tests {@link Curve.buildCounts(int[])} and {@link
+     * Curve.buildCounts(int[], int)}.
      */
     @Test public void testBuildCountsFromHardLabels() {
-        CurveData curve = new CurveData(labelsWorst);
+        Curve curve = new Curve(labelsWorst);
         assertArrayEquals(labelsWorst_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(2, curve.totalNegatives);
 
-        curve = new CurveData(labelsWorst, 0);  // Non-default positive label
+        curve = new Curve(labelsWorst, 0);  // Non-default positive label
         assertArrayEquals(labelsWorst_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_posCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new CurveData(labelsAverage);
+        curve = new Curve(labelsAverage);
         assertArrayEquals(labelsAverage_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new CurveData(labelsAverage, 0);  // Non-default positive label
+        curve = new Curve(labelsAverage, 0);  // Non-default positive label
         assertArrayEquals(labelsAverage_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_posCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new CurveData(labelsBest);
+        curve = new Curve(labelsBest);
         assertArrayEquals(labelsBest_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsBest_negCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
         assertEquals(3, curve.totalNegatives);
 
-        curve = new CurveData(labelsBest, 0);  // Non-default positive label
+        curve = new Curve(labelsBest, 0);  // Non-default positive label
         assertArrayEquals(labelsBest_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsBest_posCounts, curve.falsePositiveCounts);
         assertEquals(3, curve.totalPositives);
@@ -114,7 +114,7 @@ public class CurveDataTest {
         return matrices;
     }
 
-    /** Tests {@link CurveData.confusionMatrix(int)}. */
+    /** Tests {@link Curve.confusionMatrix(int)}. */
     @Test public void testConfusionMatrix() {
         // Normal
         int[][] expected = {
@@ -152,7 +152,7 @@ public class CurveDataTest {
         return points;
     }
 
-    /** Tests {@link CurveData.rocPoint(int)}. */
+    /** Tests {@link Curve.rocPoint(int)}. */
     @Test public void testRocPoint() {
         // Normal
         // Remember FPR horizontal, TPR vertical
@@ -181,7 +181,7 @@ public class CurveDataTest {
         }
     }
 
-    /** Tests {@link CurveData.rocPoints()}. */
+    /** Tests {@link Curve.rocPoints()}. */
     @Test public void testRocPoints() {
         // Normal
         double[][] expected = createRocPoints(labelsAverage_posCounts, labelsAverage_negCounts);
@@ -200,7 +200,7 @@ public class CurveDataTest {
         }
     }
 
-    /** Tests {@link CurveData.rocArea()}. */
+    /** Tests {@link Curve.rocArea()}. */
     @Test public void testRocArea() {
         // Normal
         // Points: Rectangles (w * h = area):
@@ -241,17 +241,17 @@ public class CurveDataTest {
         // Test a few possibly pathological cases
 
         // No area
-        curve = new CurveData(labelsWorst_posCounts, labelsWorst_negCounts);
+        curve = new Curve(labelsWorst_posCounts, labelsWorst_negCounts);
         assertEquals(0.0, curve.rocArea(), TOLERANCE);
 
         // Half area
         int[] posCounts_half = {0, 1};
         int[] negCounts_half = {0, 1};
-        curve = new CurveData(posCounts_half, negCounts_half);
+        curve = new Curve(posCounts_half, negCounts_half);
         assertEquals(0.5, curve.rocArea(), TOLERANCE);
 
         // Full area
-        curve = new CurveData(labelsBest_posCounts, labelsBest_negCounts);
+        curve = new Curve(labelsBest_posCounts, labelsBest_negCounts);
         assertEquals(1.0, curve.rocArea(), TOLERANCE);
     }
 
@@ -316,7 +316,7 @@ public class CurveDataTest {
         {16.0/16.0, 16.0/36.0}
     };
 
-    /** Tests {@link CurveData.prPoint(int)}. */
+    /** Tests {@link Curve.prPoint(int)}. */
     @Test public void testPrPoint() {
         // Normal
         for (int expectedIndex = 0;
@@ -335,7 +335,7 @@ public class CurveDataTest {
         }
     }
 
-    /** Tests {@link CurveData.prPoints()}. */
+    /** Tests {@link Curve.prPoints()}. */
     @Test public void testPrPoints() {
         // Normal
         double[][] actual = curve.prPoints();
@@ -360,7 +360,7 @@ public class CurveDataTest {
         }
     }
 
-    /** Tests {@link CurveData.prArea()}. */
+    /** Tests {@link Curve.prArea()}. */
     @Test public void testPrArea() {
         // Normal
         // Fields: point, increment type, area calculation
@@ -415,39 +415,39 @@ public class CurveDataTest {
     static final int[] expectedNegCounts_convexHull = {0, 0, 9, 12};
     static final int[] expectedPosCounts_convexHull = {0, 1, 10, 12};
 
-    /** Tests {@link CurveData.convexHullPoints(int[], int[])}. */
+    /** Tests {@link Curve.convexHullPoints(int[], int[])}. */
     @Test public void testConvexHullPoints() {
         // Full area, convex hull is left and top of rectangle
-        int[][] points = CurveData.convexHullPoints(labelsBest_negCounts, labelsBest_posCounts);
+        int[][] points = Curve.convexHullPoints(labelsBest_negCounts, labelsBest_posCounts);
         int[] xs = {0, 0, 3};
         int[] ys = {0, 2, 2};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
         // No area, convex hull is positive slope diagonal
-        points = CurveData.convexHullPoints(labelsBest_posCounts, labelsBest_negCounts);
+        points = Curve.convexHullPoints(labelsBest_posCounts, labelsBest_negCounts);
         xs = new int[]{0, 2};
         ys = new int[]{0, 3};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
         // Convex hull with (sorted) random scatter
-        points = CurveData.convexHullPoints(convexHull_randomXs, convexHull_randomYs);
+        points = Curve.convexHullPoints(convexHull_randomXs, convexHull_randomYs);
         xs = new int[]{0, 1, 5, 9};
         ys = new int[]{2, 5, 9, 4};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
         // Convex hull with interesting but realistic counts
-        points = CurveData.convexHullPoints(convexHull_negCounts, convexHull_posCounts);
+        points = Curve.convexHullPoints(convexHull_negCounts, convexHull_posCounts);
         assertArrayEquals(expectedNegCounts_convexHull, points[0]);
         assertArrayEquals(expectedPosCounts_convexHull, points[1]);
     }
 
-    /** Tests {@link CurveData.convexHull()}. */
+    /** Tests {@link Curve.convexHull()}. */
     @Test public void testConvexHull() {
         // Normal
-        CurveData hull = curve.convexHull();
+        Curve hull = curve.convexHull();
         int[] expectedPosCounts_curve = {0, 1, 3, 5};
         int[] expectedNegCounts_curve = {0, 0, 1, 5};
         assertArrayEquals(expectedPosCounts_curve, hull.truePositiveCounts);
@@ -463,14 +463,14 @@ public class CurveDataTest {
         assertTrue(hull.rocArea() >= randCurve.rocArea());
 
         // Interesting but realistic
-        curve = new CurveData(convexHull_posCounts, convexHull_negCounts);
+        curve = new Curve(convexHull_posCounts, convexHull_negCounts);
         hull = curve.convexHull();
         assertArrayEquals(expectedPosCounts_convexHull, hull.truePositiveCounts);
         assertArrayEquals(expectedNegCounts_convexHull, hull.falsePositiveCounts);
         assertTrue(hull.rocArea() >= curve.rocArea());
     }
 
-    /** Tests {@link CurveData.mannWhitneyU()}. */
+    /** Tests {@link Curve.mannWhitneyU()}. */
     @Test public void testMannWhitneyU() {
         /* There are 2 samples; rank them all together.  For each
          * sample, r is the sum of ranks for that sample, n is the
@@ -501,7 +501,7 @@ public class CurveDataTest {
         // The individual U statistics can come out non-integer
         int[] posCounts = {0, 1, 3, 5, 6};
         int[] negCounts = {0, 0, 1, 3, 4};
-        curve = new CurveData(posCounts, negCounts);
+        curve = new Curve(posCounts, negCounts);
         // u1 = (1*1+2*3+2*6.5+1*9.5) - 6 * 7 / 2 = 8.5
         // u0 = (0*1+1*3+2*6.5+1*9.5) - 4 * 5 / 2 = 15.5
         double[] expectedUsNonInt = {8.5, 15.5};  // sum: 24 (= 6 * 4)

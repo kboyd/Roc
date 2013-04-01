@@ -39,7 +39,7 @@
 # listconfig: Lists all internal variables and their values.
 #
 # Individual Java files can be compiled by making *.class files, e.g.
-#     make build/java/mloss/roc/CurveData.class
+#     make build/java/mloss/roc/Curve.class
 #
 ########################################
 
@@ -138,14 +138,14 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
 	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
 
 # List Java dependencies here
-$(javaBuildDir)/$(javaPkgDir)/CurveData.class:
+$(javaBuildDir)/$(javaPkgDir)/Curve.class:
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class:
-$(javaBuildDir)/$(javaPkgDir)/CurveDataTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
-$(javaBuildDir)/$(javaPkgDir)/CurveDataBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
+$(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
+$(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
 #####

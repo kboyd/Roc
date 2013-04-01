@@ -16,7 +16,7 @@ import mloss.roc.util.Arrays;
 import mloss.roc.util.IterableArray;
 
 
-public class CurveDataPrimitivesBuilderTest {
+public class CurvePrimitivesBuilderTest {
 
     // Sorted labels based on predicteds and actuals below
     public static final int[] rankedLabels = {
@@ -60,18 +60,18 @@ public class CurveDataPrimitivesBuilderTest {
     };
 
     // Object under test
-    CurveData.PrimitivesBuilder builder;
+    Curve.PrimitivesBuilder builder;
 
     @Before public void setUp() {
-        builder = new CurveData.PrimitivesBuilder();
+        builder = new Curve.PrimitivesBuilder();
     }
 
     /**
-     * Tests {@link CurveData.PrimitivesBuilder.rankedLabels(int[])} and
-     * {@link CurveData.PrimitivesBuilder.positiveLabel(int)}.
+     * Tests {@link Curve.PrimitivesBuilder.rankedLabels(int[])} and
+     * {@link Curve.PrimitivesBuilder.positiveLabel(int)}.
      */
     @Test public void testBuildWithRankedLabels() {
-        CurveData curve = builder.rankedLabels(rankedLabels).build();
+        Curve curve = builder.rankedLabels(rankedLabels).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
         curve = builder.positiveLabel(3).build();
@@ -83,12 +83,12 @@ public class CurveDataPrimitivesBuilderTest {
     //}
 
     /**
-     * Tests {@link CurveData.PrimitivesBuilder.predicteds(double[])}
-     * and {@link CurveData.PrimitivesBuilder.actuals(int[])} and {@link
-     * CurveData.PrimitivesBuilder.positiveLabel(int)}.
+     * Tests {@link Curve.PrimitivesBuilder.predicteds(double[])} and
+     * {@link Curve.PrimitivesBuilder.actuals(int[])} and {@link
+     * Curve.PrimitivesBuilder.positiveLabel(int)}.
      */
     @Test public void testBuildWithPredictedsActuals() {
-        CurveData curve = builder.predicteds(predicteds).actuals(actuals)
+        Curve curve = builder.predicteds(predicteds).actuals(actuals)
             .build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
@@ -102,13 +102,13 @@ public class CurveDataPrimitivesBuilderTest {
 
     /**
      * Tests {@link
-     * CurveData.PrimitivesBuilder.primitiveArrayToList(int[])}.
+     * Curve.PrimitivesBuilder.primitiveArrayToList(int[])}.
      */
     @Test public void testPrimitiveArrayToListInteger() {
-        List<Integer> list = CurveData.PrimitivesBuilder
+        List<Integer> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new int[] {});
         assertEquals(0, list.size());
-        list = CurveData.PrimitivesBuilder.primitiveArrayToList(actuals);
+        list = Curve.PrimitivesBuilder.primitiveArrayToList(actuals);
         assertEquals(17, list.size());
         IterableArray<Integer> iterable = new IterableArray<Integer>
             (Arrays.intArrayToIntegerArray(actuals));
@@ -117,13 +117,13 @@ public class CurveDataPrimitivesBuilderTest {
 
     /**
      * Tests {@link
-     * CurveData.PrimitivesBuilder.primitiveArrayToList(double[])}.
+     * Curve.PrimitivesBuilder.primitiveArrayToList(double[])}.
      */
     @Test public void testPrimitiveArrayToListDouble() {
-        List<Double> list = CurveData.PrimitivesBuilder
+        List<Double> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new double[] {});
         assertEquals(0, list.size());
-        list = CurveData.PrimitivesBuilder.primitiveArrayToList(predicteds);
+        list = Curve.PrimitivesBuilder.primitiveArrayToList(predicteds);
         assertEquals(17, list.size());
         IterableArray<Double> iterable = new IterableArray<Double>
             (Arrays.doubleArrayToDoubleArray(predicteds));

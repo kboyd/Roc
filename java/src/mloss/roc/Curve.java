@@ -68,9 +68,9 @@ import java.util.List;
  * <p>One can construct this class directly from a ranking of labels,
  * but it is more convenient to use a builder to compute the ranking and
  * construct this class.  There are two builders.  The regular {@link
- * CurveData.Builder} accepts collections of objects and the {@link
- * CurveData.PrimitivesBuilder} accepts arrays of primitive numbers.
- * (You can use the class {@link mloss.roc.util.IterableArray} to treat
+ * Curve.Builder} accepts collections of objects and the {@link
+ * Curve.PrimitivesBuilder} accepts arrays of primitive numbers.  (You
+ * can use the class {@link mloss.roc.util.IterableArray} to treat
  * arrays of objects as iterable collections suitable for the regular
  * builder.)  You give a builder a list of scores (from your classifier)
  * and a corresponding list of labels and the builder does the rest.
@@ -116,7 +116,7 @@ import java.util.List;
  * true negatives = (total negatives) - (false positives)
  * </code></pre>
  */
-public class CurveData {
+public class Curve {
     /* This class is implemented in terms of arrays of primitives.
      * Avoid converting to/from arrays of primitives and lists of
      * objects if possible.  Internally, this should not be a problem as
@@ -158,7 +158,7 @@ public class CurveData {
     }
 
     /** Direct constructor, mainly for testing and internal use. */
-    CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
+    Curve(int[] truePositiveCounts, int[] falsePositiveCounts) {
         this.truePositiveCounts = truePositiveCounts;
         this.falsePositiveCounts = falsePositiveCounts;
         totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
@@ -178,16 +178,16 @@ public class CurveData {
      * handling multiple classes without having to rewrite all the
      * labels into some prespecified positive and negative signifiers.
      */
-    public CurveData(int[] rankedLabels, int positiveLabel) {
+    public Curve(int[] rankedLabels, int positiveLabel) {
         initFields(rankedLabels.length);
         buildCounts(rankedLabels, positiveLabel);
     }
 
     /**
-     * Calls {@link #CurveData(int[], int)} with positiveLabel=1 (the
+     * Calls {@link #Curve(int[], int)} with positiveLabel=1 (the
      * default positive label for integers).
      */
-    public CurveData(int[] rankedLabels) {
+    public Curve(int[] rankedLabels) {
         this(rankedLabels, 1);
     }
 
@@ -205,7 +205,7 @@ public class CurveData {
      * handling multiple classes without having to rewrite all the
      * labels into some prespecified positive and negative signifiers.
      */
-    public <T> CurveData(List<T> rankedLabels, T positiveLabel) {
+    public <T> Curve(List<T> rankedLabels, T positiveLabel) {
         initFields(rankedLabels.size());
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -217,7 +217,7 @@ public class CurveData {
      * @param rankedLabels A list containing the true label for each
      * example.  The labels must already be ordered (ranked) from most
      * likely positive to most likely negative.
-     * @param positiveLabel See {@link #CurveData(int[], int)}.
+     * @param positiveLabel See {@link #Curve(int[], int)}.
      */
     void buildCounts(int[] rankedLabels, int positiveLabel) {
         // Calculate the individual confusion matrices
@@ -575,13 +575,13 @@ public class CurveData {
             // rather than counter-clockwise.  The equals causes
             // collinear points to be dropped as well.
             while (numberHullPoints >= 2 &&
-                   CurveData.vectorCrossProduct(
-                                                hullXCoords[numberHullPoints - 2],
-                                                hullYCoords[numberHullPoints - 2],
-                                                hullXCoords[numberHullPoints - 1],
-                                                hullYCoords[numberHullPoints - 1],
-                                                xCoords[pointIndex],
-                                                yCoords[pointIndex])
+                   Curve.vectorCrossProduct(
+                                            hullXCoords[numberHullPoints - 2],
+                                            hullYCoords[numberHullPoints - 2],
+                                            hullXCoords[numberHullPoints - 1],
+                                            hullYCoords[numberHullPoints - 1],
+                                            xCoords[pointIndex],
+                                            yCoords[pointIndex])
                    >= 0) {
                 numberHullPoints--;
             }
@@ -604,13 +604,13 @@ public class CurveData {
      *
      * @return A new curve, the convex hull of this curve.
      */
-    public CurveData convexHull() {
+    public Curve convexHull() {
         // Calculate the convex hull from the points defined by the
         // counts.  The convex hull points are also in terms of counts.
         // These are the new counts.
         int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
                                               truePositiveCounts);  // TPR on y-axis
-        return new CurveData(hullPoints[1], hullPoints[0]);
+        return new Curve(hullPoints[1], hullPoints[0]);
     }
 
     /**
@@ -699,8 +699,8 @@ public class CurveData {
 
 
     /**
-     * <p>Builds {@code CurveData} objects in multiple, flexible ways.
-     * The methods in this class independently specify each piece of
+     * <p>Builds {@code Curve} objects in multiple, flexible ways.  The
+     * methods in this class independently specify each piece of
      * requisite information and can be chained together into a single,
      * self-documenting expression.  (This class is a <a
      * href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
@@ -709,14 +709,14 @@ public class CurveData {
      * pattern</a>.)</p>
      *
      * <p>This builder works with iterable sequences of objects.  To
-     * build a CurveData from arrays of primitive numbers see {@link
+     * build a Curve from arrays of primitive numbers see {@link
      * PrimitivesBuilder}.<p>
      *
      * <p>Fundamentally, a curve is built from a ranking of labels and a
      * label to consider positive.  This approach is "pure" but often
-     * inconvenient (see {@link CurveData#CurveData(List, Object)}).
-     * Therefore, curves are often constructed from lists of predictions
-     * (scores) and the corresponding actual labels, which are typically
+     * inconvenient (see {@link Curve#Curve(List, Object)}).  Therefore,
+     * curves are often constructed from lists of predictions (scores)
+     * and the corresponding actual labels, which are typically
      * conveniently available.  In this case, the actual labels are
      * ranked by sorting the scores in descending order.<p>
      *
@@ -911,7 +911,7 @@ public class CurveData {
          * @throws IllegalStateException if the builder is not in a
          * valid state to construct a curve
          */
-        public CurveData build() {
+        public Curve build() {
             // Check if it is OK to proceed (throws exception if not)
             checkValidBuilderState();
 
@@ -950,7 +950,7 @@ public class CurveData {
             }
 
             // TODO pass weights if specified
-            return new CurveData(rankedLabels, positiveLabel);
+            return new Curve(rankedLabels, positiveLabel);
         }
 
         /**
