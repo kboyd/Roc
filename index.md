@@ -1,5 +1,5 @@
 ---
-title: Roc software: Everything ROC and Precision-Recall curves.
+title: Roc software - Everything ROC and Precision-Recall curves.
 ---
 All About Roc
 =============
@@ -30,7 +30,7 @@ prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
 Downloads
 ---------
 
-* [*Download Roc*](https://kboyd.github.com/Roc/releases/) from the
+* [**Download Roc**](http://kboyd.github.com/Roc/releases/) from the
   releases page.
 * Download the latest code as a [ZIP
   file](https://github.com/kboyd/Roc/zipball/master) or a [TAR
@@ -104,11 +104,11 @@ Java Library and JAR
 The Java library provides an API for working with ROC and PR curves in
 your Java programs.  It is distributed as a Java archive (JAR)
 containing source code, bytecode, and documentation.  The JAR can be
-obtained on the [releases page](https://kboyd.github.com/Roc/releases/).
+obtained on the [releases page](http://kboyd.github.com/Roc/releases/).
 To include the library in your Java project, just place the JAR in a
 convenient location and include it in your classpath.  You can browse
 the documentation by extracting it from the JAR or by viewing the
-[latest version on GitHub](https://kboyd.github.com/Roc/javadoc/).
+[latest version on GitHub](http://kboyd.github.com/Roc/javadoc/).
 
 
 Contact
@@ -116,6 +116,13 @@ Contact
 
 * [Kendrick Boyd](https://github.com/kboyd)
 * [Aubrey Barnard](https://github.com/afbarnard)
+
+Please search the existing documentation before contacting us.  There is
+this README, the [Javadoc](http://kboyd.github.com/Roc/javadoc/), the
+[wiki](https://github.com/kboyd/Roc/wiki), and [existing
+issues](https://github.com/kboyd/Roc/issues).  Then, [open an
+issue](https://github.com/kboyd/Roc/issues/new) to report a bug or ask a
+question.
 
 
 Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt

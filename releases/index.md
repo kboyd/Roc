@@ -12,12 +12,12 @@ file](https://github.com/kboyd/Roc/zipball/master) or a [TAR
 ball](https://github.com/kboyd/Roc/tarball/master).
 
 
-0.1.0 - 2013-04-01
-------------------
+Version 0.1.0 - 2013-04-01
+--------------------------
 
 Downloads:
 
-* [JAR](https://kboyd.github.com/Roc/releases/0.1.0/roc-0.1.0.jar)
+* [JAR](http://kboyd.github.com/Roc/releases/0.1.0/roc-0.1.0.jar)
 * [Code](https://github.com/Roc/tree/0.1.0)
 
 Changes:
