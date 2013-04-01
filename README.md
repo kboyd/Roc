@@ -24,12 +24,25 @@ roc, an enormous, legendary [bird of
 prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
 
 
+Downloads
+---------
+
+* [**Download Roc**](http://kboyd.github.com/Roc/releases/) from the
+  releases page.
+* Download the latest code as a [ZIP
+  file](https://github.com/kboyd/Roc/zipball/master) or a [TAR
+  ball](https://github.com/kboyd/Roc/tarball/master).
+* [View the project](https://github.com/kboyd/Roc) on GitHub.
+
+
 License
 -------
 
 Roc is free, open source software.  It is released under the BSD
 2-Clause License (also known as the FreeBSD License).  See the file
-LICENSE.txt for details.
+`LICENSE.txt` in your distribution (or [on
+GitHub](https://github.com/kboyd/Roc/blob/master/LICENSE.txt)) for
+details.
 
 
 Features and Project Maturity
@@ -88,18 +101,25 @@ Java Library and JAR
 The Java library provides an API for working with ROC and PR curves in
 your Java programs.  It is distributed as a Java archive (JAR)
 containing source code, bytecode, and documentation.  The JAR can be
-obtained at TODO.  To include the library in your Java project, just
-place the JAR in a convenient location and include it in your classpath.
-You can browse the documentation by extracting it from the JAR or by
-viewing the [latest version on
-GitHub](http://kboyd.github.com/Roc/javadoc/).
+obtained on the [releases page](http://kboyd.github.com/Roc/releases/).
+To include the library in your Java project, just place the JAR in a
+convenient location and include it in your classpath.  You can browse
+the documentation by extracting it from the JAR or by viewing the
+[latest version on GitHub](http://kboyd.github.com/Roc/javadoc/).
 
 
 Contact
 -------
 
-* [Kendrick Boyd](http://github.com/kboyd)
-* [Aubrey Barnard](http://github.com/afbarnard)
+* [Kendrick Boyd](https://github.com/kboyd)
+* [Aubrey Barnard](https://github.com/afbarnard)
+
+Please search the existing documentation before contacting us.  There is
+this README, the [Javadoc](http://kboyd.github.com/Roc/javadoc/), the
+[wiki](https://github.com/kboyd/Roc/wiki), and [existing
+issues](https://github.com/kboyd/Roc/issues).  Then, [open an
+issue](https://github.com/kboyd/Roc/issues/new) to report a bug or ask a
+question.
 
 
 Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt

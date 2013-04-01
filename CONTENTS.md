@@ -8,15 +8,28 @@ Wondering what's around here?  Here's what.
 Directories
 -----------
 
-* `java`: Java source code, tests, and internal documentation, split
-  according to `src`, `test`, and `doc` subdirectories.  The internal
-  documentation is javadoc level private and may not exist (but can be
-  built).
+* `java`: Everything for Java: source code, tests, internal
+  documentation, etc.
+
+  * `src`: Tree of sources for library and program under `mloss/roc`,
+    some files for producing Javadoc.
+
+    * `doc-files`: Files for including in the Javadoc.  Currently, all
+      these files are generated and so this directory can be safely
+      removed.
+
+  * `test`: Tree of sources for JUnit tests under `mloss/roc`.
+
+  * `doc`: Internal Javadoc (level private).  Generated.  May not exist.
+    May be safely removed.
+
 * `doc`: General (language-agnostic) documentation, tutorials, etc.
   Language-specific documentation is in the respective language
   directories.
-* `build`: Working directory for builds that can always be safely
-  deleted.  (May not exist.)
+
+* `build`: Working directory for builds.  Generated.  May not exist.
+  May be safely removed.
+
 * `dev`: Files pertaining to development and meta.
 
 

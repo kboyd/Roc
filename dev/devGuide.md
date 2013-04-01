@@ -72,20 +72,19 @@ Development
   (e.g. tools)
 * Organize subdirectories of languages by convention
   * Java has `src` and `test` directories, perhaps `doc`
-* `doc` for general (language-agnostic) documentation, tutorials, etc.
-* `build` for build storage.  Can be removed to "clean".
-* High-level ideas documented in file CONTENTS.md.  (Maintain it!)
+* High-level structure documented in file CONTENTS.md.  (Maintain it!)
+  Only guidelines, intentions, and ideas should exist in this file.  All
+  specific information or details go in CONTENTS.md.
 
 
 ### Branching Model ###
 
 * Everything derives from `master`.  It is used for integration and
-  should be as stable as possible.
+  release.  It should be as stable as possible.
 * Develop on your own branch: dev/<username>
-* Release on `release`.  Everything on release should be stable and
-  release-worthy.
 * Create other branches as needed for bugs, large features, etc.
-* Meta can probably be done directly on `master`.
+* Meta can be done directly on `master` or on your own branch depending
+  on where it fits best.
 
 
 References
