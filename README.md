@@ -24,6 +24,13 @@ roc, an enormous, legendary [bird of
 prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
 
 
+Quick Links
+-----------
+
+* [Roc project on GitHub](https://github.com/kboyd/Roc)
+* [Javadoc](http://kboyd.github.io/Roc/javadoc/)
+
+
 Downloads
 ---------
 
@@ -32,13 +39,6 @@ Downloads
 * Download the latest code as a [ZIP
   file](https://github.com/kboyd/Roc/zipball/master) or a [TAR
   ball](https://github.com/kboyd/Roc/tarball/master).
-
-
-Quick Links
------------
-
-* [The project on GitHub](https://github.com/kboyd/Roc)
-* [Javadoc](http://kboyd.github.io/Roc/javadoc/)
 
 
 License
