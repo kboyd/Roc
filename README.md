@@ -61,36 +61,37 @@ planned to be released as a library and as a command-line interface
 (CLI) front-end for the library.  The table below contains a summary of
 features.
 
-Features are NP="not planned", P="planned", I="implemented", T="tested",
-S="stable".  Languages are J="Java", P2="Python 2.x".
+Features are S=stable, T=tested, I=implemented, P=planned, NP=not
+planned, ?=undecided, NA=not applicable.  Languages are J=Java,
+P2=Python 2.x.
 
-    Feature Description           Library Status  CLI Status (P2)
-    -------------------           --------------  ---------------
+    Feature Description           Library Status  CLI Status
+    -------------------           --------------  ----------
     ROC curves
-    . Points                      J:T  P2:P       P
-    . Area                        J:T  P2:P       P
-    . Maximum area (convex hull)  J:T  P2:P       P
-    . Aggregation (averaging)     J:P  P2:P       P
-    . Confidence bounds           J:P  P2:P       P
-    . Clipping                    J:P  P2:P       P
+    . Points                      J:T  P2:P       J:P  P2:P
+    . Area                        J:T  P2:P       J:P  P2:P
+    . Maximum area (convex hull)  J:T  P2:P       J:P  P2:P
+    . Aggregation (averaging)     J:P  P2:P       J:?  P2:?
+    . Confidence bounds           J:P  P2:P       J:?  P2:?
+    . Clipping                    J:P  P2:P       J:?  P2:?
     PR curves
-    . Points                      J:T  P2:P       P
-    . Area                        J:T  P2:P       P
-    . Maximum area (convex hull)  J:I  P2:P       P
-    . Aggregation (averaging)     J:P  P2:P       P
-    . Confidence bounds           J:P  P2:P       P
-    . Clipping                    J:P  P2:P       P
-    . Minimum awareness           J:P  P2:P       P
-    Plotting                      J:NP P2:P       P
+    . Points                      J:T  P2:P       J:P  P2:P
+    . Area                        J:T  P2:P       J:P  P2:P
+    . Maximum area (convex hull)  J:I  P2:P       J:P  P2:P
+    . Aggregation (averaging)     J:P  P2:P       J:?  P2:?
+    . Confidence bounds           J:P  P2:P       J:?  P2:?
+    . Clipping                    J:P  P2:P       J:?  P2:?
+    . Minimum awareness           J:P  P2:P       J:?  P2:?
+    Plotting                      J:NP P2:P       J:NP P2:P
     Inputs
-    . Ranking                     J:T  P2:P       P
-    . Predicteds, actuals         J:T  P2:P       P
-    . Predicted-actual pairs      J:P  P2:P       P
-    . Example weights             J:P  P2:P       P
+    . Ranking                     J:T  P2:P       J:P  P2:P
+    . Predicteds, actuals         J:T  P2:P       J:P  P2:P
+    . Predicted-actual pairs      J:P  P2:P       J:P  P2:P
+    . Example weights             J:P  P2:P       J:P  P2:P
     Convenience
-    . File I/O                    J:P  P2:P       P
+    . File I/O                    J:P  P2:P       NA
     Ranking Statistics
-    . Mann-Whitney-U              J:T  P2:P       P
+    . Mann-Whitney-U              J:T  P2:P       J:?  P2:?
 
 
 Requirements
