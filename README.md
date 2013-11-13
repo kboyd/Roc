@@ -32,7 +32,13 @@ Downloads
 * Download the latest code as a [ZIP
   file](https://github.com/kboyd/Roc/zipball/master) or a [TAR
   ball](https://github.com/kboyd/Roc/tarball/master).
-* [View the project](https://github.com/kboyd/Roc) on GitHub.
+
+
+Quick Links
+-----------
+
+* [The project on GitHub](https://github.com/kboyd/Roc)
+* [Javadoc](http://kboyd.github.io/Roc/javadoc/)
 
 
 License
