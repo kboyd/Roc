@@ -55,6 +55,9 @@ else
 junitJar := $(firstword $(junitJar))
 endif
 
+# Java compiler options (e.g. -source 5 -target 5)
+javacOpts := -source 5 -target 5 -Xlint
+
 # Version (anything in the README after the identifying phrase that
 # consists of digits and periods with digits on the ends)
 version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
@@ -133,9 +136,9 @@ $(javaBuildDir)/.exists:
 
 # General Java compilation
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaSrcDir)/%.java
-	cd $(javaSrcDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
+	cd $(javaSrcDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) $(javacOpts) $*.java
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
-	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
+	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) $(javacOpts) $*.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
