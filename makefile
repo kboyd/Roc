@@ -12,6 +12,8 @@
 # Useful Targets and their Descriptions
 # -------------------------------------
 #
+# main: Compile application main
+#
 # tests: Compile, run core JUnit tests.
 #
 # usertests: Compile, run JUnit user scenarios (functionality/acceptance
@@ -86,7 +88,7 @@ javaTestClasses := $(subst $(javaTestDir),$(javaBuildDir),$(javaTestFiles:.java=
 javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig tests usertests alltests javadoc release-javadoc jar clean clean-java clean-javadoc allclean
+.PHONY: listconfig main tests usertests alltests javadoc release-javadoc jar clean clean-java clean-javadoc allclean
 
 
 ########################################
@@ -142,14 +144,21 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
+$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class:
+$(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class:
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
+
+#####
+# Main
+
+main: $(javaBuildDir)/$(javaPkgDir)/Main.class
 
 #####
 # JUnit
