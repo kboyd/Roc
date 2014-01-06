@@ -332,8 +332,22 @@ public class Main {
         //}
         // Create labels iterator
         Iterator<String> labelsIterator = new ProjectionIterator<String>(csvRows, 0);
+        // Build the curve
+        Curve curve;
+        if (scoresIterator == null) {
+            curve = buildCurve(labelsIterator);
+        } else {
+            curve = buildCurve(scoresIterator, labelsIterator);
+        }
         // Call curve generation and output
-        printReport(buildCurve(scoresIterator, labelsIterator), output);
+        printReport(curve, output);
+    }
+
+    private static Curve buildCurve(Iterator<String> labelsIterator) {
+        return new Curve.Builder<Double,String>()
+            .rankedLabels(new IteratorIterable<String>(labelsIterator))
+            .positiveLabel("1")
+            .build();
     }
 
     private static Curve buildCurve(Iterator<Double> scoresIterator, Iterator<String> labelsIterator) {
