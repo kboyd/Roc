@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * Copyright (c) 2014 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -60,6 +60,7 @@ public class Main {
     public static final String versionKey = "--version";
     public static final String aboutKey = "--about";
     public static final String licenseKey = "--license";
+    public static final String debugKey = "--debug";
     public static final String scoresKey = "--scores";
     public static final String labelsKey = "--labels";
     public static final String scoresLabelsKey = "--scores-labels";
@@ -99,6 +100,7 @@ public class Main {
         "Display the version and other information about this software.\n" +
         licenseKey + "\n" + indent +
         "Display a summary of the license for this software.\n" +
+        debugKey + "\n" + indent + "Print stack traces, etc.\n" +
         scoresKey + " FILE\n" + indent +
         "File containing scores, one per line (CSV format).  Must be specified in\n" + indent +
         "combination with --labels and are matched to the labels by line number.\n" + indent +
@@ -164,6 +166,8 @@ public class Main {
                 } else {
                     throw new MainException(String.format("Argument missing for option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
+            } else if (arg.equals(debugKey)) {
+                // Ignore
             } else {
                 throw new MainException(String.format("Unrecognized option: %s", arg), ExitStatus.ERROR_USAGE);
             }
@@ -274,7 +278,12 @@ public class Main {
         } catch (Exception e) {
             //System.err.println(String.format("roc: Error: %s: %s", e.getClass().getName(), e.getMessage()));
             System.err.println(String.format("roc: Error: %s", e.getMessage()));
-            int exitStatus = 1;
+            // Print a stack trace if in debug mode
+            if (Arrays.asList(args).contains(debugKey)) {
+                e.printStackTrace();
+            }
+            // Determine and return exit status
+            int exitStatus = ExitStatus.ERROR_INTERNAL.ordinal();
             if (e instanceof MainException) {
                 exitStatus = ((MainException) e).exitStatus.ordinal();
             }
