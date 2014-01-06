@@ -66,16 +66,51 @@ public class Main {
 
     public static final String stdioFileName = "-";
 
+    private static final String indent = "        ";
+
+    // TODO load help from a file or have it compiled in or options package?
+    // file pros: easy to write, could work with multiple languages
+    // file cons: how load reliably? (resources loader?), synchronization of code and help
+    // here pros: code and help automatically synchronized
+    // here cons: complex to read/write, hard to format
+    // opts pros: might provide best-of-both-worlds of above
+    // opts cons: third-party, syntax/verbosity
+
+    // Manually wrap the help text to 80 characters (column 89 for
+    // non-indented, column 81 for indented)
     public static final String help =
-        "TODO!  No help yet.  Sorry about that.\n" +
-        helpKey + "\n" +
-        versionKey + " | " + aboutKey + "\n" +
-        licenseKey + "\n" +
-        "\n" +
-        scoresKey + " FILE[:OPTS]\n" +
-        labelsKey + " FILE[:OPTS]\n" +
-        scoresLabelsKey + " FILE[:OPTS]\n" +
-        "";
+        "Roc.  Everything ROC and PR curves.\n\n" +
+
+        "SYNOPSIS\n\n" +
+
+        "java mloss.roc.Main [OPTION [ARGUMENT]]...\n\n" +
+
+        "DESCRIPTION\n\n" +
+
+        "Reads the scores and labels of a binary classification result and prints ROC and\n" +
+        "PR analysis reports.  When no options are given, this program operates as if\n" +
+        "'--scores-labels -' had been given.  A '-' as a file name indicates standard\n" +
+        "input and can be used for any file argument that makes sense.\n\n" +
+
+        "OPTIONS\n\n" +
+
+        helpKey + "\n" + indent + "Display this help.\n" +
+        versionKey + " | " + aboutKey + "\n" + indent +
+        "Display the version and other information about this software.\n" +
+        licenseKey + "\n" + indent +
+        "Display a summary of the license for this software.\n" +
+        scoresKey + " FILE\n" + indent +
+        "File containing scores, one per line (CSV format).  Must be specified in\n" + indent +
+        "combination with --labels and are matched to the labels by line number.\n" + indent +
+        "No default.\n" +
+        labelsKey + " FILE\n" + indent +
+        "File containing labels, one per line (CSV format).  Labels specified by\n" + indent +
+        "themselves are treated as already ranked from most positive to most\n" + indent +
+        "negative.  No default.\n" +
+        scoresLabelsKey + " FILE\n" + indent +
+        "File containing scores and labels, in two-column CSV format.  No\n" + indent +
+        "default.\n" +
+        "";  // This is here to make inserting/reordering lines easier
 
     /** -h, -?, --help, help, etc. */
     private static final Pattern helpPattern = Pattern.compile("(--?(h(elp)?|\\?))|help");
@@ -366,7 +401,7 @@ public class Main {
         }
     }
 
-    public static void printReport(Curve curve, PrintWriter output /* TODO what to include and what format */) {
+    public static void printReport(Curve curve, PrintWriter output /* TODO make report object to handle what to include and what format */) {
         output.println("%YAML 1.1");
         output.println("---");
         output.println("ROC area: " + curve.rocArea());
