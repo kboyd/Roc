@@ -57,8 +57,8 @@ public class CurveBuilderTest {
     public static final String positiveLabel = new String("1");
 
     // Correct counts based on the above data
-    public static final int[] posCounts = {0, 1, 1, 1, 2, 2, 2, 3, 4, 4, 5, 6};
-    public static final int[] negCounts = {0, 0, 1, 2, 2, 3, 4, 4, 4, 5, 5, 5};
+    public static final long[] posCounts = {0, 1, 1, 1, 2, 2, 2, 3, 4, 4, 5, 6};
+    public static final long[] negCounts = {0, 0, 1, 2, 2, 3, 4, 4, 4, 5, 5, 5};
 
     // Object under test
     Curve.Builder<Double, String> builder;
@@ -136,8 +136,8 @@ public class CurveBuilderTest {
          * This produces the following pos and neg counts (with positive
          * label = 1):
          */
-        int[] posCounts = {0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 5, 6};
-        int[] negCounts = {0, 0, 1, 1, 2, 3, 4, 4, 4, 5, 5, 5};
+        long[] posCounts = {0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 5, 6};
+        long[] negCounts = {0, 0, 1, 1, 2, 3, 4, 4, 4, 5, 5, 5};
         Curve curve = builder.predicteds(predictedsList).actuals(actualsList)
             .positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);

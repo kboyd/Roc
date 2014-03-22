@@ -19,16 +19,16 @@ public class CurveTest {
     // Test data
 
     static final int[] labelsWorst = {0, 0, 1, 1, 1, 1, 1};
-    static final int[] labelsWorst_posCounts = {0, 0, 0, 1, 2, 3, 4, 5};
-    static final int[] labelsWorst_negCounts = {0, 1, 2, 2, 2, 2, 2, 2};
+    static final long[] labelsWorst_posCounts = {0, 0, 0, 1, 2, 3, 4, 5};
+    static final long[] labelsWorst_negCounts = {0, 1, 2, 2, 2, 2, 2, 2};
 
     static final int[] labelsAverage = {1, 0, 1, 1, 0, 0, 1, 0, 0, 1};
-    static final int[] labelsAverage_posCounts = {0, 1, 1, 2, 3, 3, 3, 4, 4, 4, 5};
-    static final int[] labelsAverage_negCounts = {0, 0, 1, 1, 1, 2, 3, 3, 4, 5, 5};
+    static final long[] labelsAverage_posCounts = {0, 1, 1, 2, 3, 3, 3, 4, 4, 4, 5};
+    static final long[] labelsAverage_negCounts = {0, 0, 1, 1, 1, 2, 3, 3, 4, 5, 5};
 
     static final int[] labelsBest = {1, 1, 0, 0, 0};
-    static final int[] labelsBest_posCounts = {0, 1, 2, 2, 2, 2};
-    static final int[] labelsBest_negCounts = {0, 0, 0, 1, 2, 3};
+    static final long[] labelsBest_posCounts = {0, 1, 2, 2, 2, 2};
+    static final long[] labelsBest_negCounts = {0, 0, 0, 1, 2, 3};
 
     static final int[] staircaseLabels = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
 
@@ -48,8 +48,8 @@ public class CurveTest {
      * for i in xrange(1, len(ns)):
      *     ns[i] = ns[i - 1] + random.choice(incs)
      */
-    static final int[] random_posCounts = {0, 1, 4, 5, 5, 5, 7, 8, 10, 12, 12, 13, 13, 15, 16};
-    static final int[] random_negCounts = {0, 0, 1, 2, 6, 9, 10, 10, 13, 13, 16, 18, 18, 20, 20};
+    static final long[] random_posCounts = {0, 1, 4, 5, 5, 5, 7, 8, 10, 12, 12, 13, 13, 15, 16};
+    static final long[] random_negCounts = {0, 0, 1, 2, 6, 9, 10, 10, 13, 13, 16, 18, 18, 20, 20};
 
     Curve curve;
     Curve randCurve;
@@ -102,10 +102,10 @@ public class CurveTest {
         assertEquals(2, curve.totalNegatives);
     }
 
-    public int[][] createConfusionMatrices(int[] posCounts, int[] negCounts) {
-        int[][] matrices = new int[posCounts.length][4];
-        int totPos = posCounts[posCounts.length - 1];
-        int totNeg = negCounts[negCounts.length - 1];
+    public long[][] createConfusionMatrices(long[] posCounts, long[] negCounts) {
+        long[][] matrices = new long[posCounts.length][4];
+        long totPos = posCounts[posCounts.length - 1];
+        long totNeg = negCounts[negCounts.length - 1];
         for (int matrixIndex = 0; matrixIndex < matrices.length; matrixIndex++) {
             matrices[matrixIndex][0] = posCounts[matrixIndex];
             matrices[matrixIndex][1] = negCounts[matrixIndex];
@@ -118,7 +118,7 @@ public class CurveTest {
     /** Tests {@link Curve.confusionMatrix(int)}. */
     @Test public void testConfusionMatrix() {
         // Normal
-        int[][] expected = {
+        long[][] expected = {
             {0, 0, 5, 5},
             {1, 0, 4, 5},
             {1, 1, 4, 4},
@@ -142,7 +142,7 @@ public class CurveTest {
         }
     }
 
-    public double[][] createRocPoints(int[] posCounts, int[] negCounts) {
+    public double[][] createRocPoints(long[] posCounts, long[] negCounts) {
         double[][] points = new double[posCounts.length][2];
         double totPos = (double) posCounts[posCounts.length - 1];
         double totNeg = (double) negCounts[negCounts.length - 1];
@@ -409,33 +409,33 @@ public class CurveTest {
         assertEquals(expected, randCurve.prArea(), TOLERANCE);
     }
 
-    static final int[] convexHull_randomXs = {0, 1, 1, 2, 2, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 9, 9};
-    static final int[] convexHull_randomYs = {2, 3, 5, 2, 5, 5, 7, 2, 4, 6, 7, 9, 0, 7, 7, 4, 5, 0, 2, 4};
-    static final int[] convexHull_negCounts = {0, 0, 1, 3, 5, 5, 6, 7, 9, 11, 12};
-    static final int[] convexHull_posCounts = {0, 1, 1, 1, 2, 4, 6, 8, 10, 10, 12};
-    static final int[] expectedNegCounts_convexHull = {0, 0, 9, 12};
-    static final int[] expectedPosCounts_convexHull = {0, 1, 10, 12};
+    static final long[] convexHull_randomXs = {0, 1, 1, 2, 2, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 7, 7, 8, 9, 9};
+    static final long[] convexHull_randomYs = {2, 3, 5, 2, 5, 5, 7, 2, 4, 6, 7, 9, 0, 7, 7, 4, 5, 0, 2, 4};
+    static final long[] convexHull_negCounts = {0, 0, 1, 3, 5, 5, 6, 7, 9, 11, 12};
+    static final long[] convexHull_posCounts = {0, 1, 1, 1, 2, 4, 6, 8, 10, 10, 12};
+    static final long[] expectedNegCounts_convexHull = {0, 0, 9, 12};
+    static final long[] expectedPosCounts_convexHull = {0, 1, 10, 12};
 
     /** Tests {@link Curve.convexHullPoints(int[], int[])}. */
     @Test public void testConvexHullPoints() {
         // Full area, convex hull is left and top of rectangle
-        int[][] points = Curve.convexHullPoints(labelsBest_negCounts, labelsBest_posCounts);
-        int[] xs = {0, 0, 3};
-        int[] ys = {0, 2, 2};
+        long[][] points = Curve.convexHullPoints(labelsBest_negCounts, labelsBest_posCounts);
+        long[] xs = {0, 0, 3};
+        long[] ys = {0, 2, 2};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
         // No area, convex hull is positive slope diagonal
         points = Curve.convexHullPoints(labelsBest_posCounts, labelsBest_negCounts);
-        xs = new int[]{0, 2};
-        ys = new int[]{0, 3};
+        xs = new long[]{0, 2};
+        ys = new long[]{0, 3};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
         // Convex hull with (sorted) random scatter
         points = Curve.convexHullPoints(convexHull_randomXs, convexHull_randomYs);
-        xs = new int[]{0, 1, 5, 9};
-        ys = new int[]{2, 5, 9, 4};
+        xs = new long[]{0, 1, 5, 9};
+        ys = new long[]{2, 5, 9, 4};
         assertArrayEquals(xs, points[0]);
         assertArrayEquals(ys, points[1]);
 
@@ -449,16 +449,16 @@ public class CurveTest {
     @Test public void testConvexHull() {
         // Normal
         Curve hull = curve.convexHull();
-        int[] expectedPosCounts_curve = {0, 1, 3, 5};
-        int[] expectedNegCounts_curve = {0, 0, 1, 5};
+        long[] expectedPosCounts_curve = {0, 1, 3, 5};
+        long[] expectedNegCounts_curve = {0, 0, 1, 5};
         assertArrayEquals(expectedPosCounts_curve, hull.truePositiveCounts);
         assertArrayEquals(expectedNegCounts_curve, hull.falsePositiveCounts);
         assertTrue(hull.rocArea() >= curve.rocArea());
 
         // Random
         hull = randCurve.convexHull();
-        int[] expectedPosCounts_random = {0, 1, 4, 5, 12, 16};
-        int[] expectedNegCounts_random = {0, 0, 1, 2, 13, 20};
+        long[] expectedPosCounts_random = {0, 1, 4, 5, 12, 16};
+        long[] expectedNegCounts_random = {0, 0, 1, 2, 13, 20};
         assertArrayEquals(expectedPosCounts_random, hull.truePositiveCounts);
         assertArrayEquals(expectedNegCounts_random, hull.falsePositiveCounts);
         assertTrue(hull.rocArea() >= randCurve.rocArea());
@@ -514,7 +514,7 @@ public class CurveTest {
      * produces incorrect (and negative) ROC areas when totalPositives
      * and totalNegatives are greater than 2^16.
      */
-    @Test public void testRocAreaIntegerOverflow() {
+    @Test public void testRocAreaIntegerOverfloxw() {
 	// 2^17 positives and negatives
 	int n = 1<<17;
 	// in perfect order

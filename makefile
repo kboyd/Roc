@@ -138,7 +138,7 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
 	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
 
 # List Java dependencies here
-$(javaBuildDir)/$(javaPkgDir)/Curve.class:
+$(javaBuildDir)/$(javaPkgDir)/Curve.class: $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class:

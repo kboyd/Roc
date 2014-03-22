@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
+import mloss.roc.util.Arrays;
 
 // TODO: handle case where classifier output is a weak ranking, e.g. class labels
 
@@ -128,16 +128,16 @@ public class Curve {
      */
 
     /** The number of true positives at an index in the ranking. */
-    int[] truePositiveCounts;
+    long[] truePositiveCounts;
 
     /** The number of false positives at an index in the ranking. */
-    int[] falsePositiveCounts;
+    long[] falsePositiveCounts;
 
     /** The total number of positive labels/examples. */
-    int totalPositives;
+    long totalPositives;
 
     /** The total number of negative labels/examples. */
-    int totalNegatives;
+    long totalNegatives;
 
     /**
      * Initializes the fields of this class.
@@ -147,8 +147,8 @@ public class Curve {
     private void initFields(int rankingSize) {
         // Allocate space for n + 1 points.  There is one point after
         // each element in the ranking and a zero one to start.
-        truePositiveCounts = new int[rankingSize + 1];
-        falsePositiveCounts = new int[rankingSize + 1];
+        truePositiveCounts = new long[rankingSize + 1];
+        falsePositiveCounts = new long[rankingSize + 1];
 
         // Initial values
         truePositiveCounts[0] = 0;
@@ -159,12 +159,22 @@ public class Curve {
 
     /** Direct constructor, mainly for testing and internal use. */
     Curve(int[] truePositiveCounts, int[] falsePositiveCounts) {
-        this.truePositiveCounts = truePositiveCounts;
-        this.falsePositiveCounts = falsePositiveCounts;
+	// use fully qualified name for Arrays class to avoid
+	// confusion if the java.util.Arrays class is ever imported
+        this.truePositiveCounts = mloss.roc.util.Arrays.intArrayToLongArray(truePositiveCounts);
+        this.falsePositiveCounts = mloss.roc.util.Arrays.intArrayToLongArray(falsePositiveCounts);
         totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
         totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
     }
 
+    /** Direct constructor, mainly for testing and internal use. */
+    Curve(long[] truePositiveCounts, long[] falsePositiveCounts) {
+	this.truePositiveCounts = truePositiveCounts;
+	this.falsePositiveCounts = falsePositiveCounts;
+	totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
+	totalNegatives = falsePositiveCounts[falsePositiveCounts.length - 1];
+    }
+    
     /**
      * Creates a classification result analysis suitable for producing
      * ROC and PR curves.
@@ -261,12 +271,12 @@ public class Curve {
      * positives, false positives, false negatives, and true negatives
      * ([TP, FP, FN, TN]).
      */
-    public int[] confusionMatrix(int rankNumber) {
-        int truePositives = truePositiveCounts[rankNumber];
-        int falsePositives = falsePositiveCounts[rankNumber];
-        int falseNegatives = totalPositives - truePositives;
-        int trueNegatives = totalNegatives - falsePositives;
-        return new int[] {truePositives, falsePositives, falseNegatives, trueNegatives};
+    public long[] confusionMatrix(int rankNumber) {
+        long truePositives = truePositiveCounts[rankNumber];
+        long falsePositives = falsePositiveCounts[rankNumber];
+        long falseNegatives = totalPositives - truePositives;
+        long trueNegatives = totalNegatives - falsePositives;
+        return new long[] {truePositives, falsePositives, falseNegatives, trueNegatives};
     }
 
     /**
@@ -453,7 +463,7 @@ public class Curve {
      */
     public double prArea() {
         double area = 0.0;
-        int posCount, prevPosCount;
+        long posCount, prevPosCount;
         double base, height, prevHeight;
         for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
             // There are 3 cases:
@@ -531,7 +541,7 @@ public class Curve {
      * @return The cross product of the given vectors, OAxOB.
      * @see #convexHullPoints(int[], int[])
      */
-    static int vectorCrossProduct(int ox, int oy, int ax, int ay, int bx, int by) {
+    static long vectorCrossProduct(long ox, long oy, long ax, long ay, long bx, long by) {
         return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
     }
 
@@ -559,13 +569,13 @@ public class Curve {
      * points.  The convex hull points are an order-preserved sublist of
      * the given points.
      */
-    static int[][] convexHullPoints(int[] xCoords, int[] yCoords) {
+    static long[][] convexHullPoints(long[] xCoords, long[] yCoords) {
         // Point O (origin) is the second-to-last point in the hull.
         // Point A is the last point in the hull.  Point B is the
         // current point from the curve under consideration.
 
-        int[] hullXCoords = new int[xCoords.length];
-        int[] hullYCoords = new int[xCoords.length];
+        long[] hullXCoords = new long[xCoords.length];
+        long[] hullYCoords = new long[xCoords.length];
         int numberHullPoints = 0;
         for (int pointIndex = 0; pointIndex < xCoords.length; pointIndex++) {
             // Remove points (A) from the hull that lie under vector OB.
@@ -591,11 +601,11 @@ public class Curve {
             numberHullPoints++;
         }
         // Downsize arrays
-        int[] newHullXCoords = new int[numberHullPoints];
-        int[] newHullYCoords = new int[numberHullPoints];
+        long[] newHullXCoords = new long[numberHullPoints];
+        long[] newHullYCoords = new long[numberHullPoints];
         System.arraycopy(hullXCoords, 0, newHullXCoords, 0, numberHullPoints);
         System.arraycopy(hullYCoords, 0, newHullYCoords, 0, numberHullPoints);
-        return new int[][]{newHullXCoords, newHullYCoords};
+        return new long[][]{newHullXCoords, newHullYCoords};
     }
 
     /**
@@ -608,7 +618,7 @@ public class Curve {
         // Calculate the convex hull from the points defined by the
         // counts.  The convex hull points are also in terms of counts.
         // These are the new counts.
-        int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
+        long[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
                                               truePositiveCounts);  // TPR on y-axis
         return new Curve(hullPoints[1], hullPoints[0]);
     }
@@ -670,9 +680,9 @@ public class Curve {
          * u1 + u2 = n1 * n2
          */
 
-        int posCount;
-        int negCount;
-        int maxRawRank;
+        long posCount;
+        long negCount;
+        long maxRawRank;
         double rank;
         double sumPosRanks = 0.0;
         double sumNegRanks = 0.0;
