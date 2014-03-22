@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 
 /** Tests {@link Curve}. */
 public class CurveTest {
@@ -53,7 +54,6 @@ public class CurveTest {
     Curve curve;
     Curve randCurve;
     Curve staircaseCurve;
-
     @Before public void setUp() {
         curve = new Curve(labelsAverage);
         randCurve = new Curve(random_posCounts, random_negCounts);
@@ -507,5 +507,29 @@ public class CurveTest {
         // u0 = (0*1+1*3+2*6.5+1*9.5) - 4 * 5 / 2 = 15.5
         double[] expectedUsNonInt = {8.5, 15.5};  // sum: 24 (= 6 * 4)
         assertArrayEquals(expectedUsNonInt, curve.mannWhitneyU(), TOLERANCE);
+    }
+
+    /**
+     * Tests issue15. Integer overflow in {@link Curve.rocArea()} that
+     * produces incorrect (and negative) ROC areas when totalPositives
+     * and totalNegatives are greater than 2^16.
+     */
+    @Test public void testRocAreaIntegerOverflow() {
+	// 2^17 positives and negatives
+	int n = 1<<17;
+	// in perfect order
+	int[] labels = new int[n+n];	
+	Arrays.fill(labels,0,n,1);
+	Arrays.fill(labels,n,n+n,0);
+	Curve hugeCurve = new Curve(labels);
+	double expected = 1.0;
+	assertEquals(expected, hugeCurve.rocArea(),TOLERANCE);
+
+	// in worst order
+	Arrays.fill(labels,0,n,0);
+	Arrays.fill(labels,n,n+n,1);
+	hugeCurve = new Curve(labels);
+	expected = 0.0;
+	assertEquals(expected, hugeCurve.rocArea(),TOLERANCE);
     }
 }
