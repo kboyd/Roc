@@ -47,4 +47,24 @@ public class Arrays {
         }
         return objectArray;
     }
+
+    /**
+     * Converts int array to long array. Creates a long array that is
+     * a copy of the values in the given int array.
+     *
+     * @param array Any int array. If null, the method returns null.
+     */
+    public static long[] intArrayToLongArray(int[] array) {
+	if (array==null) {
+	    return null;
+	}
+	else {
+	    long r[] = new long[array.length];
+	    for (int i=0;i<array.length;++i) {
+		r[i] = (long) array[i];
+	    }
+	    return r;
+	}	
+    }
+
 }
