@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012 Roc Project.  See LICENSE.txt for details.
+ * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * LICENSE.txt for details.
  */
 
 package mloss.roc;
@@ -20,8 +21,8 @@ import static mloss.roc.util.Assert.*;
 import mloss.roc.util.IterableArray;
 
 
-/** Tests {@link CurveData.Builder}. */
-public class CurveDataBuilderTest {
+/** Tests {@link Curve.Builder}. */
+public class CurveBuilderTest {
 
     // Ranked labels in various forms
     public static final String[] rankedLabelsArray = {
@@ -60,13 +61,13 @@ public class CurveDataBuilderTest {
     public static final int[] negCounts = {0, 0, 1, 2, 2, 3, 4, 4, 4, 5, 5, 5};
 
     // Object under test
-    CurveData.Builder<Double, String> builder;
+    Curve.Builder<Double, String> builder;
 
     @Before public void setUp() {
-        builder = new CurveData.Builder<Double, String>();
+        builder = new Curve.Builder<Double, String>();
     }
 
-    /** Tests {@link CurveData.Builder.rankedLabels(Iterable)}. */
+    /** Tests {@link Curve.Builder.rankedLabels(Iterable)}. */
     @Test public void testBuildWithRankedLabels() {
         // Check sequence instantiation
         builder.rankedLabels(rankedLabelsSequence);
@@ -78,7 +79,7 @@ public class CurveDataBuilderTest {
         assertSame(rankedLabelsList, builder.rankedLabels);
 
         // Check build
-        CurveData curve = builder.positiveLabel(positiveLabel).build();
+        Curve curve = builder.positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
     }
@@ -87,8 +88,8 @@ public class CurveDataBuilderTest {
     //}
 
     /**
-     * Tests {@link CurveData.Builder.predicteds(Iterable)} and {@link
-     * CurveData.Builder.predicteds(Iterable)}.
+     * Tests {@link Curve.Builder.predicteds(Iterable)} and {@link
+     * Curve.Builder.predicteds(Iterable)}.
      */
     @Test public void testBuildWithPredictedsActuals() {
         // Check sequence instantiation
@@ -104,7 +105,7 @@ public class CurveDataBuilderTest {
         assertSame(actualsList, builder.actuals);
 
         // Check build
-        CurveData curve = builder.positiveLabel(positiveLabel).build();
+        Curve curve = builder.positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
     }
@@ -112,7 +113,7 @@ public class CurveDataBuilderTest {
     //@Test public void testBuildWithPredictedsActualsWeights() {
     //}
 
-    /** Tests {@link CurveData.Builder.comparator(Comparator)}. */
+    /** Tests {@link Curve.Builder.comparator(Comparator)}. */
     @Test public void testComparator() {
         builder.comparator(new Comparator<Number>() {
                 // Compare only tenths (and larger) digits
@@ -137,7 +138,7 @@ public class CurveDataBuilderTest {
          */
         int[] posCounts = {0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 5, 6};
         int[] negCounts = {0, 0, 1, 1, 2, 3, 4, 4, 4, 5, 5, 5};
-        CurveData curve = builder.predicteds(predictedsList).actuals(actualsList)
+        Curve curve = builder.predicteds(predictedsList).actuals(actualsList)
             .positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
@@ -170,21 +171,21 @@ public class CurveDataBuilderTest {
             .positiveLabel(positiveLabel).build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStatePAWSize() {
-        List<Double> weights = Collections.emptyList();
-        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
-            .positiveLabel(positiveLabel).build();
-    }
+//    @Test(expected=IllegalStateException.class)
+//    public void testInvalidStatePAWSize() {
+//        List<Double> weights = Collections.emptyList();
+//        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
+//            .positiveLabel(positiveLabel).build();
+//    }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateRLWSize() {
-        List<Double> weights = Collections.emptyList();
-        builder.rankedLabels(rankedLabelsList).weights(weights)
-            .positiveLabel(positiveLabel).build();
-    }
+//    @Test(expected=IllegalStateException.class)
+//    public void testInvalidStateRLWSize() {
+//        List<Double> weights = Collections.emptyList();
+//        builder.rankedLabels(rankedLabelsList).weights(weights)
+//            .positiveLabel(positiveLabel).build();
+//    }
 
-    /** Tests {@link CurveData.Builder.instantiateSequence(Iterable)}. */
+    /** Tests {@link Curve.Builder.instantiateSequence(Iterable)}. */
     @Test public void instantiateSequence() {
         Random random = new Random();
         int sequenceSize = random.nextInt(31);
@@ -193,21 +194,21 @@ public class CurveDataBuilderTest {
             array[sequenceIndex] = Long.valueOf(random.nextLong());
         }
         Iterable<Long> sequence = new IterableArray<Long>(array);
-        List<Long> list = CurveData.Builder.instantiateSequence(sequence);
+        List<Long> list = Curve.Builder.instantiateSequence(sequence);
         assertNotSame(sequence, list);
         assertIterablesEqual(sequence, list);
     }
 
     /**
-     * Tests {@link CurveData.Builder.TupleScoreReverseComparator} with
+     * Tests {@link Curve.Builder.TupleScoreReverseComparator} with
      * natural orderings.
      */
     @Test public void testTupleScoreReverseComparatorNaturalOrdering() {
-        CurveData.Builder<Double, String>.TupleScoreReverseComparator comparator =
+        Curve.Builder<Double, String>.TupleScoreReverseComparator comparator =
             builder.new TupleScoreReverseComparator();
-        CurveData.Builder<Double, String>.Tuple tuple1 = builder.new Tuple(3.33, "pos");
-        CurveData.Builder<Double, String>.Tuple tuple2 = builder.new Tuple(3.14, "neg");
-        CurveData.Builder<Double, String>.Tuple tuple3 =
+        Curve.Builder<Double, String>.Tuple tuple1 = builder.new Tuple(3.33, "pos");
+        Curve.Builder<Double, String>.Tuple tuple2 = builder.new Tuple(3.14, "neg");
+        Curve.Builder<Double, String>.Tuple tuple3 =
             builder.new Tuple(new Double(3.33), "neg");  // Avoid identity equality
         // Test basic ranking orderings
         assertEquals(-1, comparator.compare(tuple1, tuple2));
@@ -217,17 +218,17 @@ public class CurveDataBuilderTest {
     }
 
     /**
-     * Tests {@link CurveData.Builder.TupleScoreReverseComparator} with
+     * Tests {@link Curve.Builder.TupleScoreReverseComparator} with
      * an explicit, given comparator.
      */
     @Test public void testTupleScoreReverseComparatorExplicitComparator() {
         // Create a builder for a score type with richer comparison possibilities
-        CurveData.Builder<String, String> builder = new CurveData.Builder<String, String>();
+        Curve.Builder<String, String> builder = new Curve.Builder<String, String>();
         /* Create a non-standard comparator that compares strings by
          * length.  Have the comparator work for objects to test
          * Comparator<? super TScore>.
          */
-        CurveData.Builder<String, String>.TupleScoreReverseComparator comparator =
+        Curve.Builder<String, String>.TupleScoreReverseComparator comparator =
             builder.new TupleScoreReverseComparator(new Comparator<Object>() {
                     public int compare(Object o1, Object o2) {
                         if (o1 instanceof String && o2 instanceof String) {
@@ -237,9 +238,9 @@ public class CurveDataBuilderTest {
                         }
                     }
                 });
-        CurveData.Builder<String, String>.Tuple tuple1 = builder.new Tuple("22", "pos");
-        CurveData.Builder<String, String>.Tuple tuple2 = builder.new Tuple("333", "neg");
-        CurveData.Builder<String, String>.Tuple tuple3 = builder.new Tuple("two", "neg");
+        Curve.Builder<String, String>.Tuple tuple1 = builder.new Tuple("22", "pos");
+        Curve.Builder<String, String>.Tuple tuple2 = builder.new Tuple("333", "neg");
+        Curve.Builder<String, String>.Tuple tuple3 = builder.new Tuple("two", "neg");
         // Test basic ranking orderings
         assertEquals(1, comparator.compare(tuple1, tuple2));
         assertEquals(-1, comparator.compare(tuple2, tuple1));

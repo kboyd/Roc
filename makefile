@@ -39,7 +39,7 @@
 # listconfig: Lists all internal variables and their values.
 #
 # Individual Java files can be compiled by making *.class files, e.g.
-#     make build/java/mloss/roc/CurveData.class
+#     make build/java/mloss/roc/Curve.class
 #
 ########################################
 
@@ -57,8 +57,9 @@ else
 junitJar := $(firstword $(junitJar))
 endif
 
-# Version
-version := 1.0.0
+# Version (anything in the README after the identifying phrase that
+# consists of digits and periods with digits on the ends)
+version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
 
 # Project layout
 buildBaseDir := build
@@ -101,6 +102,7 @@ indent := $(emptyString)    $(emptyString)
 # List variables and values
 listconfig:
 	@echo Variables:
+	@echo version: $(version)
 	@echo junitJar: $(junitJar)
 	@echo classpath: $(classpath)
 	@echo javaSrcFiles:
@@ -139,14 +141,14 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
 
 
 # List Java dependencies here
-$(javaBuildDir)/$(javaPkgDir)/CurveData.class:
+$(javaBuildDir)/$(javaPkgDir)/Curve.class:
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class:
-$(javaBuildDir)/$(javaPkgDir)/CurveDataTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
-$(javaBuildDir)/$(javaPkgDir)/CurveDataBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/CurveDataPrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/CurveData.class
+$(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
+$(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
 #####
@@ -202,6 +204,7 @@ jar: $(javaBuildDir)/roc-$(version).jar
 
 # Copy files from src to build for packaging
 $(javaBuildDir)/%.java: $(javaSrcDir)/%.java
+	mkdir -p $(@D) # Make sure the destination directory exists
 	cp $< $@
 
 # Build a JAR for the current version

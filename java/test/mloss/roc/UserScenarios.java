@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2012 Roc Project.  See LICENSE.txt for details.
+ * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * LICENSE.txt for details.
  */
 
 package mloss.roc;
@@ -35,12 +36,12 @@ public class UserScenarios {
         double[][] maxPoints = {{0.0, 0.0}, {0.0, 5.0 / 7.0}, {1.0, 1.0}};
 
         // Create the ROC analysis (The ranking is computed automatically.)
-        CurveData rocAnalysis = new CurveData.PrimitivesBuilder()
+        Curve rocAnalysis = new Curve.PrimitivesBuilder()
             .predicteds(predictedLabels)
             .actuals(actualLabels)
             .build();
         // Get the convex hull
-        CurveData convexHull = rocAnalysis.convexHull();
+        Curve convexHull = rocAnalysis.convexHull();
         // Calculate the AUC ROCs
         double area = rocAnalysis.rocArea();
         double maxArea = convexHull.rocArea();
@@ -49,12 +50,12 @@ public class UserScenarios {
 
         // Check the results
         // 2 rectangles: 3/6 * 5/7 + 3/6 * 6/7 = 11/14
-        assertEquals(11.0 / 14.0, area, CurveDataTest.TOLERANCE);
+        assertEquals(11.0 / 14.0, area, CurveTest.TOLERANCE);
         // 1 trapezoid: (5 / 7 + 1) * 1 / 2 = 6/7
-        assertEquals(6.0 / 7.0, maxArea, CurveDataTest.TOLERANCE);
+        assertEquals(6.0 / 7.0, maxArea, CurveTest.TOLERANCE);
         assertEquals(maxPoints.length, rocPoints.length);
         for (int pointIndex = 0; pointIndex < maxPoints.length; pointIndex++) {
-            assertArrayEquals(maxPoints[pointIndex], rocPoints[pointIndex], CurveDataTest.TOLERANCE);
+            assertArrayEquals(maxPoints[pointIndex], rocPoints[pointIndex], CurveTest.TOLERANCE);
         }
     }
 

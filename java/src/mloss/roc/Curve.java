@@ -68,9 +68,9 @@ import java.util.List;
  * <p>One can construct this class directly from a ranking of labels,
  * but it is more convenient to use a builder to compute the ranking and
  * construct this class.  There are two builders.  The regular {@link
- * CurveData.Builder} accepts collections of objects and the {@link
- * CurveData.PrimitivesBuilder} accepts arrays of primitive numbers.
- * (You can use the class {@link mloss.roc.util.IterableArray} to treat
+ * Curve.Builder} accepts collections of objects and the {@link
+ * Curve.PrimitivesBuilder} accepts arrays of primitive numbers.  (You
+ * can use the class {@link mloss.roc.util.IterableArray} to treat
  * arrays of objects as iterable collections suitable for the regular
  * builder.)  You give a builder a list of scores (from your classifier)
  * and a corresponding list of labels and the builder does the rest.
@@ -116,7 +116,7 @@ import java.util.List;
  * true negatives = (total negatives) - (false positives)
  * </code></pre>
  */
-public class CurveData {
+public class Curve {
     /* This class is implemented in terms of arrays of primitives.
      * Avoid converting to/from arrays of primitives and lists of
      * objects if possible.  Internally, this should not be a problem as
@@ -158,7 +158,7 @@ public class CurveData {
     }
 
     /** Direct constructor, mainly for testing and internal use. */
-    CurveData(int[] truePositiveCounts, int[] falsePositiveCounts) {
+    Curve(int[] truePositiveCounts, int[] falsePositiveCounts) {
         this.truePositiveCounts = truePositiveCounts;
         this.falsePositiveCounts = falsePositiveCounts;
         totalPositives = truePositiveCounts[truePositiveCounts.length - 1];
@@ -178,16 +178,16 @@ public class CurveData {
      * handling multiple classes without having to rewrite all the
      * labels into some prespecified positive and negative signifiers.
      */
-    public CurveData(int[] rankedLabels, int positiveLabel) {
+    public Curve(int[] rankedLabels, int positiveLabel) {
         initFields(rankedLabels.length);
         buildCounts(rankedLabels, positiveLabel);
     }
 
     /**
-     * Calls {@link #CurveData(int[], int)} with positiveLabel=1 (the
+     * Calls {@link #Curve(int[], int)} with positiveLabel=1 (the
      * default positive label for integers).
      */
-    public CurveData(int[] rankedLabels) {
+    public Curve(int[] rankedLabels) {
         this(rankedLabels, 1);
     }
 
@@ -205,7 +205,7 @@ public class CurveData {
      * handling multiple classes without having to rewrite all the
      * labels into some prespecified positive and negative signifiers.
      */
-    public <T> CurveData(List<T> rankedLabels, T positiveLabel) {
+    public <T> Curve(List<T> rankedLabels, T positiveLabel) {
         initFields(rankedLabels.size());
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -217,7 +217,7 @@ public class CurveData {
      * @param rankedLabels A list containing the true label for each
      * example.  The labels must already be ordered (ranked) from most
      * likely positive to most likely negative.
-     * @param positiveLabel See {@link #CurveData(int[], int)}.
+     * @param positiveLabel See {@link #Curve(int[], int)}.
      */
     void buildCounts(int[] rankedLabels, int positiveLabel) {
         // Calculate the individual confusion matrices
@@ -285,13 +285,14 @@ public class CurveData {
     }
 
     /**
-     * Generate (x,y) points for a ROC curve.  Interpolation in ROC
-     * space is linear so the ROC curve can be plotted by simply
-     * connecting these points with lines.
+     * Generates (x,y)=(FPR,TPR) points for plotting a ROC curve with
+     * connecting lines.  Interpolation in ROC space is linear so
+     * connecting consecutive points with lines gives the exact ROC
+     * curve.
      *
      * @return An array of two-element arrays.  Each two-element array
-     * is a (x,y) point.  Points are sorted by ascending x value with
-     * ties broken by ascending y value.
+     * is a (x,y) point in ROC space.  Points are provided in plotting
+     * order.
      */
     public double[][] rocPoints() {
         double[][] points = new double[truePositiveCounts.length][2];
@@ -305,7 +306,10 @@ public class CurveData {
     }
 
     /**
-     * @return The area under the ROC curve.
+     * Computes the area under the ROC curve.  (The curve is defined by
+     * {@link #rocPoints()}.)
+     *
+     * @return Area under the ROC curve
      */
     public double rocArea() {
         /* This implementation is in terms of the Mann-Whitney U
@@ -318,24 +322,16 @@ public class CurveData {
     }
 
     /**
-     * Computes the point on the PR curve that corresponds to a
-     * particular classification threshold.
+     * Computes recall at a particular classification threshold.
      *
      * @param rankNumber The number of elements in the ranking to treat
      * as positive.
-     * @return A two-element array containing the recall (x-axis) and
-     * the precision (y-axis) ([recall, precision]).
+     * @return Recall at the given threshold.
      */
-    public double[] prPoint(int rankNumber) {
-        // TODO figure out how to handle (what to return) when (tp + fp) == 0.
-        // x-axis: recall = tp / (tp + fn) = tp / #p
-        // y-axis: precision = tp / (tp + fp)
-        double recall = (double) truePositiveCounts[rankNumber] / (double) totalPositives;
-        int calledPositive = truePositiveCounts[rankNumber] + falsePositiveCounts[rankNumber];
-        double precision = 0.0;
-        if (calledPositive != 0)
-            precision = (double) truePositiveCounts[rankNumber] / (double) calledPositive;
-        return new double[] {recall, precision};
+    public double recall(int rankNumber) {
+        // recall = tp / (tp + fn) = tp / #p
+        return (double) truePositiveCounts[rankNumber] /
+            (double) totalPositives;
     }
 
     
@@ -391,87 +387,160 @@ public class CurveData {
 
     
     /**
-     * Just the known PR points.  Not appropriate for plotting!
-     * (Linear interpolation is incorrect.)
+     * Computes precision at a particular classification threshold.
+     *
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return Precision at the given threshold.
      */
-    public double[][] rawPrPoints() {
-        double[][] points = new double[truePositiveCounts.length][2];
-        double totPos = (double) totalPositives;
-        for (int pointIndex = 1; pointIndex < points.length; pointIndex++) {
-            points[pointIndex][0] = (double) truePositiveCounts[pointIndex] / totPos;
-            points[pointIndex][1] = (double) truePositiveCounts[pointIndex]
-                / (double) (truePositiveCounts[pointIndex] + falsePositiveCounts[pointIndex]);
+    public double precision(int rankNumber) {
+        // precision = tp / (tp + fp)
+        // Precision uses the value of rank 1 as the value for rank 0
+        if (rankNumber == 0) {
+            rankNumber++;
         }
-        return points;
+        return (double) truePositiveCounts[rankNumber] /
+            (double) (truePositiveCounts[rankNumber] +
+                      falsePositiveCounts[rankNumber]);
     }
 
     /**
-     * Appropriate for plotting as uses most conservative possible
-     * interpolation.
+     * Computes the point on the PR curve that corresponds to a
+     * particular classification threshold.
+     *
+     * The precision is undefined (due to division by zero) for the
+     * zeroth point.  We choose to handle this as a special case and
+     * define the zeroth point as (0, y1) where y1 is the vertical value
+     * (precision) of the point with rank 1.  That is, the zeroth point
+     * extends the curve horizontally left from the first defined point
+     * (rank 1) to the vertical axis.
+     *
+     * @param rankNumber The number of elements in the ranking to treat
+     * as positive.
+     * @return A two-element array containing the recall (x-axis) and
+     * the precision (y-axis) ([recall, precision]).
+     */
+    public double[] prPoint(int rankNumber) {
+        // (x/recall, y/precision)
+        return new double[] {recall(rankNumber), precision(rankNumber)};
+    }
+
+    /**
+     * Generates (x,y)=(recall,precision) points for plotting a PR curve
+     * with connecting lines.  Interpolation in PR space is generally
+     * not linear, so the returned points are the closest linear
+     * underestimate of the actual PR curve.  Plot the PR curve by
+     * connecting consecutive points with lines.
+     *
+     * Technically, a closer linear underestimate could be achieved by
+     * introducing intermediate points (samples), but this method
+     * achieves the closest underestimate without samples.
+     *
+     * See TODO:REFERENCE for more information.
+     *
+     * @return An array of two-element arrays.  Each two-element array
+     * is a (x,y) point in PR space.  Points are provided in plotting
+     * order.
      */
     public double[][] prPoints() {
-        // Skips zeroth point to avoid divide by zero problem
-        double[][] points = new double[truePositiveCounts.length * 2 - 3][2];
-        double totPos = (double) totalPositives;
-        int countIndex;
-        for (int pointIndex = 0; pointIndex < points.length; pointIndex += 2) {
-            countIndex = pointIndex / 2 + 1;
-            points[pointIndex][0] = (double) truePositiveCounts[countIndex] / totPos;
-            points[pointIndex][1] = (double) truePositiveCounts[countIndex]
-                / (double) (truePositiveCounts[countIndex] + falsePositiveCounts[countIndex]);
-        }
-        for (int pointIndex = 1; pointIndex < points.length; pointIndex += 2) {
-            if (points[pointIndex - 1][1] < points[pointIndex + 1][1]) {
-                points[pointIndex][0] = points[pointIndex + 1][0];
-                points[pointIndex][1] = points[pointIndex - 1][1];
-            } else {
-                points[pointIndex][0] = points[pointIndex - 1][0];
-                points[pointIndex][1] = points[pointIndex + 1][1];
+        // As long as there are no ties (no thresholds where both true
+        // and false positives increase), the raw PR points suffice and
+        // can be linearly interpolated for an underestimate of the
+        // actual curve.  In the case of a tie, linear interpolation
+        // overestimates, which this method handles by creating a
+        // lower-left bounding "box" that underestimates.  Each tie
+        // requires introducing a single point, the lower-left corner of
+        // the bounding "box".
+
+        // Count the number of ties to know the number of extra points.
+        int ties = 0;
+        int prevIndex;
+        for (int pointIndex = 1; pointIndex < truePositiveCounts.length; pointIndex++) {
+            // A tie is when both counts increase between thresholds
+            prevIndex = pointIndex - 1;
+            if (truePositiveCounts[pointIndex] > truePositiveCounts[prevIndex] &&
+                falsePositiveCounts[pointIndex] > falsePositiveCounts[prevIndex]) {
+                ties++;
             }
+        }
+
+        // Calculate the PR points adding "lower-left" points for ties
+        double[][] points = new double[truePositiveCounts.length + ties][2];
+        double[] point = prPoint(0);
+        // Add the zeroth point by hand
+        points[0][0] = point[0];
+        points[0][1] = point[1];
+        // Add the remaining points
+        int pointIndex = 1;
+        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+            // Get the current PR point
+            point = prPoint(countIndex);
+            // If this is a "tie" point, add a point to make a
+            // lower-left bounding "box".  A tie is when both counts
+            // increase between thresholds.
+            prevIndex = countIndex - 1;
+            if (truePositiveCounts[countIndex] > truePositiveCounts[prevIndex] &&
+                falsePositiveCounts[countIndex] > falsePositiveCounts[prevIndex]) {
+                // Add a "lower-left" point which has x/recall from the
+                // previous point and y/precision from the current
+                // point.
+                points[pointIndex][0] = points[pointIndex - 1][0];
+                points[pointIndex][1] = point[1];
+                pointIndex++;
+            }
+            // Add in the current PR point
+            points[pointIndex][0] = point[0];
+            points[pointIndex][1] = point[1];
+            pointIndex++;
         }
         return points;
     }
 
     /**
-     * Calculate area under PR curve for recall between minimum and
-     * maximum recall. Uses interpolation from Davis and Goadrich
-     * 2006 (and Goadrich and Shavlik 2005?).
+     * Calculates an estimate of the area under the PR curve.  (The
+     * curve is defined by {@link #prPoints()}.)  The area is an
+     * underestimate of the area under the actual PR curve.
      *
-     * @param minimumRecall lowest recall that counts towards area
-     * @param maximumRecall highest recall that counts towards area
-     * @return area under PR curve
+     * @return Area under the PR curve
      */
-    public double prArea(double minimumRecall, double maximumRecall) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public double prArea() {
+        double area = 0.0;
+        int posCount, prevPosCount;
+        double base, height, prevHeight;
+        for (int countIndex = 1; countIndex < truePositiveCounts.length; countIndex++) {
+            // There are 3 cases:
+            // 1. Positive count increased: trapezoid between current
+            //    height and previous height.  (This case handles the
+            //    first point and it just so happens both heights are
+            //    the same.)
+            // 2. Negative count increased: height decreased and there
+            //    is no area
+            // 3. Positive and negative counts increased: rectangle at
+            //    current height (to lower-bound curve)
+
+            // Only calculate an area if the positives have increased
+            posCount = truePositiveCounts[countIndex];
+            prevPosCount = truePositiveCounts[countIndex - 1];
+            if (posCount > prevPosCount) {
+                base = (double) (posCount - prevPosCount);
+                height = precision(countIndex);
+                if (falsePositiveCounts[countIndex] > // Neg counts
+                    falsePositiveCounts[countIndex - 1]) {
+                    // Rectangle
+                    area += base * height;
+                } else {
+                    // Trapezoid
+                    prevHeight = precision(countIndex - 1);
+                    area += base * (prevHeight + height) / 2.0;
+                }
+            }
+        }
+        // The number of positives was factored out of all the base
+        // computations.  Put it back in and return.
+        return area / (double) totalPositives;
     }
 
     /**
-     * <p>Generate (x,y) points for PR curve. Linear interpolation is NOT
-     * correct for PR curves, instead interpolation is done by
-     * FORMULA.</p>
-     *
-     * <p>TODO - probably need a plotPr() that doesn't require specifying
-     * the numberOfSamples, what should be the default though? 100?
-     * 1000?</p>
-     *
-     * @param numberOfSamples number of evenly spaced samples to take
-     * of the PR curve, with a sufficiently large value using a line
-     * between points is a reasonable approximation of the correct
-     * interpolation
-     * @return [i][0] is the x-value (recall) of the ith point, [i][1]
-     * is the y-value (precision) of the ith points, points are sorted
-     * by ascending x-value
-     */
-    public double[][] prPoints(int numberOfSamples) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    /**
-     * <p>Directly from the <a
-     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">monotone
-     * chain computational geometry</a> section from the Wikibook on
-     * Algorithm Implementation.<p>
-     *
      * <p>Computes the cross product of vectors OA and OB, that is, the
      * z-component of their three-dimensional cross product.  (A and B
      * are two-dimensional vectors and O is their common origin.)  The
@@ -499,6 +568,11 @@ public class CurveData {
      *
      * <p>We only need integer vectors for ROC/PR curves so keep
      * everything integer calculations.<p>
+     *
+     * <p>Directly from the <a
+     * href="http://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain">monotone
+     * chain computational geometry</a> section from the Wikibook on
+     * Algorithm Implementation.<p>
      *
      * @param ox The x component of vector O.
      * @param oy The y component of vector O.
@@ -553,13 +627,13 @@ public class CurveData {
             // rather than counter-clockwise.  The equals causes
             // collinear points to be dropped as well.
             while (numberHullPoints >= 2 &&
-                   CurveData.vectorCrossProduct(
-                                                hullXCoords[numberHullPoints - 2],
-                                                hullYCoords[numberHullPoints - 2],
-                                                hullXCoords[numberHullPoints - 1],
-                                                hullYCoords[numberHullPoints - 1],
-                                                xCoords[pointIndex],
-                                                yCoords[pointIndex])
+                   Curve.vectorCrossProduct(
+                                            hullXCoords[numberHullPoints - 2],
+                                            hullYCoords[numberHullPoints - 2],
+                                            hullXCoords[numberHullPoints - 1],
+                                            hullYCoords[numberHullPoints - 1],
+                                            xCoords[pointIndex],
+                                            yCoords[pointIndex])
                    >= 0) {
                 numberHullPoints--;
             }
@@ -582,13 +656,13 @@ public class CurveData {
      *
      * @return A new curve, the convex hull of this curve.
      */
-    public CurveData convexHull() {
+    public Curve convexHull() {
         // Calculate the convex hull from the points defined by the
         // counts.  The convex hull points are also in terms of counts.
         // These are the new counts.
         int[][] hullPoints = convexHullPoints(falsePositiveCounts,  // FPR on x-axis
                                               truePositiveCounts);  // TPR on y-axis
-        return new CurveData(hullPoints[1], hullPoints[0]);
+        return new Curve(hullPoints[1], hullPoints[0]);
     }
 
     /**
@@ -677,8 +751,8 @@ public class CurveData {
 
 
     /**
-     * <p>Builds {@code CurveData} objects in multiple, flexible ways.
-     * The methods in this class independently specify each piece of
+     * <p>Builds {@code Curve} objects in multiple, flexible ways.  The
+     * methods in this class independently specify each piece of
      * requisite information and can be chained together into a single,
      * self-documenting expression.  (This class is a <a
      * href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
@@ -687,14 +761,14 @@ public class CurveData {
      * pattern</a>.)</p>
      *
      * <p>This builder works with iterable sequences of objects.  To
-     * build a CurveData from arrays of primitive numbers see {@link
+     * build a Curve from arrays of primitive numbers see {@link
      * PrimitivesBuilder}.<p>
      *
      * <p>Fundamentally, a curve is built from a ranking of labels and a
      * label to consider positive.  This approach is "pure" but often
-     * inconvenient (see {@link CurveData#CurveData(List, Object)}).
-     * Therefore, curves are often constructed from lists of predictions
-     * (scores) and the corresponding actual labels, which are typically
+     * inconvenient (see {@link Curve#Curve(List, Object)}).  Therefore,
+     * curves are often constructed from lists of predictions (scores)
+     * and the corresponding actual labels, which are typically
      * conveniently available.  In this case, the actual labels are
      * ranked by sorting the scores in descending order.<p>
      *
@@ -811,22 +885,22 @@ public class CurveData {
             return this;
         }
 
-        /**
-         * Specifies a sequence of weights that correspond to the actual
-         * labels.  Completely optional.  The iterable is instantiated
-         * as a list if necessary.
-         *
-         * @param weights A sequence of doubles
-         * @return This builder
-         */
-        public Builder<TScore, TLabel> weights(Iterable<Double> weights) {
-            if (weights instanceof List) {
-                this.weights = (List<Double>) weights;
-            } else {
-                this.weights = Builder.instantiateSequence(weights);
-            }
-            return this;
-        }
+//        /**
+//         * Specifies a sequence of weights that correspond to the actual
+//         * labels.  Completely optional.  The iterable is instantiated
+//         * as a list if necessary.
+//         *
+//         * @param weights A sequence of doubles
+//         * @return This builder
+//         */
+//        public Builder<TScore, TLabel> weights(Iterable<Double> weights) {
+//            if (weights instanceof List) {
+//                this.weights = (List<Double>) weights;
+//            } else {
+//                this.weights = Builder.instantiateSequence(weights);
+//            }
+//            return this;
+//        }
 
         /**
          * Specifies the object to use as a positive label.
@@ -889,7 +963,7 @@ public class CurveData {
          * @throws IllegalStateException if the builder is not in a
          * valid state to construct a curve
          */
-        public CurveData build() {
+        public Curve build() {
             // Check if it is OK to proceed (throws exception if not)
             checkValidBuilderState();
 
@@ -928,7 +1002,7 @@ public class CurveData {
             }
 
             // TODO pass weights if specified
-            return new CurveData(rankedLabels, positiveLabel);
+            return new Curve(rankedLabels, positiveLabel);
         }
 
         /**
@@ -1048,15 +1122,15 @@ public class CurveData {
             return this;
         }
 
-        /**
-         * @param weights A sequence of doubles
-         * @return This builder
-         * @see Builder#weights(Iterable)
-         */
-        public PrimitivesBuilder weights(double[] weights) {
-            this.weights = PrimitivesBuilder.primitiveArrayToList(weights);
-            return this;
-        }
+//        /**
+//         * @param weights A sequence of doubles
+//         * @return This builder
+//         * @see Builder#weights(Iterable)
+//         */
+//        public PrimitivesBuilder weights(double[] weights) {
+//            this.weights = PrimitivesBuilder.primitiveArrayToList(weights);
+//            return this;
+//        }
 
         /**
          * @param label The positive label

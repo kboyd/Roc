@@ -3,4 +3,4 @@
 
 -windowtitle "Roc Java API Docs"
 -doctitle "Roc \"Everything ROC and PR Curves\" Java API Documentation"
--bottom "Copyright &copy; 2013 Roc Project. See <a href=\"{@docRoot}/doc-files/LICENSE.txt\">LICENSE.txt</a> for details."
+-bottom "Copyright &copy; 2013 Roc Project. This is free software. See <a href=\"{@docRoot}/doc-files/LICENSE.txt\">LICENSE.txt</a> for details."

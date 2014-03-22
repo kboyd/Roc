@@ -101,28 +101,28 @@ matrix</a> and hence a point in ROC/PR space.</p>
 
 <h2>Usage</h2>
 
-<p>ROC and PR analysis centers around the class {@link
-mloss.roc.CurveData}, which represents a ranking of the true labels from
-most positive to most negative.  A ranking contains all the information
-needed to construct ROC and PR curves.  Typically, a classifier assigns
-a score to each test example.  The score reflects how positive the
-classifier considers the example.  The test examples can then be ranked
-from most positive to most negative and the true labels analyzed to
-produce ROC and PR curves.</p>
+<p>ROC and PR analysis centers around the class {@link mloss.roc.Curve},
+which represents a ranking of the true labels from most positive to most
+negative.  A ranking contains all the information needed to construct
+ROC and PR curves.  Typically, a classifier assigns a score to each test
+example.  The score reflects how positive the classifier considers the
+example.  The test examples can then be ranked from most positive to
+most negative and the true labels analyzed to produce ROC and PR
+curves.</p>
 
-<p>If you already have a ranking, you can construct a {@code CurveData}
-directly using the {@link mloss.roc.CurveData#CurveData(List, Object)}
-or {@link mloss.roc.CurveData#CurveData(int[])} constructors.
-Typically, you will only have the output of the classifier and will want
-to use one of the builders to construct the analysis.</p>
+<p>If you already have a ranking, you can construct a {@code Curve}
+directly using the {@link mloss.roc.Curve#Curve(List, Object)} or {@link
+mloss.roc.Curve#Curve(int[])} constructors.  Typically, you will only
+have the output of the classifier and will want to use one of the
+builders to construct the analysis.</p>
 
 <p>Builders exist to give you an intuitive and user-friendly way to
 construct rankings for ROC/PR analysis.  You provide a builder the
 outputs of your classifier and the corresponding true labels, and it
 computes the ranking and gives you back an analysis object ({@code
-CurveData}).  Builders come in two flavors, one for collections ({@link
-mloss.roc.CurveData.Builder}) and one for arrays of primitives ({@link
-mloss.roc.CurveData.PrimitivesBuilder}).  (You can use the {@link
+Curve}).  Builders come in two flavors, one for collections ({@link
+mloss.roc.Curve.Builder}) and one for arrays of primitives ({@link
+mloss.roc.Curve.PrimitivesBuilder}).  (You can use the {@link
 mloss.roc.util.IterableArray} class to treat arrays of objects as
 iterable collections.)</p>
 
@@ -139,7 +139,7 @@ int[] trueLabels = ...
 double[] scores = ...
 
 // Create the analysis.  The ranking is computed automatically.
-CurveData analysis = new CurveData.PrimitivesBuilder()
+Curve analysis = new Curve.PrimitivesBuilder()
     .predicteds(scores)
     .actuals(trueLabels)
     .build();
@@ -148,7 +148,7 @@ CurveData analysis = new CurveData.PrimitivesBuilder()
 double area = analysis.rocArea();
 
 // Convex hull
-CurveData hull = analysis.convexHull();
+Curve hull = analysis.convexHull();
 double maxArea = hull.rocArea();
 
 // Points for plotting the curve
