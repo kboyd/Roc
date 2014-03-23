@@ -510,10 +510,10 @@ public class CurveTest {
     }
 
     /**
-     * Tests for integer overflow in {@link Curve.rocArea()} that
-     * produces incorrect (and negative) ROC areas when totalPositives
-     * and totalNegatives are greater than 2^16.
-     * https://github.com/kboyd/Roc/issues/15
+     * Tests for integer overflow bug in {@link Curve.rocArea()} and
+     * {@link Curve.mannWhitneyU()} that produces incorrect (and
+     * negative) ROC areas when totalPositives and totalNegatives are
+     * greater than 2^16.  https://github.com/kboyd/Roc/issues/15
      */
     @Test public void testRocAreaIntegerOverflow() {
 	// Use 2^17 positives and negatives.
@@ -525,16 +525,20 @@ public class CurveTest {
 	// Negatives (0) come after.
 	Arrays.fill(labels,n,n+n,0);
 	Curve hugeCurve = new Curve(labels);
-	double expected = 1.0;
-	assertEquals(expected, hugeCurve.rocArea(),TOLERANCE);
-
+	double expectedRocArea = 1.0;
+	assertEquals(expectedRocArea, hugeCurve.rocArea(),TOLERANCE);
+	double[] expectedMannWhitneyU = {0.0,(double) n * (double)n};
+	assertArrayEquals(expectedMannWhitneyU,hugeCurve.mannWhitneyU(),TOLERANCE);
+	
 	// Check when in worst order with correct rocArea of 0.
 	// Negatives (0) come first.
 	Arrays.fill(labels,0,n,0);
 	// Positives (1) come after.
 	Arrays.fill(labels,n,n+n,1);
 	hugeCurve = new Curve(labels);
-	expected = 0.0;
-	assertEquals(expected, hugeCurve.rocArea(),TOLERANCE);
+	expectedRocArea = 0.0;
+	assertEquals(expectedRocArea, hugeCurve.rocArea(),TOLERANCE);
+	expectedMannWhitneyU = new double[]{(double)n * (double) n,0.0};
+	assertArrayEquals(expectedMannWhitneyU,hugeCurve.mannWhitneyU(),TOLERANCE);
     }
 }
