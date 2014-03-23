@@ -510,23 +510,28 @@ public class CurveTest {
     }
 
     /**
-     * Tests issue15. Integer overflow in {@link Curve.rocArea()} that
+     * Tests for integer overflow in {@link Curve.rocArea()} that
      * produces incorrect (and negative) ROC areas when totalPositives
      * and totalNegatives are greater than 2^16.
+     * https://github.com/kboyd/Roc/issues/15
      */
     @Test public void testRocAreaIntegerOverflow() {
-	// 2^17 positives and negatives
+	// Use 2^17 positives and negatives.
 	int n = 1<<17;
-	// in perfect order
-	int[] labels = new int[n+n];	
+	// Check when in perfect order with correct rocArea of 1.
+	int[] labels = new int[n+n];
+	// Positives (1) come first.
 	Arrays.fill(labels,0,n,1);
+	// Negatives (0) come after.
 	Arrays.fill(labels,n,n+n,0);
 	Curve hugeCurve = new Curve(labels);
 	double expected = 1.0;
 	assertEquals(expected, hugeCurve.rocArea(),TOLERANCE);
 
-	// in worst order
+	// Check when in worst order with correct rocArea of 0.
+	// Negatives (0) come first.
 	Arrays.fill(labels,0,n,0);
+	// Positives (1) come after.
 	Arrays.fill(labels,n,n+n,1);
 	hugeCurve = new Curve(labels);
 	expected = 0.0;
