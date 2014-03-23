@@ -318,7 +318,9 @@ public class Curve {
          * corresponds to the area under the curve.  (I'm not sure why.)
          */
         double[] uStatistics = mannWhitneyU();
-        return uStatistics[1] / (double) (totalPositives * totalNegatives);
+	// Cast totalPositives and totalNegatives to double to avoid
+	// integer overflow in the product.
+        return uStatistics[1] / ((double) totalPositives * (double) totalNegatives);
     }
 
     /**
@@ -689,8 +691,10 @@ public class Curve {
             sumPosRanks += rank * (double) posCount;
             sumNegRanks += rank * (double) negCount;
         }
-        double uPos = sumPosRanks - (double) (totalPositives * totalPositives + totalPositives) / 2.0;
-        double uNeg = sumNegRanks - (double) (totalNegatives * totalNegatives + totalNegatives) / 2.0;
+	// Cast totalPositives and totalNegatives to double to avoid
+	// integer overflow in the products.
+        double uPos = sumPosRanks - ((double) totalPositives * (double) totalPositives + (double) totalPositives) / 2.0;
+        double uNeg = sumNegRanks - ((double) totalNegatives * (double) totalNegatives + (double) totalNegatives) / 2.0;
         return new double[] {uPos, uNeg};
     }
 
