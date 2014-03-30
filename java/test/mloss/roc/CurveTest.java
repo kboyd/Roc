@@ -518,8 +518,9 @@ public class CurveTest {
      * greater than 2^16.  https://github.com/kboyd/Roc/issues/15
      */
     @Test public void testRocAreaIntegerOverflow() {
-	// Use 2^17 positives and 2^17 negatives.
-	int n = 1<<17;
+	// Use 2^20 positives and 2^20 negatives to test up to our
+	// supported scale of 1 million.
+	int n = 1<<20;
 	
 	// Check when in perfect order with correct rocArea of 1.
 	int[] labels = new int[n+n];
