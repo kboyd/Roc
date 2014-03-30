@@ -319,7 +319,14 @@ public class Curve {
          */
         double[] uStatistics = mannWhitneyU();
 	// Cast totalPositives and totalNegatives to double to avoid
-	// integer overflow in the product.
+	// integer overflow in the product.  For our supported scale
+	// of up to 2^20 (~ 1 million) examples the multiplication
+	// will not lose precision because the factors are at most
+	// 2^20 and the product will be at most 2^40 which fits in a
+	// double's 53 bits of precision. For larger data sizes there
+	// should be minimal floating point error provided
+	// totalPositives and totalNegatives are not on extremely
+	// different scales (i.e. the exponents are similar).
         return uStatistics[1] / ((double) totalPositives * (double) totalNegatives);
     }
 
@@ -692,7 +699,14 @@ public class Curve {
             sumNegRanks += rank * (double) negCount;
         }
 	// Cast totalPositives and totalNegatives to double to avoid
-	// integer overflow in the products.
+	// integer overflow in the product.  For our supported scale
+	// of up to 2^20 (~ 1 million) examples the multiplication
+	// will not lose precision because the factors are at most
+	// 2^20 and the product will be at most 2^40 which fits in a
+	// double's 53 bits of precision. For larger data sizes there
+	// should be minimal floating point error provided
+	// totalPositives and totalNegatives are not on extremely
+	// different scales (i.e. the exponents are similar).
         double uPos = sumPosRanks - ((double) totalPositives * (double) totalPositives + (double) totalPositives) / 2.0;
         double uNeg = sumNegRanks - ((double) totalNegatives * (double) totalNegatives + (double) totalNegatives) / 2.0;
         return new double[] {uPos, uNeg};

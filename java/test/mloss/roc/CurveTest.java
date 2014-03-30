@@ -5,11 +5,12 @@
 
 package mloss.roc;
 
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 
 /** Tests {@link Curve}. */
 public class CurveTest {
@@ -54,6 +55,7 @@ public class CurveTest {
     Curve curve;
     Curve randCurve;
     Curve staircaseCurve;
+
     @Before public void setUp() {
         curve = new Curve(labelsAverage);
         randCurve = new Curve(random_posCounts, random_negCounts);
@@ -516,29 +518,32 @@ public class CurveTest {
      * greater than 2^16.  https://github.com/kboyd/Roc/issues/15
      */
     @Test public void testRocAreaIntegerOverflow() {
-	// Use 2^17 positives and negatives.
+	// Use 2^17 positives and 2^17 negatives.
 	int n = 1<<17;
+	
 	// Check when in perfect order with correct rocArea of 1.
 	int[] labels = new int[n+n];
 	// Positives (1) come first.
-	Arrays.fill(labels,0,n,1);
+	Arrays.fill(labels, 0, n, 1);
 	// Negatives (0) come after.
-	Arrays.fill(labels,n,n+n,0);
+	Arrays.fill(labels, n, n+n, 0);
 	Curve hugeCurve = new Curve(labels);
 	double expectedRocArea = 1.0;
-	assertEquals(expectedRocArea, hugeCurve.rocArea(),TOLERANCE);
-	double[] expectedMannWhitneyU = {0.0,(double) n * (double)n};
-	assertArrayEquals(expectedMannWhitneyU,hugeCurve.mannWhitneyU(),TOLERANCE);
+	assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
+	double[] expectedMannWhitneyU = {0.0, (double) n * (double) n};
+	assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
+			  TOLERANCE);
 	
 	// Check when in worst order with correct rocArea of 0.
 	// Negatives (0) come first.
-	Arrays.fill(labels,0,n,0);
+	Arrays.fill(labels, 0, n, 0);
 	// Positives (1) come after.
-	Arrays.fill(labels,n,n+n,1);
+	Arrays.fill(labels, n, n+n, 1);
 	hugeCurve = new Curve(labels);
 	expectedRocArea = 0.0;
-	assertEquals(expectedRocArea, hugeCurve.rocArea(),TOLERANCE);
-	expectedMannWhitneyU = new double[]{(double)n * (double) n,0.0};
-	assertArrayEquals(expectedMannWhitneyU,hugeCurve.mannWhitneyU(),TOLERANCE);
+	assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
+	expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};
+	assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
+			  TOLERANCE);
     }
 }
