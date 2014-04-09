@@ -92,6 +92,10 @@ P2=Python 2.x.
     Ranking Statistics
     . Mann-Whitney-U              J:T  P2:P       J:?  P2:?
 
+This software is designed and tested to support 1 million total
+examples.  It probably works on many more, but the performance and
+accuracy have not been tested at such larger scales.
+
 
 Requirements
 ------------
