@@ -8,6 +8,7 @@ package mloss.roc.util;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,8 +104,8 @@ public class CsvProcessing {
         StringArrayComparator mergeCmp = new StringArrayComparator(keys1, keys2);
 
         // Sort each input
-        sorted1.sort(cmp1);
-        sorted2.sort(cmp2);
+        Collections.sort(sorted1, cmp1);
+        Collections.sort(sorted2, cmp2);
 
         // Merge the two CSVs together
         List<String[]> merged = new LinkedList<String[]>();
