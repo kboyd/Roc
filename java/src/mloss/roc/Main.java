@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import mloss.roc.util.CsvProcessing;
 import mloss.roc.util.NaiveCsvReader;
 
 
@@ -28,18 +29,14 @@ import mloss.roc.util.NaiveCsvReader;
 // then send them for appropriate processing (joining, sorting, curve
 // generation).
 
-// TODO handle file options
-// TODO project input CSVs
-// TODO join input CSVs
-// TODO connect input to Curve building
-// TODO check for empty input
-// TODO more (basic) examples in help
+// TODO options: --report <report> --to <file>
+// TODO option for specifying positive label
 
 
 /**
  * <p>Main reads the results of a binary classification and generates a
  * report of the ROC and PR results.  The inputs are the scores given to
- * the examples and the associated groud truth labels.  The output is a
+ * the examples and the associated ground truth labels.  The output is a
  * customizable report including ROC and/or PR curves and areas.</p>
  *
  * <p>The inputs can be specified with or without the examples in one or
@@ -74,7 +71,7 @@ public class Main {
 
     private static final String indent = "        ";
 
-    // TODO load help from a file or have it compiled in or options package?
+    // TODO load help from a file, or have it compiled in, or build it with an options package?
     // file pros: easy to write, could work with multiple languages
     // file cons: how load reliably? (resources loader?), synchronization of code and help
     // here pros: code and help automatically synchronized
@@ -179,9 +176,13 @@ public class Main {
     /**
      *
      */
-    public static void apiMain(String[] args, BufferedReader input,
-                               PrintWriter output, PrintWriter error
-                               ) throws MainException, FileNotFoundException, IOException {
+    public static void apiMain(
+            String[] args,
+            BufferedReader input,
+            PrintWriter output,
+            PrintWriter error)
+        throws MainException, FileNotFoundException, IOException {
+
         // Environment.  For now this is a somewhat naive environment
         // that maps keys (command line options) to FileArguments or
         // unparsed values (or null).  Booleans are represented by key
@@ -191,6 +192,7 @@ public class Main {
         String defaultOperation = scoresLabelsKey;
         String defaultFileName = stdioFileName;
         String defaultDelimiter = ",";
+        String positiveLabel = "1";
         Map<String, Object> env = new TreeMap<String, Object>();
 
         // Search the command line arguments for requested help.  Help
@@ -268,34 +270,94 @@ public class Main {
         if (env.containsKey(licenseKey)) {
             error.println(licenseMessage);
         }
-        // Process inputs.  Providing scores and labels together in one
-        // input overrides providing them individually.
+        // Process inputs to build the curve.  Providing scores and
+        // labels together in one input overrides providing them
+        // individually.
+        Curve curve = null;
         if (env.containsKey(scoresLabelsKey)) {
-            // Input is scores and labels together
-            //output.println(scoresLabelsKey);
-            //output.println(env.get(scoresLabelsKey));
-            // Get scores and labels CSV input from a file or stdin as specified
+            // Input is scores and labels together in CSV format.  Get
+            // them from a file or stdin as specified.
             FileArgument slFile = (FileArgument) env.get(scoresLabelsKey);
-            BufferedReader scoresLabelsInput = openFileOrDefault(slFile.name, stdioFileName, input);
-            // Generate curve and output
-            processScoresLabelsOneInput(scoresLabelsInput, defaultDelimiter, 0, 1, output);
-        } else if (env.containsKey(labelsKey)) {
-            // Input is scores and labels separately or labels only
-            BufferedReader scoresInput = null;
-            BufferedReader labelsInput = null;
-            // Get scores input only if given
-            if (env.containsKey(scoresKey)) {
-                //output.println(scoresKey);
-                //output.println(env.get(scoresKey));
-                // Get scores CSV input from a file or stdin as specified
-                FileArgument sFile = (FileArgument) env.get(scoresKey);
-                scoresInput = openFileOrDefault(sFile.name, stdioFileName, input);
+            BufferedReader scoresLabelsInput =
+                openFileOrDefault(slFile.name, stdioFileName, input);
+            List<String[]> scoresLabelsCsv =
+                new NaiveCsvReader(scoresLabelsInput, defaultDelimiter).readAll();
+            checkEmptyInput(scoresLabelsCsv, slFile.name);
+
+            // Build curve
+            int scoreCol = slFile.getScoreColumn();
+            int labelCol = slFile.getLabelColumn();
+            if (scoreCol == 0 && labelCol == 0) {
+                labelCol = 1;
             }
-            // Get labels CSV input from a file or stdin as specified
+            curve = buildCurveFromScoresLabels(
+                scoresLabelsCsv, scoreCol, labelCol, positiveLabel);
+        } else if (env.containsKey(scoresKey) && env.containsKey(labelsKey)) {
+            // Input is scores and labels separately in CSV format
+            FileArgument sFile = (FileArgument) env.get(scoresKey);
             FileArgument lFile = (FileArgument) env.get(labelsKey);
-            labelsInput = openFileOrDefault(lFile.name, stdioFileName, input);
-            // Generate curve and output
-            processScoresLabelsTwoInputs(scoresInput, labelsInput, defaultDelimiter, output);
+            // Check for key agreement (provided by both or neither)
+            int[] scoresKeyCols = sFile.getKeyColumns();
+            int[] labelsKeyCols = lFile.getKeyColumns();
+            if (scoresKeyCols.length != labelsKeyCols.length) {
+                throw new MainException("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
+            }
+
+            // Get the input from files or stdin
+            BufferedReader scoresInput =
+                openFileOrDefault(sFile.name, stdioFileName, input);
+            BufferedReader labelsInput =
+                openFileOrDefault(lFile.name, stdioFileName, input);
+            List<String[]> scoresCsv =
+                new NaiveCsvReader(scoresInput, defaultDelimiter).readAll();
+            List<String[]> labelsCsv =
+                new NaiveCsvReader(labelsInput, defaultDelimiter).readAll();
+            checkEmptyInput(scoresCsv, sFile.name);
+            checkEmptyInput(labelsCsv, lFile.name);
+
+            // Build curve
+            int scoreCol = sFile.getScoreColumn();
+            int labelCol = lFile.getLabelColumn();
+            // Build with the rows already in order or with a join
+            if (scoresKeyCols.length == 0) {
+                curve = buildCurveFromSeparateScoresLabels(
+                    scoresCsv, scoreCol,
+                    labelsCsv, labelCol,
+                    positiveLabel);
+            } else {
+                curve = buildCurveFromJoinedScoresLabels(
+                    scoresCsv, scoresKeyCols, scoreCol,
+                    labelsCsv, labelsKeyCols, labelCol,
+                    positiveLabel);
+            }
+        } else if (env.containsKey(labelsKey)) {
+            // Input is ranked labels only in CSV format.  Get them from
+            // a file or stdin as specified.
+            FileArgument lFile = (FileArgument) env.get(labelsKey);
+            BufferedReader labelsInput =
+                openFileOrDefault(lFile.name, stdioFileName, input);
+            List<String[]> labelsCsv =
+                new NaiveCsvReader(labelsInput, defaultDelimiter).readAll();
+            checkEmptyInput(labelsCsv, lFile.name);
+
+            // Build curve
+            int labelCol = lFile.getLabelColumn();
+            curve = buildCurveFromRankedLabels(
+                labelsCsv, labelCol, positiveLabel);
+        }
+
+        // Report on the curve (if one was constructed)
+        if (curve != null) {
+            printReport(curve, output);
+        }
+    }
+
+    private static void checkEmptyInput(List<String[]> csv, String fileName)
+        throws MainException {
+
+        if (csv.size() == 0) {
+            throw new MainException(String.format("Empty input: %s", fileName),
+                                    ExitStatus.ERROR_FILE);
         }
     }
 
@@ -343,7 +405,6 @@ public class Main {
         try {
             apiMain(args);
         } catch (Exception e) {
-            //System.err.println(String.format("roc: Error: %s: %s", e.getClass().getName(), e.getMessage()));
             System.err.println(String.format("roc: Error: %s", e.getMessage()));
             // Print a stack trace if in debug mode
             if (Arrays.asList(args).contains(debugKey)) {
@@ -405,8 +466,37 @@ public class Main {
     private static class FileArgument {
         public String name;
         public int[] keyCols;
+        // Column numbers are 1-based so zero indicates unset
         public int scoreCol;
         public int labelCol;
+
+        public int[] getKeyColumns() {
+            if (keyCols == null) {
+                return new int[0];
+            } else {
+                int[] indices = new int[keyCols.length];
+                for (int i = 0; i < keyCols.length; i++) {
+                    indices[i] = keyCols[i] - 1;
+                }
+                return indices;
+            }
+        }
+
+        public int getScoreColumn() {
+            if (scoreCol >= 1) {
+                return scoreCol - 1;
+            } else {
+                return 0;
+            }
+        }
+
+        public int getLabelColumn() {
+            if (labelCol >= 1) {
+                return labelCol - 1;
+            } else {
+                return 0;
+            }
+        }
     }
 
     public static BufferedReader openFileOrDefault(String fileName, String defaultName, BufferedReader defaultInput) throws IOException {
@@ -417,70 +507,120 @@ public class Main {
         }
     }
 
-    private static void processScoresLabelsOneInput(BufferedReader scoresLabelsInput, String delimiter, int scoresColumn, int labelsColumn, PrintWriter output) throws IOException {
-        // Read the CSV input
-        List<String[]> csvRows = new NaiveCsvReader(scoresLabelsInput, delimiter).readAll();
-        //for (String[] row : csvRows) {
-        //    output.println(Arrays.toString(row));
-        //}
-        // Create iterators for appropriate columns
-        Iterator<Double> scoresIterator = new StringToDoubleConversionIterator(new ProjectionIterator<String>(csvRows, scoresColumn));
-        Iterator<String> labelsIterator = new ProjectionIterator<String>(csvRows, labelsColumn);
-        // Call curve generation and output
-        printReport(buildCurve(scoresIterator, labelsIterator), output);
-    }
+    public static Curve buildCurveFromRankedLabels(
+            Iterable<String[]> labelsCsv,
+            int labelsColumn,
+            String positiveLabel) {
 
-    private static void processScoresLabelsTwoInputs(BufferedReader scoresInput, BufferedReader labelsInput, String delimiter, PrintWriter output) throws IOException {
-        List<String[]> csvRows;
-        Iterator<Double> scoresIterator = null;
-        // Process scores input only if given
-        if (scoresInput != null) {
-            // Read CSV input
-            csvRows = new NaiveCsvReader(scoresInput, delimiter).readAll();
-            //for (String[] row : csvRows) {
-            //    output.println(Arrays.toString(row));
-            //}
-            // Create scores iterator
-            scoresIterator = new StringToDoubleConversionIterator(new ProjectionIterator<String>(csvRows, 0));
-        }
-        // Process labels input
-        csvRows = new NaiveCsvReader(labelsInput, delimiter).readAll();
-        //for (String[] row : csvRows) {
-        //    output.println(Arrays.toString(row));
-        //}
-        // Create labels iterator
-        Iterator<String> labelsIterator = new ProjectionIterator<String>(csvRows, 0);
-        // Build the curve
-        Curve curve;
-        if (scoresIterator == null) {
-            curve = buildCurve(labelsIterator);
-        } else {
-            curve = buildCurve(scoresIterator, labelsIterator);
-        }
-        // Call curve generation and output
-        printReport(curve, output);
-    }
+        // Create an iterator for the input column of labels
+        Iterable<String> labelsIterator =
+            new ProjectionIterator<String>(labelsCsv, labelsColumn);
 
-    private static Curve buildCurve(Iterator<String> labelsIterator) {
+        // Build and return the curve
         return new Curve.Builder<Double,String>()
-            .rankedLabels(new IteratorIterable<String>(labelsIterator))
-            .positiveLabel("1")
+            .rankedLabels(labelsIterator)
+            .positiveLabel(positiveLabel)
             .build();
     }
 
-    private static Curve buildCurve(Iterator<Double> scoresIterator, Iterator<String> labelsIterator) {
+    public static Curve buildCurveFromScoresLabels(
+            Iterable<String[]> scoresLabelsCsv,
+            int scoresColumn,
+            int labelsColumn,
+            String positiveLabel) {
+
+        // Project the scores and labels
+        Iterable<Double> scoresIterator =
+            new StringToDoubleConversionIterator(
+                new ProjectionIterator<String>(scoresLabelsCsv,
+                                               scoresColumn));
+        Iterable<String> labelsIterator =
+            new ProjectionIterator<String>(scoresLabelsCsv,
+                                           labelsColumn);
+
+        // Build and return the curve
         return new Curve.Builder<Double,String>()
-            .predicteds(new IteratorIterable<Double>(scoresIterator))
-            .actuals(new IteratorIterable<String>(labelsIterator))
-            .positiveLabel("1")
+            .predicteds(scoresIterator)
+            .actuals(labelsIterator)
+            .positiveLabel(positiveLabel)
             .build();
     }
 
-    public static class ProjectionIterator<E> implements Iterator<E> {
+    public static Curve buildCurveFromJoinedScoresLabels(
+            Iterable<String[]> scoresCsv,
+            int[] scoresKeyColumns,
+            int scoresColumn,
+            Iterable<String[]> labelsCsv,
+            int[] labelsKeyColumns,
+            int labelsColumn,
+            String positiveLabel) {
+
+        // Check arguments
+        if (scoresKeyColumns.length != labelsKeyColumns.length) {
+            throw new IllegalArgumentException("There must be the same number of key columns for both the scores and labels.");
+        }
+
+        // Set up the join
+        int[][] keys = new int[scoresKeyColumns.length][2];
+        int[][] fields = new int[scoresKeyColumns.length + 2][2];
+        int keyIndex;
+        for (keyIndex = 0; keyIndex < scoresKeyColumns.length; keyIndex++) {
+            // Match keys
+            keys[keyIndex][0] = scoresKeyColumns[keyIndex];
+            keys[keyIndex][1] = labelsKeyColumns[keyIndex];
+            // Assemble fields
+            fields[keyIndex][0] = 0;
+            fields[keyIndex][1] = scoresKeyColumns[keyIndex];
+        }
+        // Assemble remaining fields
+        fields[keyIndex][0] = 0;
+        fields[keyIndex][1] = scoresColumn;
+        keyIndex++;
+        fields[keyIndex][0] = 1;
+        fields[keyIndex][1] = labelsColumn;
+
+        // Do the join
+        List<String[]> scoresLabelsRows =
+            CsvProcessing.mergeJoin(keys, fields, scoresCsv, labelsCsv);
+
+        // Call the separate, in-order curve builder
+        return buildCurveFromSeparateScoresLabels(
+            scoresLabelsRows, fields.length - 2,
+            scoresLabelsRows, fields.length - 1,
+            positiveLabel);
+    }
+
+    public static Curve buildCurveFromSeparateScoresLabels(
+            Iterable<String[]> scoresCsv,
+            int scoresColumn,
+            Iterable<String[]> labelsCsv,
+            int labelsColumn,
+            String positiveLabel) {
+
+        // Project the scores and labels
+        Iterable<Double> scoresIterator =
+            new StringToDoubleConversionIterator(
+                new ProjectionIterator<String>(scoresCsv,
+                                               scoresColumn));
+        Iterable<String> labelsIterator =
+            new ProjectionIterator<String>(labelsCsv,
+                                           labelsColumn);
+
+        // Build and return the curve
+        return new Curve.Builder<Double, String>()
+            .predicteds(scoresIterator)
+            .actuals(labelsIterator)
+            .positiveLabel(positiveLabel)
+            .build();
+    }
+
+    public static class ProjectionIterator<E>
+        implements Iterator<E>, Iterable<E> {
+
         private Iterator<E[]> iterator;
         private int column;
 
-        public ProjectionIterator(List<E[]> table, int column) {
+        public ProjectionIterator(Iterable<E[]> table, int column) {
             iterator = table.iterator();
             this.column = column;
         }
@@ -501,14 +641,19 @@ public class Main {
         public void remove() {
             throw new UnsupportedOperationException();
         }
+
+        public Iterator<E> iterator() {
+            return this;
+        }
     }
 
-    public static class StringToDoubleConversionIterator implements Iterator<Double> {
+    public static class StringToDoubleConversionIterator
+        implements Iterator<Double>, Iterable<Double> {
 
         private Iterator<String> iterator;
 
-        public StringToDoubleConversionIterator(Iterator<String> iterator) {
-            this.iterator = iterator;
+        public StringToDoubleConversionIterator(Iterable<String> iterable) {
+            iterator = iterable.iterator();
         }
 
         public boolean hasNext() {
@@ -528,17 +673,9 @@ public class Main {
         public void remove() {
             throw new UnsupportedOperationException();
         }
-    }
 
-    public static class IteratorIterable<T> implements Iterable<T> {
-        private Iterator<T> iterator;
-
-        public IteratorIterable(Iterator<T> iterator) {
-            this.iterator = iterator;
-        }
-
-        public Iterator<T> iterator() {
-            return iterator;
+        public Iterator<Double> iterator() {
+            return this;
         }
     }
 
