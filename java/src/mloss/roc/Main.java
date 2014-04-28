@@ -275,18 +275,16 @@ public class Main {
         // individually.
         Curve curve = null;
         if (env.containsKey(scoresLabelsKey)) {
-            // Input is scores and labels together in CSV format.  Get
-            // them from a file or stdin as specified.
+            // Input is scores and labels together in CSV format
             FileArgument slFile = (FileArgument) env.get(scoresLabelsKey);
-            BufferedReader scoresLabelsInput =
-                openFileOrDefault(slFile.name, stdioFileName, input);
+            // Read the CSV input from files or stdin as requested
             List<String[]> scoresLabelsCsv =
-                new NaiveCsvReader(scoresLabelsInput, defaultDelimiter).readAll();
-            checkEmptyInput(scoresLabelsCsv, slFile.name);
+                readCsv(slFile.name, input, defaultDelimiter);
 
             // Build curve
             int scoreCol = slFile.getScoreColumn();
             int labelCol = slFile.getLabelColumn();
+            // TODO fix this logic for defaulting the columns
             if (scoreCol == 0 && labelCol == 0) {
                 labelCol = 1;
             }
@@ -303,17 +301,11 @@ public class Main {
                 throw new MainException("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
             }
 
-            // Get the input from files or stdin
-            BufferedReader scoresInput =
-                openFileOrDefault(sFile.name, stdioFileName, input);
-            BufferedReader labelsInput =
-                openFileOrDefault(lFile.name, stdioFileName, input);
+            // Read the CSV input from files or stdin as requested
             List<String[]> scoresCsv =
-                new NaiveCsvReader(scoresInput, defaultDelimiter).readAll();
+                readCsv(sFile.name, input, defaultDelimiter);
             List<String[]> labelsCsv =
-                new NaiveCsvReader(labelsInput, defaultDelimiter).readAll();
-            checkEmptyInput(scoresCsv, sFile.name);
-            checkEmptyInput(labelsCsv, lFile.name);
+                readCsv(lFile.name, input, defaultDelimiter);
 
             // Build curve
             int scoreCol = sFile.getScoreColumn();
@@ -331,14 +323,11 @@ public class Main {
                     positiveLabel);
             }
         } else if (env.containsKey(labelsKey)) {
-            // Input is ranked labels only in CSV format.  Get them from
-            // a file or stdin as specified.
+            // Input is ranked labels (only) in CSV format
             FileArgument lFile = (FileArgument) env.get(labelsKey);
-            BufferedReader labelsInput =
-                openFileOrDefault(lFile.name, stdioFileName, input);
+            // Read the CSV input from files or stdin as requested
             List<String[]> labelsCsv =
-                new NaiveCsvReader(labelsInput, defaultDelimiter).readAll();
-            checkEmptyInput(labelsCsv, lFile.name);
+                readCsv(lFile.name, input, defaultDelimiter);
 
             // Build curve
             int labelCol = lFile.getLabelColumn();
@@ -349,15 +338,6 @@ public class Main {
         // Report on the curve (if one was constructed)
         if (curve != null) {
             printReport(curve, output);
-        }
-    }
-
-    private static void checkEmptyInput(List<String[]> csv, String fileName)
-        throws MainException {
-
-        if (csv.size() == 0) {
-            throw new MainException(String.format("Empty input: %s", fileName),
-                                    ExitStatus.ERROR_FILE);
         }
     }
 
@@ -499,12 +479,25 @@ public class Main {
         }
     }
 
-    public static BufferedReader openFileOrDefault(String fileName, String defaultName, BufferedReader defaultInput) throws IOException {
-        if (fileName.equals(defaultName)) {
-            return defaultInput;
-        } else {
-            return new BufferedReader(new FileReader(fileName));
+    public static List<String[]> readCsv(
+            String fileName,
+            BufferedReader input,
+            String delimiter)
+        throws FileNotFoundException, IOException, MainException {
+
+        // Use the given input if the file name signifies stdio.
+        // Otherwise open the given file.
+        if (fileName != stdioFileName) {
+            input = new BufferedReader(new FileReader(fileName));
         }
+        // Read the entire CSV
+        List<String[]> csv = new NaiveCsvReader(input, delimiter).readAll();
+        // Check for non-empty input
+        if (csv.size() == 0) {
+            throw new MainException(String.format("Empty input: %s", fileName),
+                                    ExitStatus.ERROR_FILE);
+        }
+        return csv;
     }
 
     public static Curve buildCurveFromRankedLabels(
