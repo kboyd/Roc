@@ -58,14 +58,18 @@ public class Main {
     public static final String licenseMessage =
         "Roc is free, open source software licensed under the BSD 2-clause (FreeBSD) license.";
 
-    public static final String helpKey = "--help";
-    public static final String versionKey = "--version";
-    public static final String aboutKey = "--about";
-    public static final String licenseKey = "--license";
-    public static final String debugKey = "--debug";
-    public static final String scoresKey = "--scores";
-    public static final String labelsKey = "--labels";
-    public static final String scoresLabelsKey = "--scores-labels";
+    public static final String helpOptName = "--help";
+    public static final String versionOptName = "--version";
+    public static final String aboutOptName = "--about";
+    public static final String licenseOptName = "--license";
+    public static final String debugOptName = "--debug";
+    public static final String scoresOptName = "--scores";
+    public static final String labelsOptName = "--labels";
+    public static final String scoresLabelsOptName = "--scores-labels";
+    public static final String scoresKeyOptName = "--scores-key";
+    public static final String scoresColumnOptName = "--scores-column";
+    public static final String labelsKeyOptName = "--labels-key";
+    public static final String labelsColumnOptName = "--labels-column";
 
     public static final String stdioFileName = "-";
 
@@ -91,56 +95,73 @@ public class Main {
         "DESCRIPTION\n\n" +
 
         "Reads the scores and labels of a binary classification result and prints ROC and\n" +
-        "PR analysis reports.  When no options are given, this program operates as if\n" +
-        "'--scores-labels -' had been given.  A '-' as a file name indicates standard\n" +
-        "input and can be used for any file argument that makes sense.\n" +
-        "\n" +
-
-        "File options can be appended to a file name to specify the columns of interest.\n" +
-        "The syntax is a colon followed by a dictionary having no spaces.  The keys of\n" +
-        "the dictionary are 'k' for key, 's' for score, and 'l' for label.  The values\n" +
-        "are column numbers or a list of column numbers for 'k' to use a compound key.\n" +
-        "See the examples below.\n" +
+        "PR analysis reports.  There are three basic modes of input:\n" +
+        "  1. a single file with columns for both scores and labels,\n" +
+        "  2. columns of scores and labels in separate files to be joined together,\n" +
+        "  3. a single file with a column of labels that are already in ranked order.\n" +
+        "The default behavior when no options are given is to treat standard input as\n" +
+        "mode 1, equivalent to '--scores-labels -'.  Using '-' as a file name indicates\n" +
+        "standard input.\n" +
         "\n" +
 
         "OPTIONS\n\n" +
 
-        helpKey + "\n" + indent + "Display this help.\n" +
-        versionKey + " | " + aboutKey + "\n" + indent +
+        helpOptName + "\n" + indent + "Display this help.\n" +
+        versionOptName + " | " + aboutOptName + "\n" + indent +
         "Display the version and other information about this software.\n" +
-        licenseKey + "\n" + indent +
+        licenseOptName + "\n" + indent +
         "Display a summary of the license for this software.\n" +
-        debugKey + "\n" + indent + "Print stack traces, etc.\n" +
-        scoresKey + " FILE[:OPTS]\n" + indent +
-        "File containing scores, one per line (CSV format).  Must be specified in\n" + indent +
-        "combination with --labels.  The scores are matched to the labels by the\n" + indent +
-        "specified key or otherwise by line number.  Accepts file options for key\n" + indent +
-        "and score columns.  No default.\n" +
-        labelsKey + " FILE[:OPTS]\n" + indent +
-        "File containing labels, one per line (CSV format).  Labels specified by\n" + indent +
-        "themselves are treated as already ranked from most positive to most\n" + indent +
-        "negative.  Accepts file options for key and label columns.  No default.\n" +
-        scoresLabelsKey + " FILE[:OPTS]\n" + indent +
-        "File containing scores and labels, in two-column CSV format.\n" + indent +
-        "Accepts file options for score and label columns.  No default.\n" +
+        debugOptName + "\n" + indent + "Print stack traces, etc.\n" +
+
+        scoresOptName + " FILE\n" + indent +
+        "File containing scores, one per line, in CSV format.  Must be specified\n" + indent +
+        "in combination with --labels.  The scores are matched to the labels by\n" + indent +
+        "the specified keys or otherwise by line number.  No default.\n" +
+        labelsOptName + " FILE\n" + indent +
+        "File containing labels, one per line, in CSV format.  Labels specified\n" + indent +
+        "by themselves are treated as already ranked from most positive to most\n" + indent +
+        "negative.  No default.\n" +
+        scoresLabelsOptName + " FILE\n" + indent +
+        "File containing scores and labels, in CSV format.  No default.\n" +
+
+        scoresColumnOptName + " COLUMN\n" + indent +
+        "Column containing the scores in the scores file or the scores-labels\n" + indent +
+        "file.  1-based number.  Default is 1 for separate scores and labels\n" + indent +
+        "files or otherwise the smallest number not specified by --labels-column.\n" +
+        labelsColumnOptName + " COLUMN\n" + indent +
+        "Column containing the labels in the labels file or the scores-labels\n" + indent +
+        "file.  1-based number.  Default is 1 for separate scores and labels\n" + indent+
+        "files or otherwise the smallest number not specified by --scores-column.\n" +
+        scoresKeyOptName + " COLUMN_LIST\n" + indent +
+        "Column or list of columns containing the (compound) keys for the scores\n" + indent +
+        "file to use when joining the scores to the labels from the labels file.\n" + indent +
+        "Comma-separated list of 1-based numbers as a single token (no spaces).\n" + indent +
+        "Default is to join the files by line number.  Only applies to separate\n" + indent +
+        "scores and labels files.\n" +
+        labelsKeyOptName + " COLUMN_LIST\n" + indent +
+        "Column or list of columns containing the (compound) keys for the labels\n" + indent +
+        "file to use when joining the labels to the scores from the scores file.\n" + indent +
+        "Comma-separated list of 1-based numbers as a single token (no spaces).\n" + indent +
+        "Default is to join the files by line number.  Only applies to separate\n" + indent +
+        "scores and labels files.\n" +
         "\n" +
 
         "EXAMPLES\n\n" +
 
         "Join results with ground truth:\n" +
-        "    ...Main --scores results.csv:{k:1,s:5} --labels truth.csv:{l:4,k:3}\n" +
+        "    ...Main --scores results.csv --scores-key 1 --scores-column 5\n" +
+        "            --labels truth.csv   --labels-key 3 --labels-column 4\n" +
 
         "Join using compound key (whose fields are reversed in the truth):\n" +
-        "    ...Main --scores results.csv:{s:3,k:[1,2]} --labels truth.csv:{k:[2,1],l:3}\n" +
-
-        "Like above with shell quoting (bash):\n" +
-        "    ...Main --scores results.csv:'{k:1,s:5}' --labels 'truth.csv:{l:4,k:3}'\n" +
+        "    ...Main --scores results.csv --scores-key 1,2 --scores-column 3\n" +
+        "            --labels truth.csv   --labels-key 2,1 --labels-column 3\n" +
 
         "Specify score and label columns:\n" +
-        "    ...Main --scores-labels scrsLbls.csv:{s:4,l:3}\n" +
+        "    ...Main --scores-labels scrsLbls.csv --labels-column 3 --scores-column 4\n" +
 
-        "Options for standard input:\n" +
-        "    <classifier> | java...Main --scores-labels -:{s:102,l:103}\n" +
+        "Processing standard input with default options (which could be omitted):\n" +
+        "    <classifier> | java...Main --scores-labels - --scores-column 1\n" +
+        "        --labels-column 2\n" +
 
         "";  // This is here to make inserting/reordering lines easier
 
@@ -151,36 +172,43 @@ public class Main {
     private static final Pattern helpPattern =
         Pattern.compile("(--?(h(elp)?|\\?))|help");
 
-    /**
-     * Pattern to recognize basic JSON-like dictionaries attached at the
-     * end of a string with a colon.
-     */
-    private static final Pattern okFileNameWithOptionsPattern =
-        Pattern.compile("(.+):\\{((?:[kls]:(?:\\d+|\\[\\d+(?:,\\d+)*\\]))(?:,[kls]:(?:\\d+|\\[\\d+(?:,\\d+)*\\]))*)\\}");
+    /** Pattern to match positive integers. */
+    private static final Pattern integerPattern =
+        Pattern.compile("\\d+");
 
-    /**
-     * Pattern to extract individual key-value pairs from the basic
-     * JSON-like dictionaries.
-     */
-    private static final Pattern fileNameOptionPattern =
-        Pattern.compile(",?([kls]):(?:(\\d+)|\\[(\\d+(?:,\\d+)*)\\])");
-
-    /** Pattern to recognize a file with an attempted dictionary. */
-    private static final Pattern fileNameWithDictPattern =
-        Pattern.compile("(.+):(\\{.*?\\})");
+    /** Pattern to match a list of positive integers. */
+    private static final Pattern integerListPattern =
+        Pattern.compile("\\d+(,\\d+)*");
 
     /** Pattern to split by commas. */
     private static final Pattern commaSplitPattern =
         Pattern.compile("\\s*,\\s*");
 
+    // IO members
+    private BufferedReader input;
+    private PrintWriter output;
+    private PrintWriter error;
+
+    /** Constructs a main with the given IO. */
+    public Main(BufferedReader input,
+                PrintWriter output,
+                PrintWriter error) {
+        this.input = input;
+        this.output = output;
+        this.error = error;
+    }
+
+    /** Constructs a main that uses all the standard IO. */
+    public Main() {
+        this(new BufferedReader(new InputStreamReader(System.in)),
+             new PrintWriter(System.out, true), // auto-flush
+             new PrintWriter(System.err, true));
+    }
+
     /**
-     *
+     * Runs the given command line.
      */
-    public static void apiMain(
-            String[] args,
-            BufferedReader input,
-            PrintWriter output,
-            PrintWriter error)
+    public void run(String[] args)
         throws MainException, FileNotFoundException, IOException {
 
         // Environment.  For now this is a somewhat naive environment
@@ -189,11 +217,11 @@ public class Main {
         // existence.  It would be better to map the keys to appropriate
         // objects that can handle the various types of environment
         // values, like in a command line parsing library.
-        String defaultOperation = scoresLabelsKey;
+        String defaultOperation = scoresLabelsOptName;
         String defaultFileName = stdioFileName;
         String defaultDelimiter = ",";
         String positiveLabel = "1";
-        Map<String, Object> env = new TreeMap<String, Object>();
+        Map<String, String> env = new TreeMap<String, String>();
 
         // Search the command line arguments for requested help.  Help
         // overrides all other operations and must be processed before
@@ -206,111 +234,201 @@ public class Main {
             }
         }
 
-        // Parse the command line arguments
+        // Parse the command line options and their arguments
         for (int argIndex = 0; argIndex < args.length; argIndex++) {
             String arg = args[argIndex].toLowerCase();
-            if (arg.equals(helpKey) ||
-                arg.equals(versionKey) ||
-                arg.equals(aboutKey) ||
-                arg.equals(licenseKey)
-                ) {
+
+            // Commands
+            if (arg.equals(helpOptName) ||
+                arg.equals(versionOptName) ||
+                arg.equals(aboutOptName) ||
+                arg.equals(licenseOptName)) {
+                // Just store the command
                 env.put(arg, null);
-            } else if (arg.equals(scoresKey) ||
-                       arg.equals(labelsKey) ||
-                       arg.equals(scoresLabelsKey)
-                       ) {
-                // Check next argument exists
-                if (argIndex + 1 < args.length) {
-                    FileArgument fileArg = parseFileNameWithOptions(args[argIndex + 1]);
-                    env.put(arg, fileArg);
-                    argIndex++;
-                } else {
-                    throw new MainException(String.format("Argument missing for option: %s", arg), ExitStatus.ERROR_USAGE);
+            } 
+
+            // Input files
+            else if (arg.equals(scoresOptName) ||
+                     arg.equals(labelsOptName) ||
+                     arg.equals(scoresLabelsOptName)) {
+                // Check filename argument given
+                if (argIndex + 1 >= args.length) {
+                    throw new MainException(String.format("File name missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
-            } else if (arg.equals(debugKey)) {
-                // Ignore.  Nothing to be done.
-            } else {
-                throw new MainException(String.format("Unrecognized option: %s", arg), ExitStatus.ERROR_USAGE);
-            }
-        }
-
-        // Enforce logical constraints between options
-        if (env.containsKey(scoresKey) && !env.containsKey(labelsKey)) {
-            throw new MainException(String.format("Option '%s' must be accompanied by option '%s'.", scoresKey, labelsKey), ExitStatus.ERROR_USAGE);
-        }
-
-        // Check files exist up front before processing anything.  (All
-        // files happen to be inputs.)
-        for (Object value : env.values()) {
-            if (value instanceof FileArgument) {
-                String fileName = ((FileArgument) value).name;
-                if (fileName.equals(defaultFileName))
-                    continue;
+                // Check file exists and is readable
+                String fileName = args[argIndex + 1];
                 File file = new File(fileName);
-                if (!file.exists() || !file.isFile() || !file.canRead()) {
+                if (!fileName.equals(defaultFileName) &&
+                    (!file.exists() ||
+                     !file.isFile() ||
+                     !file.canRead())) {
                     throw new MainException(String.format("Not a readable file: %s", fileName), ExitStatus.ERROR_FILE);
                 }
+                // Store the file name
+                env.put(arg, fileName);
+                argIndex++;
             }
+
+            // Integers
+            else if (arg.equals(scoresColumnOptName) ||
+                     arg.equals(labelsColumnOptName)) {
+                // Check integer argument given
+                if (argIndex + 1 >= args.length) {
+                    throw new MainException(String.format("Integer missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                }
+                // Check the value is an integer
+                String integerValue = args[argIndex + 1];
+                if (!integerPattern.matcher(integerValue).matches()) {
+                    throw new MainException(String.format("Not an integer: %s", integerValue), ExitStatus.ERROR_USAGE);
+                }
+                // Store the integer value
+                env.put(arg, integerValue);
+                argIndex++;
+            }
+
+            // (Lists of) integers
+            else if (arg.equals(scoresKeyOptName) ||
+                     arg.equals(labelsKeyOptName)) {
+                // Check integer/list argument given
+                if (argIndex + 1 >= args.length) {
+                    throw new MainException(String.format("Integer or list of integers missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                }
+                // Check the value is an integer or a list of integers
+                String integerListValue = args[argIndex + 1];
+                if (!integerListPattern.matcher(integerListValue).matches()) {
+                    throw new MainException(String.format("Not an integer or list of integers: %s", integerListValue), ExitStatus.ERROR_USAGE);
+                }
+                // Store the integer value
+                env.put(arg, integerListValue);
+                argIndex++;
+            }
+
+            // Ignored or non-functional arguments
+            else if (arg.equals(debugOptName)) {
+            }
+
+            // Unrecognized
+            else {
+                throw new MainException(String.format("Unrecognized option: %s", arg), ExitStatus.ERROR_USAGE);
+            }
+        } // Done parsing command line
+
+        // Enforce logical constraints between options
+        if (env.containsKey(scoresOptName) && !env.containsKey(labelsOptName)) {
+            throw new MainException(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
         }
 
         // If no operations, do the default
         if (env.size() == 0) {
-            FileArgument defaultFile = new FileArgument();
-            defaultFile.name = defaultFileName;
-            env.put(defaultOperation, defaultFile);
+            env.put(defaultOperation, defaultFileName);
         }
 
         // Process the operations
 
         // Print about
-        if (env.containsKey(versionKey) || env.containsKey(aboutKey)) {
+        if (env.containsKey(versionOptName) || env.containsKey(aboutOptName)) {
             error.println(aboutMessage);
         }
+
         // Print license
-        if (env.containsKey(licenseKey)) {
+        if (env.containsKey(licenseOptName)) {
             error.println(licenseMessage);
         }
+
         // Process inputs to build the curve.  Providing scores and
         // labels together in one input overrides providing them
         // individually.
         Curve curve = null;
-        if (env.containsKey(scoresLabelsKey)) {
-            // Input is scores and labels together in CSV format
-            FileArgument slFile = (FileArgument) env.get(scoresLabelsKey);
+
+        // Input is scores and labels together in CSV format
+        if (env.containsKey(scoresLabelsOptName)) {
+            // Get the scores and labels columns
+            int scoreCol = 0;
+            int labelCol = 0;
+            if (env.containsKey(scoresColumnOptName)) {
+                String integerValue = env.get(scoresColumnOptName);
+                scoreCol = Integer.parseInt(integerValue);
+            }
+            if (env.containsKey(labelsColumnOptName)) {
+                String integerValue = env.get(labelsColumnOptName);
+                labelCol = Integer.parseInt(integerValue);
+            }
+            // Check column numbers are different
+            if (scoreCol == labelCol && scoreCol > 0) {
+                throw new MainException("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
+            }
+            // Default column values that were not specified
+            if (scoreCol == 0 && labelCol == 0) {
+                scoreCol = 1;
+                labelCol = 2;
+            } else if (scoreCol == 0) {
+                if (labelCol == 1) {
+                    scoreCol = 2;
+                } else {
+                    scoreCol = 1;
+                }
+            } else if (labelCol == 0) {
+                if (scoreCol == 1) {
+                    labelCol = 2;
+                } else {
+                    labelCol = 1;
+                }
+            }
+            // Change column numbers to indices
+            scoreCol--;
+            labelCol--;
+
             // Read the CSV input from files or stdin as requested
+            String slFileName = env.get(scoresLabelsOptName);
             List<String[]> scoresLabelsCsv =
-                readCsv(slFile.name, input, defaultDelimiter);
+                readCsv(slFileName, openFileOrInput(slFileName), defaultDelimiter);
 
             // Build curve
-            int scoreCol = slFile.getScoreColumn();
-            int labelCol = slFile.getLabelColumn();
-            // TODO fix this logic for defaulting the columns
-            if (scoreCol == 0 && labelCol == 0) {
-                labelCol = 1;
-            }
             curve = buildCurveFromScoresLabels(
                 scoresLabelsCsv, scoreCol, labelCol, positiveLabel);
-        } else if (env.containsKey(scoresKey) && env.containsKey(labelsKey)) {
-            // Input is scores and labels separately in CSV format
-            FileArgument sFile = (FileArgument) env.get(scoresKey);
-            FileArgument lFile = (FileArgument) env.get(labelsKey);
+        }
+
+        // Input is scores and labels separately in CSV format
+        else if (env.containsKey(scoresOptName) && env.containsKey(labelsOptName)) {
+            // Get the key columns
+            int[] scoresKeyCols = {};
+            int[] labelsKeyCols = {};
+            if (env.containsKey(scoresKeyOptName)) {
+                String integerListValue = env.get(scoresKeyOptName);
+                scoresKeyCols = parseIntegerList(integerListValue);
+            }
+            if (env.containsKey(labelsKeyOptName)) {
+                String integerListValue = env.get(labelsKeyOptName);
+                labelsKeyCols = parseIntegerList(integerListValue);
+            }
             // Check for key agreement (provided by both or neither)
-            int[] scoresKeyCols = sFile.getKeyColumns();
-            int[] labelsKeyCols = lFile.getKeyColumns();
-            if (scoresKeyCols.length != labelsKeyCols.length) {
+            if ((scoresKeyCols.length > 0 || 
+                 labelsKeyCols.length > 0) &&
+                scoresKeyCols.length != labelsKeyCols.length) {
                 throw new MainException("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
             }
 
-            // Read the CSV input from files or stdin as requested
-            List<String[]> scoresCsv =
-                readCsv(sFile.name, input, defaultDelimiter);
-            List<String[]> labelsCsv =
-                readCsv(lFile.name, input, defaultDelimiter);
+            // Get the scores and labels columns
+            int scoreCol = 0;
+            int labelCol = 0;
+            if (env.containsKey(scoresColumnOptName)) {
+                String integerValue = env.get(scoresColumnOptName);
+                scoreCol = Integer.parseInt(integerValue) - 1;
+            }
+            if (env.containsKey(labelsColumnOptName)) {
+                String integerValue = env.get(labelsColumnOptName);
+                labelCol = Integer.parseInt(integerValue) - 1;
+            }
 
-            // Build curve
-            int scoreCol = sFile.getScoreColumn();
-            int labelCol = lFile.getLabelColumn();
-            // Build with the rows already in order or with a join
+            // Read the CSV input from files or stdin as requested
+            String sFileName = env.get(scoresOptName);
+            String lFileName = env.get(labelsOptName);
+            List<String[]> scoresCsv =
+                readCsv(sFileName, openFileOrInput(sFileName), defaultDelimiter);
+            List<String[]> labelsCsv =
+                readCsv(lFileName, openFileOrInput(lFileName), defaultDelimiter);
+
+            // Build curve with the rows already in order or with a join
             if (scoresKeyCols.length == 0) {
                 curve = buildCurveFromSeparateScoresLabels(
                     scoresCsv, scoreCol,
@@ -322,15 +440,23 @@ public class Main {
                     labelsCsv, labelsKeyCols, labelCol,
                     positiveLabel);
             }
-        } else if (env.containsKey(labelsKey)) {
-            // Input is ranked labels (only) in CSV format
-            FileArgument lFile = (FileArgument) env.get(labelsKey);
+        }
+
+        // Input is ranked labels (only) in CSV format
+        else if (env.containsKey(labelsOptName)) {
+            // Get the label column
+            int labelCol = 0;
+            if (env.containsKey(labelsColumnOptName)) {
+                String integerValue = env.get(labelsColumnOptName);
+                labelCol = Integer.parseInt(integerValue) - 1;
+            }
+
             // Read the CSV input from files or stdin as requested
+            String lFileName = env.get(labelsOptName);
             List<String[]> labelsCsv =
-                readCsv(lFile.name, input, defaultDelimiter);
+                readCsv(lFileName, openFileOrInput(lFileName), defaultDelimiter);
 
             // Build curve
-            int labelCol = lFile.getLabelColumn();
             curve = buildCurveFromRankedLabels(
                 labelsCsv, labelCol, positiveLabel);
         }
@@ -339,17 +465,6 @@ public class Main {
         if (curve != null) {
             printReport(curve, output);
         }
-    }
-
-    /**
-     *
-     */
-    public static void apiMain(String[] args)
-        throws MainException, FileNotFoundException, IOException {
-        apiMain(args,
-                new BufferedReader(new InputStreamReader(System.in)),
-                new PrintWriter(System.out, true),
-                new PrintWriter(System.err, true));
     }
 
     /**
@@ -383,11 +498,11 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
-            apiMain(args);
+            new Main().run(args);
         } catch (Exception e) {
             System.err.println(String.format("roc: Error: %s", e.getMessage()));
             // Print a stack trace if in debug mode
-            if (Arrays.asList(args).contains(debugKey)) {
+            if (Arrays.asList(args).contains(debugOptName)) {
                 e.printStackTrace();
             }
             // Determine and return exit status
@@ -399,97 +514,38 @@ public class Main {
         }
     }
 
-    public static FileArgument parseFileNameWithOptions(String token) throws MainException {
-        FileArgument fileArg = new FileArgument();
-        // Parse the file name and (possible) options
-        Matcher fileWOptsMatcher = okFileNameWithOptionsPattern.matcher(token);
-        Matcher fileWDictMatcher = fileNameWithDictPattern.matcher(token);
-        if (fileWOptsMatcher.matches()) {
-            fileArg.name = fileWOptsMatcher.group(1);
-            String options = fileWOptsMatcher.group(2);
-            Matcher optMatcher = fileNameOptionPattern.matcher(options);
-            while (optMatcher.find()) {
-                // TODO worry about keys specified multiple times?
-                String key = optMatcher.group(1);
-                switch (key.charAt(0)) {
-                case 'k':
-                    String[] colStrings = commaSplitPattern.split(optMatcher.group(3));
-                    int[] cols = new int[colStrings.length];
-                    for (int colIndex = 0; colIndex < cols.length; colIndex++) {
-                        cols[colIndex] = Integer.parseInt(colStrings[colIndex]);
-                    }
-                    fileArg.keyCols = cols;
-                    break;
-                case 'l':
-                    fileArg.labelCol = Integer.parseInt(optMatcher.group(2));
-                    break;
-                case 's':
-                    fileArg.scoreCol = Integer.parseInt(optMatcher.group(2));
-                    break;
-                default:
-                    String msg = String.format("File option key not in {k,l,s}: '%s' in '%s'", key, options);
-                    throw new MainException(msg, ExitStatus.ERROR_USAGE);
-                }
-            }
-        } else if (fileWDictMatcher.matches()) {
-            String msg = String.format("Bad options for file '%s': %s",
-                                       fileWDictMatcher.group(1),
-                                       fileWDictMatcher.group(2));
-            throw new MainException(msg, ExitStatus.ERROR_USAGE);
+    /**
+     * Parse a comma-separated list of positive integers into an array
+     * of integers, subtracting 1 along the way.
+     */
+    private static int[] parseIntegerList(String list) {
+        String[] strs = commaSplitPattern.split(list);
+        int[] ints = new int[strs.length];
+        for (int i = 0; i < strs.length; i++) {
+            ints[i] = Integer.parseInt(strs[i]) - 1;
+        }
+        return ints;
+    }
+
+    public BufferedReader openFileOrInput(String fileName)
+        throws FileNotFoundException {
+
+        // Use the given input if the file name signifies stdio.
+        // Otherwise open the given file.
+        if (fileName.equals(stdioFileName)) {
+            return input;
         } else {
-            // Apparently no options so the whole token is the file name
-            fileArg.name = token;
-        }
-        return fileArg;
-    }
-
-    private static class FileArgument {
-        public String name;
-        public int[] keyCols;
-        // Column numbers are 1-based so zero indicates unset
-        public int scoreCol;
-        public int labelCol;
-
-        public int[] getKeyColumns() {
-            if (keyCols == null) {
-                return new int[0];
-            } else {
-                int[] indices = new int[keyCols.length];
-                for (int i = 0; i < keyCols.length; i++) {
-                    indices[i] = keyCols[i] - 1;
-                }
-                return indices;
-            }
-        }
-
-        public int getScoreColumn() {
-            if (scoreCol >= 1) {
-                return scoreCol - 1;
-            } else {
-                return 0;
-            }
-        }
-
-        public int getLabelColumn() {
-            if (labelCol >= 1) {
-                return labelCol - 1;
-            } else {
-                return 0;
-            }
+            return new BufferedReader(new FileReader(fileName));
         }
     }
 
+    /** Reads the specified input as CSV data. */
     public static List<String[]> readCsv(
             String fileName,
             BufferedReader input,
             String delimiter)
-        throws FileNotFoundException, IOException, MainException {
+        throws IOException, MainException {
 
-        // Use the given input if the file name signifies stdio.
-        // Otherwise open the given file.
-        if (fileName != stdioFileName) {
-            input = new BufferedReader(new FileReader(fileName));
-        }
         // Read the entire CSV
         List<String[]> csv = new NaiveCsvReader(input, delimiter).readAll();
         // Check for non-empty input

@@ -23,22 +23,24 @@ import static org.junit.Assert.*;
 /** Tests {@link Main}. */
 public class MainTest {
 
+    Main main;
     BufferedReader input;
     StringWriter outputString;
     PrintWriter output;
     StringWriter errorString;
     PrintWriter error;
 
-    public void setUpIo(String source) {
-        input = new BufferedReader(new StringReader(source));
+    public void makeMain(String inputText) {
+        input = new BufferedReader(new StringReader(inputText));
         outputString = new StringWriter();
         output = new PrintWriter(outputString, true);
         errorString = new StringWriter();
         error = new PrintWriter(errorString, true);
+        main = new Main(input, output, error);
     }
 
     @Test
-    public void apiMain_help()
+    public void run_help()
         throws Main.MainException, FileNotFoundException, IOException {
 
         // Matcher for help output.  Just checks the headers.
@@ -58,8 +60,8 @@ public class MainTest {
             {"--debug", "--about", "--license", "--scores", "--labels", "help"},
         };
         for (String[] cryHelp : helpCmds) {
-            setUpIo("");
-            Main.apiMain(cryHelp, input, output, error);
+            makeMain("");
+            main.run(cryHelp);
             // Help output goes to error so regular output should be empty
             assertEquals("", outputString.toString());
             assertThat(errorString.toString(), helpMatcher);
@@ -67,7 +69,7 @@ public class MainTest {
     }
 
     @Test
-    public void apiMain_aboutVersion()
+    public void run_aboutVersion()
         throws Main.MainException, FileNotFoundException, IOException {
 
         // Matcher for about/version output
@@ -82,8 +84,8 @@ public class MainTest {
         // Check both about and version
         String[][] cmds = {{"--about"}, {"--version"}};
         for (String[] cmd : cmds) {
-            setUpIo("");
-            Main.apiMain(cmd, input, output, error);
+            makeMain("");
+            main.run(cmd);
             // Informational output goes to error so regular output should be empty
             assertEquals("", outputString.toString());
             assertThat(errorString.toString(), matcher);
@@ -91,7 +93,7 @@ public class MainTest {
     }
 
     @Test
-    public void apiMain_license()
+    public void run_license()
         throws Main.MainException, FileNotFoundException, IOException {
 
         // Matcher for license output
@@ -104,13 +106,14 @@ public class MainTest {
 
         // Check both about and version
         String[] cmd = {"--license"};
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         // Informational output goes to error so regular output should be empty
         assertEquals("", outputString.toString());
         assertThat(errorString.toString(), matcher);
     }
 
+    // Scores and labels together
     public static final String scrsLblsCsv =
         "0.54803549918305260,1\n" +
         "0.03331158540273116,0\n" +
@@ -123,6 +126,7 @@ public class MainTest {
         "0.96599717171711140,0\n" +
         "0.51474884028057590,1\n";
 
+    // Scores only.  Key is row index.
     public static final String scrsCsv =
         "0.54803549918305260\n" +
         "0.03331158540273116\n" +
@@ -135,6 +139,7 @@ public class MainTest {
         "0.96599717171711140\n" +
         "0.51474884028057590\n";
 
+    // Labels only.  Key is row index.
     public static final String lblsCsv =
         "1\n" +
         "0\n" +
@@ -147,7 +152,8 @@ public class MainTest {
         "0\n" +
         "1\n";
 
-    public static final String keysScrsCsvOpts = "{k:[3,1],s:2}";
+    // Compound keys and scores.  Key is columns 3 and 1.  Score is
+    // column 2.
     public static final String keysScrsCsv =
         "z,0.54803549918305260,b\n" +
         "y,0.03331158540273116,b\n" +
@@ -160,7 +166,8 @@ public class MainTest {
         "b,0.96599717171711140,a\n" +
         "h,0.51474884028057590,a\n";
 
-    public static final String keysLblsCsvOpts = "{l:1,k:[2,3]}";
+    // Compound keys and labels.  Key is columns 2 and 3.  Label is
+    // column 1.
     public static final String keysLblsCsv =
         "1,b,z\n" +
         "0,b,y\n" +
@@ -173,7 +180,8 @@ public class MainTest {
         "0,a,b\n" +
         "1,a,h\n";
 
-    public static final String keysScrsLblsCsvOpts = "{l:5,s:2}";
+    // Scores and labels together.  Score is column 2.  Label is column
+    // 5.  Key is columns 1 and 3 but unnecessary.
     public static final String keysScrsLblsCsv =
         "z,0.54803549918305260,b,,1,y,\n" +
         "y,0.03331158540273116,b,,0,n,\n" +
@@ -212,112 +220,128 @@ public class MainTest {
         containsString("..."));
 
     @Test
-    public void apiMain_rankedLabels()
+    public void run_rankedLabels()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String labelsFileName = makeTempFileWithContents(lblsCsv);
         String[] cmd = {"--labels", labelsFileName};
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_scoresLabelsTogether()
+    public void run_scoresLabelsTogether()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String scoreslabelsFileName = makeTempFileWithContents(scrsLblsCsv);
         String[] cmd = {"--scores-labels", scoreslabelsFileName};
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_scoresLabelsTogetherWithColumns()
+    public void run_scoresLabelsTogetherWithColumns()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String scoreslabelsFileName = makeTempFileWithContents(keysScrsLblsCsv);
         String[] cmd = {
             "--scores-labels",
-            scoreslabelsFileName + ":" + keysScrsLblsCsvOpts,
+            scoreslabelsFileName,
+            "--labels-column",
+            "5",
+            "--scores-column",
+            "2",
         };
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_separateScoresLabelsInOrder()
+    public void run_separateScoresLabelsInOrder()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(scrsCsv);
         String labelsFileName = makeTempFileWithContents(lblsCsv);
         String[] cmd = {"--scores", scoresFileName, "--labels", labelsFileName};
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_separateScoresLabelsInOrderWithColumns()
+    public void run_separateScoresLabelsInOrderWithColumns()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(keysScrsCsv);
         String labelsFileName = makeTempFileWithContents(keysLblsCsv);
         String[] cmd = {
             "--scores",
-            scoresFileName + ":{s:2}",
+            scoresFileName,
+            "--scores-column",
+            "2",
             "--labels",
-            labelsFileName + ":{l:1}",
+            labelsFileName,
+            "--labels-column",
+            "1",
         };
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_joinedScoresLabels()
+    public void run_joinedScoresLabels()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(keysScrsCsv);
         String labelsFileName = makeTempFileWithContents(keysLblsCsv);
         String[] cmd = {
             "--scores",
-            scoresFileName + ":" + keysScrsCsvOpts,
+            scoresFileName,
+            "--scores-key",
+            "3,1",
+            "--scores-column",
+            "2",
             "--labels",
-            labelsFileName + ":" + keysLblsCsvOpts,
+            labelsFileName,
+            "--labels-key",
+            "2,3",
+            "--labels-column",
+            "1",
         };
-        setUpIo("");
-        Main.apiMain(cmd, input, output, error);
+        makeMain("");
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_noArgs()
+    public void run_noArgs()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String[] cmd = {};
-        setUpIo(scrsLblsCsv);
-        Main.apiMain(cmd, input, output, error);
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
         assertEquals("", errorString.toString());
         assertThat(outputString.toString(), yamlMatcher);
     }
 
     @Test
-    public void apiMain_emptyInput()
+    public void run_emptyInput()
         throws Main.MainException, FileNotFoundException, IOException {
 
         String[] cmd = {};
-        setUpIo("");
+        makeMain("");
         try {
-            Main.apiMain(cmd, input, output, error);
+            main.run(cmd);
             fail("Exception not thrown for empty input");
         } catch (Main.MainException e) {
             assertThat(e.getMessage(), containsString("Empty input"));
@@ -325,4 +349,8 @@ public class MainTest {
         assertEquals("", outputString.toString());
         assertEquals("", errorString.toString());
     }
+
+    // TODO test for positive label option
+
+    // TODO test for delimiter option
 }
