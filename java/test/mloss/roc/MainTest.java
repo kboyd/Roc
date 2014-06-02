@@ -41,7 +41,7 @@ public class MainTest {
 
     @Test
     public void run_help()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         // Matcher for help output.  Just checks the headers.
         Matcher<String> helpMatcher = allOf(
@@ -70,7 +70,7 @@ public class MainTest {
 
     @Test
     public void run_aboutVersion()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         // Matcher for about/version output
         Matcher<String> matcher = allOf(
@@ -94,7 +94,7 @@ public class MainTest {
 
     @Test
     public void run_license()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         // Matcher for license output
         Matcher<String> matcher = allOf(
@@ -221,7 +221,7 @@ public class MainTest {
 
     @Test
     public void run_rankedLabels()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String labelsFileName = makeTempFileWithContents(lblsCsv);
         String[] cmd = {"--labels", labelsFileName};
@@ -233,7 +233,7 @@ public class MainTest {
 
     @Test
     public void run_scoresLabelsTogether()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String scoreslabelsFileName = makeTempFileWithContents(scrsLblsCsv);
         String[] cmd = {"--scores-labels", scoreslabelsFileName};
@@ -245,7 +245,7 @@ public class MainTest {
 
     @Test
     public void run_scoresLabelsTogetherWithColumns()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String scoreslabelsFileName = makeTempFileWithContents(keysScrsLblsCsv);
         String[] cmd = {
@@ -264,7 +264,7 @@ public class MainTest {
 
     @Test
     public void run_separateScoresLabelsInOrder()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(scrsCsv);
         String labelsFileName = makeTempFileWithContents(lblsCsv);
@@ -277,7 +277,7 @@ public class MainTest {
 
     @Test
     public void run_separateScoresLabelsInOrderWithColumns()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(keysScrsCsv);
         String labelsFileName = makeTempFileWithContents(keysLblsCsv);
@@ -299,7 +299,7 @@ public class MainTest {
 
     @Test
     public void run_joinedScoresLabels()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String scoresFileName = makeTempFileWithContents(keysScrsCsv);
         String labelsFileName = makeTempFileWithContents(keysLblsCsv);
@@ -325,7 +325,7 @@ public class MainTest {
 
     @Test
     public void run_noArgs()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String[] cmd = {};
         makeMain(scrsLblsCsv);
@@ -336,14 +336,14 @@ public class MainTest {
 
     @Test
     public void run_emptyInput()
-        throws Main.MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         String[] cmd = {};
         makeMain("");
         try {
             main.run(cmd);
             fail("Exception not thrown for empty input");
-        } catch (Main.MainException e) {
+        } catch (Main.Exception e) {
             assertThat(e.getMessage(), containsString("Empty input"));
         }
         assertEquals("", outputString.toString());

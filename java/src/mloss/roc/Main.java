@@ -184,6 +184,48 @@ public class Main {
     private static final Pattern commaSplitPattern =
         Pattern.compile("\\s*,\\s*");
 
+    /** Exit statuses for main. */
+    public enum ExitStatus {
+        OK,
+        ERROR_USAGE,
+        ERROR_INPUT,
+        ERROR_FILE,
+        ERROR_INTERNAL,
+    }
+
+    /** Exception for main that has an exit status. */
+    public static class Exception extends java.lang.Exception {
+        private static final long serialVersionUID = 1L;
+
+        public ExitStatus exitStatus;
+
+        public Exception(String message, ExitStatus exitStatus) {
+            super(message);
+            this.exitStatus = exitStatus;
+        }
+    }
+
+    /**
+     * Calls {@link #run(String[])}, handles its exceptions, and exits.
+     */
+    public static void main(String[] args) {
+        try {
+            new Main().run(args);
+        } catch (java.lang.Exception e) {
+            System.err.println(String.format("roc: Error: %s", e.getMessage()));
+            // Print a stack trace if in debug mode
+            if (Arrays.asList(args).contains(debugOptName)) {
+                e.printStackTrace();
+            }
+            // Determine and return exit status
+            int exitStatus = ExitStatus.ERROR_INTERNAL.ordinal();
+            if (e instanceof Main.Exception) {
+                exitStatus = ((Main.Exception) e).exitStatus.ordinal();
+            }
+            System.exit(exitStatus);
+        }
+    }
+
     // IO members
     private BufferedReader input;
     private PrintWriter output;
@@ -198,18 +240,16 @@ public class Main {
         this.error = error;
     }
 
-    /** Constructs a main that uses all the standard IO. */
+    /** Constructs a main that uses standard IO. */
     public Main() {
         this(new BufferedReader(new InputStreamReader(System.in)),
              new PrintWriter(System.out, true), // auto-flush
              new PrintWriter(System.err, true));
     }
 
-    /**
-     * Runs the given command line.
-     */
+    /** Runs the given command line. */
     public void run(String[] args)
-        throws MainException, FileNotFoundException, IOException {
+        throws Main.Exception, FileNotFoundException, IOException {
 
         // Environment.  For now this is a somewhat naive environment
         // that maps keys (command line options) to FileArguments or
@@ -245,7 +285,7 @@ public class Main {
                 arg.equals(licenseOptName)) {
                 // Just store the command
                 env.put(arg, null);
-            } 
+            }
 
             // Input files
             else if (arg.equals(scoresOptName) ||
@@ -253,7 +293,7 @@ public class Main {
                      arg.equals(scoresLabelsOptName)) {
                 // Check filename argument given
                 if (argIndex + 1 >= args.length) {
-                    throw new MainException(String.format("File name missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                    throw new Main.Exception(String.format("File name missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check file exists and is readable
                 String fileName = args[argIndex + 1];
@@ -262,7 +302,7 @@ public class Main {
                     (!file.exists() ||
                      !file.isFile() ||
                      !file.canRead())) {
-                    throw new MainException(String.format("Not a readable file: %s", fileName), ExitStatus.ERROR_FILE);
+                    throw new Main.Exception(String.format("Not a readable file: %s", fileName), ExitStatus.ERROR_FILE);
                 }
                 // Store the file name
                 env.put(arg, fileName);
@@ -274,12 +314,12 @@ public class Main {
                      arg.equals(labelsColumnOptName)) {
                 // Check integer argument given
                 if (argIndex + 1 >= args.length) {
-                    throw new MainException(String.format("Integer missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                    throw new Main.Exception(String.format("Integer missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check the value is an integer
                 String integerValue = args[argIndex + 1];
                 if (!integerPattern.matcher(integerValue).matches()) {
-                    throw new MainException(String.format("Not an integer: %s", integerValue), ExitStatus.ERROR_USAGE);
+                    throw new Main.Exception(String.format("Not an integer: %s", integerValue), ExitStatus.ERROR_USAGE);
                 }
                 // Store the integer value
                 env.put(arg, integerValue);
@@ -291,12 +331,12 @@ public class Main {
                      arg.equals(labelsKeyOptName)) {
                 // Check integer/list argument given
                 if (argIndex + 1 >= args.length) {
-                    throw new MainException(String.format("Integer or list of integers missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                    throw new Main.Exception(String.format("Integer or list of integers missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check the value is an integer or a list of integers
                 String integerListValue = args[argIndex + 1];
                 if (!integerListPattern.matcher(integerListValue).matches()) {
-                    throw new MainException(String.format("Not an integer or list of integers: %s", integerListValue), ExitStatus.ERROR_USAGE);
+                    throw new Main.Exception(String.format("Not an integer or list of integers: %s", integerListValue), ExitStatus.ERROR_USAGE);
                 }
                 // Store the integer value
                 env.put(arg, integerListValue);
@@ -309,13 +349,13 @@ public class Main {
 
             // Unrecognized
             else {
-                throw new MainException(String.format("Unrecognized option: %s", arg), ExitStatus.ERROR_USAGE);
+                throw new Main.Exception(String.format("Unrecognized option: %s", arg), ExitStatus.ERROR_USAGE);
             }
         } // Done parsing command line
 
         // Enforce logical constraints between options
         if (env.containsKey(scoresOptName) && !env.containsKey(labelsOptName)) {
-            throw new MainException(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
+            throw new Main.Exception(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
         }
 
         // If no operations, do the default
@@ -355,7 +395,7 @@ public class Main {
             }
             // Check column numbers are different
             if (scoreCol == labelCol && scoreCol > 0) {
-                throw new MainException("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
+                throw new Main.Exception("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
             }
             // Default column values that were not specified
             if (scoreCol == 0 && labelCol == 0) {
@@ -402,10 +442,10 @@ public class Main {
                 labelsKeyCols = parseIntegerList(integerListValue);
             }
             // Check for key agreement (provided by both or neither)
-            if ((scoresKeyCols.length > 0 || 
+            if ((scoresKeyCols.length > 0 ||
                  labelsKeyCols.length > 0) &&
                 scoresKeyCols.length != labelsKeyCols.length) {
-                throw new MainException("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
+                throw new Main.Exception("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
             }
 
             // Get the scores and labels columns
@@ -468,53 +508,6 @@ public class Main {
     }
 
     /**
-     *
-     */
-    public enum ExitStatus {
-        OK,
-        ERROR_USAGE,
-        ERROR_INPUT,
-        ERROR_FILE,
-        ERROR_INTERNAL,
-    }
-
-    /**
-     *
-     */
-    public static class MainException extends Exception {
-        private static final long serialVersionUID = 1L;
-
-        public ExitStatus exitStatus;
-
-        public MainException(String message, ExitStatus exitStatus) {
-            super(message);
-            this.exitStatus = exitStatus;
-        }
-    }
-
-    /**
-     * Calls {@link #apiMain(String[])}, handles its exceptions, and
-     * exits.
-     */
-    public static void main(String[] args) {
-        try {
-            new Main().run(args);
-        } catch (Exception e) {
-            System.err.println(String.format("roc: Error: %s", e.getMessage()));
-            // Print a stack trace if in debug mode
-            if (Arrays.asList(args).contains(debugOptName)) {
-                e.printStackTrace();
-            }
-            // Determine and return exit status
-            int exitStatus = ExitStatus.ERROR_INTERNAL.ordinal();
-            if (e instanceof MainException) {
-                exitStatus = ((MainException) e).exitStatus.ordinal();
-            }
-            System.exit(exitStatus);
-        }
-    }
-
-    /**
      * Parse a comma-separated list of positive integers into an array
      * of integers, subtracting 1 along the way.
      */
@@ -544,14 +537,14 @@ public class Main {
             String fileName,
             BufferedReader input,
             String delimiter)
-        throws IOException, MainException {
+        throws IOException, Main.Exception {
 
         // Read the entire CSV
         List<String[]> csv = new NaiveCsvReader(input, delimiter).readAll();
         // Check for non-empty input
         if (csv.size() == 0) {
-            throw new MainException(String.format("Empty input: %s", fileName),
-                                    ExitStatus.ERROR_FILE);
+            throw new Main.Exception(String.format("Empty input: %s", fileName),
+                                     ExitStatus.ERROR_FILE);
         }
         return csv;
     }
