@@ -350,7 +350,25 @@ public class MainTest {
         assertEquals("", errorString.toString());
     }
 
-    // TODO test for positive label option
+    @Test
+    public void run_positiveLabel()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels",
+            "-",
+            "--positive",
+            "y",
+            "--labels-column",
+            "6",
+            "--scores-column",
+            "2",
+        };
+        makeMain(keysScrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), yamlMatcher);
+    }
 
     // TODO test for delimiter option
 }

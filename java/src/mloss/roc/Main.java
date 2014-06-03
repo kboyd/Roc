@@ -25,12 +25,9 @@ import mloss.roc.util.CsvProcessing;
 import mloss.roc.util.NaiveCsvReader;
 
 
-// General idea is to read columns (scores or labels) from files and
-// then send them for appropriate processing (joining, sorting, curve
-// generation).
-
 // TODO options: --report <report> --to <file>
-// TODO option for specifying positive label
+// TODO how handle options that only make sense for a file but no files given?
+// TODO integrity checks for column numbers
 
 
 /**
@@ -70,6 +67,7 @@ public class Main {
     public static final String scoresColumnOptName = "--scores-column";
     public static final String labelsKeyOptName = "--labels-key";
     public static final String labelsColumnOptName = "--labels-column";
+    public static final String positiveLabelOptName = "--positive";
 
     public static final String stdioFileName = "-";
 
@@ -226,7 +224,7 @@ public class Main {
         }
     }
 
-    // IO members
+    // Class members
     private BufferedReader input;
     private PrintWriter output;
     private PrintWriter error;
@@ -252,11 +250,11 @@ public class Main {
         throws Main.Exception, FileNotFoundException, IOException {
 
         // Environment.  For now this is a somewhat naive environment
-        // that maps keys (command line options) to FileArguments or
-        // unparsed values (or null).  Booleans are represented by key
-        // existence.  It would be better to map the keys to appropriate
-        // objects that can handle the various types of environment
-        // values, like in a command line parsing library.
+        // that maps command line option names their unparsed (string)
+        // values (or null).  Booleans are represented by key existence.
+        // It would be better to map the keys to appropriate objects
+        // that can handle the various types of environment values, like
+        // in a command line parsing library.
         String defaultOperation = scoresLabelsOptName;
         String defaultFileName = stdioFileName;
         String defaultDelimiter = ",";
@@ -343,6 +341,17 @@ public class Main {
                 argIndex++;
             }
 
+            // Strings and other unchecked/unparsed values
+            else if (arg.equals(positiveLabelOptName)) {
+                // Check that an argument was given
+                if (argIndex + 1 >= args.length) {
+                    throw new Main.Exception(String.format("Argument missing after option: %s", arg), ExitStatus.ERROR_USAGE);
+                }
+                // Store the value
+                env.put(arg, args[argIndex + 1]);
+                argIndex++;
+            }
+
             // Ignored or non-functional arguments
             else if (arg.equals(debugOptName)) {
             }
@@ -425,7 +434,8 @@ public class Main {
 
             // Build curve
             curve = buildCurveFromScoresLabels(
-                scoresLabelsCsv, scoreCol, labelCol, positiveLabel);
+                scoresLabelsCsv, scoreCol, labelCol,
+                mapGetOrDefault(env, positiveLabelOptName, positiveLabel));
         }
 
         // Input is scores and labels separately in CSV format
@@ -473,12 +483,12 @@ public class Main {
                 curve = buildCurveFromSeparateScoresLabels(
                     scoresCsv, scoreCol,
                     labelsCsv, labelCol,
-                    positiveLabel);
+                    mapGetOrDefault(env, positiveLabelOptName, positiveLabel));
             } else {
                 curve = buildCurveFromJoinedScoresLabels(
                     scoresCsv, scoresKeyCols, scoreCol,
                     labelsCsv, labelsKeyCols, labelCol,
-                    positiveLabel);
+                    mapGetOrDefault(env, positiveLabelOptName, positiveLabel));
             }
         }
 
@@ -498,7 +508,8 @@ public class Main {
 
             // Build curve
             curve = buildCurveFromRankedLabels(
-                labelsCsv, labelCol, positiveLabel);
+                labelsCsv, labelCol,
+                mapGetOrDefault(env, positiveLabelOptName, positiveLabel));
         }
 
         // Report on the curve (if one was constructed)
@@ -518,6 +529,19 @@ public class Main {
             ints[i] = Integer.parseInt(strs[i]) - 1;
         }
         return ints;
+    }
+
+    /**
+     * Exists to make up for not having {@link
+     * java.util.Map#getOrDefault(Object, Object)} in 1.7.  (It was
+     * introduced in 1.8.)
+     */
+    private static <K,V> V mapGetOrDefault(Map<K,V> map, K key, V defaultValue) {
+        if (map.containsKey(key)) {
+            return map.get(key);
+        } else {
+            return defaultValue;
+        }
     }
 
     public BufferedReader openFileOrInput(String fileName)
