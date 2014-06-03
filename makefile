@@ -49,6 +49,12 @@
 
 # Java 1.7 runtime location
 javaVersion := 7
+rtJar := $(wildcard $(rtjar) /usr/lib/jvm/jre-1.$(javaVersion).0/lib/rt.jar)
+ifndef rtJar
+$(error Cannot find the Java $(javaVersion) runtime JAR.  Add some alternative locations to the makefile or assign variable 'rtjar' on the command line)
+else
+rtJar := $(firstword $(rtJar))
+endif
 
 # JUnit 4 JAR location.  Allow local files to override system ones.
 junitJar := $(wildcard $(junit) junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar)
@@ -139,9 +145,9 @@ $(javaBuildDir)/.exists:
 
 # General Java compilation
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaSrcDir)/%.java
-	javac -cp $(classpath) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
+	javac -cp $(classpath) -bootclasspath $(rtJar) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
-	javac -cp $(classpath) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
+	javac -cp $(classpath) -bootclasspath $(rtJar) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
