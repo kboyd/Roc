@@ -1,4 +1,4 @@
-# Copyright (c) 2013 Roc Project.  This is free software.  See
+# Copyright (c) 2014 Roc Project.  This is free software.  See
 # LICENSE.txt for details.
 #
 # Builds all the aspects of Roc until a better build situation comes
@@ -176,8 +176,8 @@ $(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
 # Javadoc level private
 $(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
 	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
-# Work around javadoc bug where content is put in div with footer class
-	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html
+# Work around javadoc bug where content is put in div with footer class (but only if present)
+	grep -q 'class="footer".*name="overview_description"' $(javaDocDir)/overview-summary.html && patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html || true
 
 #####
 # Javadoc for release.  Same as 'javadoc' above but level public.
@@ -186,8 +186,8 @@ release-javadoc: $(javaBuildDir)/doc/index.html
 
 $(javaBuildDir)/doc/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
 	javadoc -d $(javaBuildDir)/doc -sourcepath $(javaSrcDir) @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
-# Work around javadoc bug where content is put in div with footer class
-	-patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaBuildDir)/doc/overview-summary.html
+# Work around javadoc bug where content is put in div with footer class (but only if present)
+	grep -q 'class="footer".*name="overview_description"' $(javaBuildDir)/doc/overview-summary.html && patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaBuildDir)/doc/overview-summary.html || true
 
 #####
 # JAR package of library source, bytecode, and docs; a distribution for use, not for development
