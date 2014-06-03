@@ -47,6 +47,9 @@
 ########################################
 # Variables
 
+# Java 1.7 runtime location
+javaVersion := 7
+
 # JUnit 4 JAR location.  Allow local files to override system ones.
 junitJar := $(wildcard $(junit) junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar)
 ifndef junitJar
@@ -54,6 +57,9 @@ $(error Cannot find the JUnit 4 JAR.  Add some alternative locations to the make
 else
 junitJar := $(firstword $(junitJar))
 endif
+
+# Java compiler options (e.g. -source 7 -target 7)
+javacOpts := -source $(javaVersion) -target $(javaVersion) -Xlint
 
 # Version (anything in the README after the identifying phrase that
 # consists of digits and periods with digits on the ends)
@@ -133,15 +139,15 @@ $(javaBuildDir)/.exists:
 
 # General Java compilation
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaSrcDir)/%.java
-	cd $(javaSrcDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
+	javac -cp $(classpath) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
-	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) -source 5 -Xlint $*.java
+	javac -cp $(classpath) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
-$(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class:
+$(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class: $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
