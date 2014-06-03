@@ -47,16 +47,31 @@
 ########################################
 # Variables
 
-# Java 1.7 runtime location
+# Target Java version
 javaVersion := 7
+# Java compiler version
+javacVersion := $(word 2, $(subst ., , $(word 2, $(shell javac -version 2>&1))))
+
+# If the target Java version and the Java compiler version are
+# different, look up the runtime JAR for the target version and set the
+# bootclasspath option to enable proper cross-compilation
+ifneq ($(javaVersion),$(javacVersion))
 rtJar := $(wildcard $(rtjar) /usr/lib/jvm/jre-1.$(javaVersion).0/lib/rt.jar)
 ifndef rtJar
-$(error Cannot find the Java $(javaVersion) runtime JAR.  Add some alternative locations to the makefile or assign variable 'rtjar' on the command line)
+$(error The target Java version is $(javaVersion) but cannot find the Java $(javaVersion) runtime JAR.  Add some alternative locations to the makefile or assign variable 'rtjar' on the command line)
 else
 rtJar := $(firstword $(rtJar))
+# Set the bootclasspath option to the discovered runtime JAR to enable
+# proper cross-compilation
+crossCompileOpts := -bootclasspath $(rtJar)
+endif
+else
+# Set empty bootclasspath option when not cross-compiling
+crossCompileOpts :=
 endif
 
 # JUnit 4 JAR location.  Allow local files to override system ones.
+# TODO only look up JUnit JAR when needed for compiling/running tests
 junitJar := $(wildcard $(junit) junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar)
 ifndef junitJar
 $(error Cannot find the JUnit 4 JAR.  Add some alternative locations to the makefile or assign variable 'junit' on the command line)
@@ -145,9 +160,9 @@ $(javaBuildDir)/.exists:
 
 # General Java compilation
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaSrcDir)/%.java
-	javac -cp $(classpath) -bootclasspath $(rtJar) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
+	javac -cp $(classpath) $(crossCompileOpts) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
-	javac -cp $(classpath) -bootclasspath $(rtJar) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
+	javac -cp $(classpath) $(crossCompileOpts) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
