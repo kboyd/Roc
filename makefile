@@ -12,6 +12,8 @@
 # Useful Targets and their Descriptions
 # -------------------------------------
 #
+# help: Display this list of targets.
+#
 # tests: Compile, run core JUnit tests.
 #
 # usertests: Compile, run JUnit user scenarios (functionality/acceptance
@@ -42,6 +44,9 @@
 #     make build/java/mloss/roc/Curve.class
 #
 ########################################
+
+# List all the phony targets (targets that are really commands, not files)
+.PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig
 
 
 ########################################
@@ -116,13 +121,14 @@ javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 # that consists of digits and periods with digits on the ends)
 version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
 
-# List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig tests usertests alltests javadoc release-javadoc jar clean clean-java clean-javadoc allclean
-
 
 ########################################
 # General targets
 
+
+# Print documentation
+help:
+	@sed -n '/^# Documentation/,/^#####/p' $(firstword $(MAKEFILE_LIST)) | cut -c 3- | head -n -1
 
 # List variables and values
 listconfig:
