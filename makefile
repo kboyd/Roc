@@ -56,28 +56,35 @@
 emptyString :=
 space := $(emptyString) $(emptyString)
 indent := $(emptyString)    $(emptyString)
+define newline
+
+
+endef
 
 # Target Java version
 javaVersion := 7
 # Java compiler version
 javacVersion := $(word 2, $(subst ., , $(word 2, $(shell javac -version 2>&1))))
 
+# Location of the Java runtime JAR for the target Java version.  Needed
+# for cross-compiling.
+rtJarLocations := /usr/lib/jvm/jre-1.$(javaVersion).0/lib/rt.jar
+rtJar := $(wildcard $(rtjar) $(rtJarLocations))
+
 # If the target Java version and the Java compiler version are
-# different, look up the runtime JAR for the target version and set the
-# bootclasspath option to enable proper cross-compilation
+# different, check for the runtime JAR for the target version and set
+# the bootclasspath option to enable proper cross-compilation.  Set
+# empty bootclasspath option when not cross-compiling.
+crossCompileOpts :=
 ifneq ($(javaVersion),$(javacVersion))
-rtJar := $(wildcard $(rtjar) /usr/lib/jvm/jre-1.$(javaVersion).0/lib/rt.jar)
 ifndef rtJar
-$(error The target Java version is $(javaVersion) but cannot find the Java $(javaVersion) runtime JAR.  Add some alternative locations to the makefile or assign variable 'rtjar' on the command line)
+$(error Error: The target Java version is $(javaVersion) but cannot find the Java $(javaVersion) runtime JAR.  (The compiler is version $(javacVersion).)  Add some alternative locations to the makefile, assign variable 'rtjar' on the command line, or set 'javaVersion' to the intended version.$(newline)$(indent)Searched: $(rtJarLocations))
 else
 rtJar := $(firstword $(rtJar))
 # Set the bootclasspath option to the discovered runtime JAR to enable
 # proper cross-compilation
 crossCompileOpts := -bootclasspath $(rtJar)
 endif
-else
-# Set empty bootclasspath option when not cross-compiling
-crossCompileOpts :=
 endif
 
 # Java compiler options (e.g. -source 7 -target 7)
@@ -190,18 +197,18 @@ $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 junitClasses := org.junit.Assert org.junit.Test
 junitClassesFiles := $(addsuffix .class,$(subst .,/,$(junitClasses)))
 $(javaBuildDir)/.junitClassesExist: $(javaBuildDir)/.exists
-	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n      Searched locations: $(junitLocations)"; exit 1; }
+	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(junitLocations)"; exit 1; }
 	@{ for jar in $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.junitJarsContents
-	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n      Searched JARs: $(junitJars)"; exit 1; }
+	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
 
 # Check for Hamcrest JARs and the required Hamcrest classes (which may
 # be contained in the JUnit JARs in some versions)
 hamcrestClasses := org.hamcrest.CoreMatchers org.hamcrest.Matcher
 hamcrestClassesFiles := $(addsuffix .class,$(subst .,/,$(hamcrestClasses)))
 $(javaBuildDir)/.hamcrestClassesExist: $(javaBuildDir)/.exists
-	@[[ -n "$(wildcard $(hamcrestJars) $(junitJars))" ]] && true || { echo -e "make: *** Error: Cannot find any Hamcrest JARs.  Assign variable 'hamcrest' on the command line or add some alternative locations to the makefile.\n      Searched locations: $(hamcrestLocations) $(junitLocations)"; exit 1; }
+	@[[ -n "$(wildcard $(hamcrestJars) $(junitJars))" ]] && true || { echo -e "make: *** Error: Cannot find any Hamcrest JARs.  Assign variable 'hamcrest' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(hamcrestLocations) $(junitLocations)"; exit 1; }
 	@{ for jar in $(hamcrestJars) $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.hamcrestJarsContents
-	@[[ "$$(grep -c $(foreach pattern,$(hamcrestClassesFiles),-e $(pattern)) $(javaBuildDir)/.hamcrestJarsContents)" -eq "$(words $(hamcrestClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The Hamcrest JAR(s) do not contain the required classes.\n      Searched JARs: $(junitJars) $(hamcrestJars)"; exit 1; }
+	@[[ "$$(grep -c $(foreach pattern,$(hamcrestClassesFiles),-e $(pattern)) $(javaBuildDir)/.hamcrestJarsContents)" -eq "$(words $(hamcrestClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The Hamcrest JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars) $(hamcrestJars)"; exit 1; }
 
 #####
 # JUnit
