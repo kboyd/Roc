@@ -46,7 +46,7 @@
 ########################################
 
 # List all the phony targets (targets that are really commands, not files)
-.PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig
+.PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig selftest
 
 
 ########################################
@@ -60,6 +60,7 @@ define newline
 
 
 endef
+makefileName := $(firstword $(MAKEFILE_LIST))
 
 # Target Java version
 javaVersion := 7
@@ -135,7 +136,7 @@ version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version 
 
 # Print documentation
 help:
-	@sed -n '/^# Documentation/,/^#####/p' $(firstword $(MAKEFILE_LIST)) | cut -c 3- | head -n -1
+	@sed -n '/^# Documentation/,/^#####/p' $(makefileName) | cut -c 3- | head -n -1
 
 # List variables and values
 listconfig:
@@ -285,3 +286,20 @@ clean-javadoc:
 allclean: clean-java clean-javadoc
 	@find -name '*~' -delete
 	@rm -Rf $(buildBaseDir)
+
+
+########################################
+# Test the makefile to make sure each target runs (not necessarily
+# correctly)
+
+selfTestCommands := $(shell grep '^.PHONY:' $(makefileName) | sed -e 's/.PHONY://' -e 's/selftest//')
+selftest:
+	@for command in $(javaSrcClasses) $(javaTestClasses) $(selfTestCommands); do \
+	    echo -n "Testing 'make $$command' ... "; \
+	    output=$$( make allclean 2>&1 && make $$command 2>&1 ); \
+	    if [[ $$? -ne 0 ]]; then \
+	        echo -e "\n----------\n$$output\n----------\nFAIL: $$command" ; exit 1; \
+	    else \
+	        echo OK; \
+	    fi \
+	done
