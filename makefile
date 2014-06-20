@@ -193,11 +193,12 @@ $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
 # Test dependencies
 
-# Check for JUnit 4 JARs and the required JUnit classes
+# Check for JUnit 4 JARs (>= 4.6) and the required JUnit classes
 junitClasses := org.junit.Assert org.junit.Test
 junitClassesFiles := $(addsuffix .class,$(subst .,/,$(junitClasses)))
 $(javaBuildDir)/.junitClassesExist: $(javaBuildDir)/.exists
 	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(junitLocations)"; exit 1; }
+	@junitVersion=( $$(java -cp $(junitJars) junit.runner.Version) ); [[ $${junitVersion%*.*} -ge 4 && $${junitVersion#*.*} -ge 6 ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
 	@{ for jar in $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.junitJarsContents
 	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
 
