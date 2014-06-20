@@ -188,7 +188,7 @@ $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class: $(javaBuildDir)/$(javaPk
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
+$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 
 # Test dependencies
