@@ -142,6 +142,8 @@ public class Main {
         "Comma-separated list of 1-based numbers as a single token (no spaces).\n" + indent +
         "Default is to join the files by line number.  Only applies to separate\n" + indent +
         "scores and labels files.\n" +
+        positiveLabelOptName + " LABEL\n" + indent +
+        "Label that identifies positive examples.  Default is 1.\n" +
         "\n" +
 
         "EXAMPLES\n\n" +
@@ -159,7 +161,7 @@ public class Main {
 
         "Processing standard input with default options (which could be omitted):\n" +
         "    <classifier> | java...Main --scores-labels - --scores-column 1\n" +
-        "        --labels-column 2\n" +
+        "        --labels-column 2 --positive 1\n" +
 
         "";  // This is here to make inserting/reordering lines easier
 
