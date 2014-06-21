@@ -28,7 +28,6 @@ import mloss.roc.util.NaiveCsvReader;
 
 // TODO design reporting in terms of different information and different formats
 // TODO how handle options that only make sense for a file but no files given?
-// TODO integrity checks for column numbers
 
 
 /**
@@ -694,6 +693,8 @@ public class Main {
             int labelsColumn,
             String positiveLabel) {
 
+        // BUG this won't work if scoresLabelsCsv is only iterable once
+
         // Project the scores and labels
         Iterable<Double> scoresIterator =
             new StringToDoubleConversionIterator(
@@ -796,11 +797,10 @@ public class Main {
 
         public E next() {
             E[] next = iterator.next();
-            if (next.length > column) {
-                return next[column];
-            } else {
-                return null;
+            if (column >= next.length) {
+                throw new ArrayIndexOutOfBoundsException(String.format("Column index out of bounds: %s", column));
             }
+            return next[column];
         }
 
         public void remove() {
