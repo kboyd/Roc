@@ -107,55 +107,64 @@ public class Main {
 
         "OPTIONS\n\n" +
 
+        "Information\n\n" +
+
         helpOptName + "\n" + indent + "Display this help.\n" +
-        versionOptName + " | " + aboutOptName + "\n" + indent +
+        aboutOptName + "\n" +
+        versionOptName + "\n" + indent +
         "Display the version and other information about this software.\n" +
         licenseOptName + "\n" + indent +
         "Display a summary of the license for this software.\n" +
         debugOptName + "\n" + indent + "Print stack traces, etc.\n" +
+        "\n" +
 
+        "Input\n\n" +
+
+        scoresLabelsOptName + " FILE\n" + indent +
+        "File containing scores and labels, one per line, in CSV format.  No\n" + indent +
+        "default.\n" +
         scoresOptName + " FILE\n" + indent +
         "File containing scores, one per line, in CSV format.  Must be specified\n" + indent +
-        "in combination with --labels.  The scores are matched to the labels by\n" + indent +
+        "in combination with '--labels'.  The scores are matched to the labels by\n" + indent +
         "the specified keys or otherwise by line number.  No default.\n" +
         labelsOptName + " FILE\n" + indent +
         "File containing labels, one per line, in CSV format.  Labels specified\n" + indent +
         "by themselves are treated as already ranked from most positive to most\n" + indent +
         "negative.  No default.\n" +
-        scoresLabelsOptName + " FILE\n" + indent +
-        "File containing scores and labels, in CSV format.  No default.\n" +
-
-        scoresColumnOptName + " COLUMN\n" + indent +
-        "Column containing the scores in the scores file or the scores-labels\n" + indent +
-        "file.  1-based number.  Default is 1 for separate scores and labels\n" + indent +
-        "files or otherwise the smallest number not specified by --labels-column.\n" +
-        labelsColumnOptName + " COLUMN\n" + indent +
-        "Column containing the labels in the labels file or the scores-labels\n" + indent +
-        "file.  1-based number.  Default is 1 for separate scores and labels\n" + indent+
-        "files or otherwise the smallest number not specified by --scores-column.\n" +
-        scoresKeyOptName + " COLUMN_LIST\n" + indent +
+        scoresColumnOptName + " INTEGER\n" + indent +
+        "Column containing the scores in either the scores file or the\n" + indent +
+        "scores-labels file.  1-based number.  Default is 1.\n" +
+        labelsColumnOptName + " INTEGER\n" + indent +
+        "Column containing the labels in either the labels file or the\n" + indent +
+        "scores-labels file.  1-based number.  Default is 1.  Default is 2 if\n" + indent +
+        "'--scores-column' is 1 and input is a scores-labels file.\n" +
+        scoresKeyOptName + " INTEGER(S)\n" + indent +
         "Column or list of columns containing the (compound) keys for the scores\n" + indent +
         "file to use when joining the scores to the labels from the labels file.\n" + indent +
         "Comma-separated list of 1-based numbers as a single token (no spaces).\n" + indent +
         "Default is to join the files by line number.  Only applies to separate\n" + indent +
         "scores and labels files.\n" +
-        labelsKeyOptName + " COLUMN_LIST\n" + indent +
+        labelsKeyOptName + " INTEGER(S)\n" + indent +
         "Column or list of columns containing the (compound) keys for the labels\n" + indent +
         "file to use when joining the labels to the scores from the scores file.\n" + indent +
         "Comma-separated list of 1-based numbers as a single token (no spaces).\n" + indent +
         "Default is to join the files by line number.  Only applies to separate\n" + indent +
         "scores and labels files.\n" +
-        positiveLabelOptName + " LABEL\n" + indent +
+        positiveLabelOptName + " STRING\n" + indent +
         "Label that identifies positive examples.  Default is 1.\n" +
+        "\n" +
+
+        "Output\n\n" +
+
         reportNameOptName + " STRING\n" + indent +
         "Name of the report to produce, one of the following:\n" + indent +
-        "[all, prarea, prpts, rocarea, rocpts]\n" + indent +
-        "Use multiple times to specify multiple reports.  Pairs with --to.\n" + indent +
-        "Default is 'all' if omitted.\n" +
+        "[all, prArea, prPts, rocArea, rocPts]\n" + indent +
+        "Use multiple times to specify multiple reports.  Pairs with '--to'.\n" + indent +
+        "Default is 'all' if no report specified.\n" +
         reportFileOptName + " FILE\n" + indent +
-        "File for the output of a report.  Pairs with --report, in order.  That\n" + indent +
-        "is, each report needs an output destination, so use --to for each\n" + indent +
-        "--report.  Default is '-' (standard output) if omitted.\n" +
+        "File for the output of a report.  Pairs with '--report', in order.  That\n" + indent +
+        "is, each report needs an output destination, so use '--to' for each\n" + indent +
+        "'--report'.  Default is '-' (standard output) if no output specified.\n" +
         "\n" +
 
         "EXAMPLES\n\n" +
@@ -432,26 +441,24 @@ public class Main {
                 String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue);
             }
-            // Check column numbers are different
-            if (scoreCol == labelCol && scoreCol > 0) {
-                throw new Main.Exception("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
-            }
-            // Default column values that were not specified
-            if (scoreCol == 0 && labelCol == 0) {
+            // Default column values that were not specified.  For this
+            // single-file input, the scores and labels columns default
+            // to 1 and 2 if possible.  Otherwise they default to 1.
+            // This approach results in a conflict in the case
+            // '--labels-column 1', but a "smarter" algorithm is too
+            // complicated to explain easily in the documentation and
+            // has doubtful utility anyway.
+            if ((scoreCol == 0 || scoreCol == 1) && labelCol == 0) {
                 scoreCol = 1;
                 labelCol = 2;
             } else if (scoreCol == 0) {
-                if (labelCol == 1) {
-                    scoreCol = 2;
-                } else {
-                    scoreCol = 1;
-                }
+                scoreCol = 1;
             } else if (labelCol == 0) {
-                if (scoreCol == 1) {
-                    labelCol = 2;
-                } else {
-                    labelCol = 1;
-                }
+                labelCol = 1;
+            }
+            // Check column numbers are different
+            if (scoreCol == labelCol) {
+                throw new Main.Exception("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
             }
             // Change column numbers to indices
             scoreCol--;
