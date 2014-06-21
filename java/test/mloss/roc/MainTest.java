@@ -370,5 +370,35 @@ public class MainTest {
         assertThat(outputString.toString(), yamlMatcher);
     }
 
+    public static final Matcher<String> rocPtsMatcher = allOf(
+        // Just pick some basic/easy points to check
+        containsString("0.0 0.0"),
+        containsString("0.2 0.2"),
+        containsString("0.6 0.6"),
+        containsString("0.8 0.8"),
+        containsString("1.0 1.0"));
+
+    @Test
+    public void run_reportRocPoints()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels",
+            "-",
+            "--report",
+            "rocpts",
+            "--to",
+            "-",
+            "--scores-column",
+            "2",
+            "--labels-column",
+            "5",
+        };
+        makeMain(keysScrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocPtsMatcher);
+    }
+
     // TODO test for delimiter option
 }

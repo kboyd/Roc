@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -25,7 +26,7 @@ import mloss.roc.util.CsvProcessing;
 import mloss.roc.util.NaiveCsvReader;
 
 
-// TODO options: --report <report> --to <file>
+// TODO design reporting in terms of different information and different formats
 // TODO how handle options that only make sense for a file but no files given?
 // TODO integrity checks for column numbers
 
@@ -68,6 +69,8 @@ public class Main {
     public static final String labelsKeyOptName = "--labels-key";
     public static final String labelsColumnOptName = "--labels-column";
     public static final String positiveLabelOptName = "--positive";
+    public static final String reportNameOptName = "--report";
+    public static final String reportFileOptName = "--to";
 
     public static final String stdioFileName = "-";
 
@@ -144,6 +147,15 @@ public class Main {
         "scores and labels files.\n" +
         positiveLabelOptName + " LABEL\n" + indent +
         "Label that identifies positive examples.  Default is 1.\n" +
+        reportNameOptName + " STRING\n" + indent +
+        "Name of the report to produce, one of the following:\n" + indent +
+        "[all, prarea, prpts, rocarea, rocpts]\n" + indent +
+        "Use multiple times to specify multiple reports.  Pairs with --to.\n" + indent +
+        "Default is 'all' if omitted.\n" +
+        reportFileOptName + " FILE\n" + indent +
+        "File for the output of a report.  Pairs with --report, in order.  That\n" + indent +
+        "is, each report needs an output destination, so use --to for each\n" + indent +
+        "--report.  Default is '-' (standard output) if omitted.\n" +
         "\n" +
 
         "EXAMPLES\n\n" +
@@ -161,7 +173,7 @@ public class Main {
 
         "Processing standard input with default options (which could be omitted):\n" +
         "    <classifier> | java...Main --scores-labels - --scores-column 1\n" +
-        "        --labels-column 2 --positive 1\n" +
+        "        --labels-column 2 --positive 1 --report all --to - --format yaml\n" +
 
         "";  // This is here to make inserting/reordering lines easier
 
@@ -251,17 +263,20 @@ public class Main {
     public void run(String[] args)
         throws Main.Exception, FileNotFoundException, IOException {
 
-        // Environment.  For now this is a somewhat naive environment
-        // that maps command line option names their unparsed (string)
-        // values (or null).  Booleans are represented by key existence.
-        // It would be better to map the keys to appropriate objects
-        // that can handle the various types of environment values, like
-        // in a command line parsing library.
+        // Default values
         String defaultOperation = scoresLabelsOptName;
         String defaultFileName = stdioFileName;
         String defaultDelimiter = ",";
         String positiveLabel = "1";
-        Map<String, String> env = new TreeMap<String, String>();
+
+        // Environment.  For now this is a somewhat naive environment
+        // that maps command line option names their unparsed (string)
+        // values, or null, or lists of unparsed string values.
+        // Booleans are represented by key existence.  It would be
+        // better to map the keys to appropriate objects that can handle
+        // the various types of environment values, like in a command
+        // line parsing library.
+        Map<String, List<String>> env = new TreeMap<String, List<String>>();
 
         // Search the command line arguments for requested help.  Help
         // overrides all other operations and must be processed before
@@ -305,7 +320,7 @@ public class Main {
                     throw new Main.Exception(String.format("Not a readable file: %s", fileName), ExitStatus.ERROR_FILE);
                 }
                 // Store the file name
-                env.put(arg, fileName);
+                putList(env, arg, fileName);
                 argIndex++;
             }
 
@@ -322,7 +337,7 @@ public class Main {
                     throw new Main.Exception(String.format("Not an integer: %s", integerValue), ExitStatus.ERROR_USAGE);
                 }
                 // Store the integer value
-                env.put(arg, integerValue);
+                putList(env, arg, integerValue);
                 argIndex++;
             }
 
@@ -339,18 +354,20 @@ public class Main {
                     throw new Main.Exception(String.format("Not an integer or list of integers: %s", integerListValue), ExitStatus.ERROR_USAGE);
                 }
                 // Store the integer value
-                env.put(arg, integerListValue);
+                putList(env, arg, integerListValue);
                 argIndex++;
             }
 
             // Strings and other unchecked/unparsed values
-            else if (arg.equals(positiveLabelOptName)) {
+            else if (arg.equals(positiveLabelOptName) ||
+                     arg.equals(reportNameOptName) ||
+                     arg.equals(reportFileOptName)) {
                 // Check that an argument was given
                 if (argIndex + 1 >= args.length) {
                     throw new Main.Exception(String.format("Argument missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Store the value
-                env.put(arg, args[argIndex + 1]);
+                putList(env, arg, args[argIndex + 1]);
                 argIndex++;
             }
 
@@ -369,9 +386,20 @@ public class Main {
             throw new Main.Exception(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
         }
 
+        // Check that lists of report names and report files are of equal length
+        if (env.containsKey(reportNameOptName) != env.containsKey(reportFileOptName) ||
+            (env.containsKey(reportNameOptName) &&
+             env.get(reportNameOptName).size() != env.get(reportFileOptName).size())) {
+            throw new Main.Exception(String.format("Options %s and %s must be given the same number of times.", reportNameOptName, reportFileOptName), ExitStatus.ERROR_USAGE);
+        }
+
+        // TODO check report names
+
+        // TODO sanity check nothing to do (what to do when command line is only options and no commands?)
+
         // If no operations, do the default
         if (env.size() == 0) {
-            env.put(defaultOperation, defaultFileName);
+            putList(env, defaultOperation, defaultFileName);
         }
 
         // Process the operations
@@ -397,11 +425,11 @@ public class Main {
             int scoreCol = 0;
             int labelCol = 0;
             if (env.containsKey(scoresColumnOptName)) {
-                String integerValue = env.get(scoresColumnOptName);
+                String integerValue = getLast(env.get(scoresColumnOptName));
                 scoreCol = Integer.parseInt(integerValue);
             }
             if (env.containsKey(labelsColumnOptName)) {
-                String integerValue = env.get(labelsColumnOptName);
+                String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue);
             }
             // Check column numbers are different
@@ -430,7 +458,7 @@ public class Main {
             labelCol--;
 
             // Read the CSV input from files or stdin as requested
-            String slFileName = env.get(scoresLabelsOptName);
+            String slFileName = getLast(env.get(scoresLabelsOptName));
             List<String[]> scoresLabelsCsv =
                 readCsv(slFileName, openFileOrInput(slFileName), defaultDelimiter);
 
@@ -446,11 +474,11 @@ public class Main {
             int[] scoresKeyCols = {};
             int[] labelsKeyCols = {};
             if (env.containsKey(scoresKeyOptName)) {
-                String integerListValue = env.get(scoresKeyOptName);
+                String integerListValue = getLast(env.get(scoresKeyOptName));
                 scoresKeyCols = parseIntegerList(integerListValue);
             }
             if (env.containsKey(labelsKeyOptName)) {
-                String integerListValue = env.get(labelsKeyOptName);
+                String integerListValue = getLast(env.get(labelsKeyOptName));
                 labelsKeyCols = parseIntegerList(integerListValue);
             }
             // Check for key agreement (provided by both or neither)
@@ -464,17 +492,17 @@ public class Main {
             int scoreCol = 0;
             int labelCol = 0;
             if (env.containsKey(scoresColumnOptName)) {
-                String integerValue = env.get(scoresColumnOptName);
+                String integerValue = getLast(env.get(scoresColumnOptName));
                 scoreCol = Integer.parseInt(integerValue) - 1;
             }
             if (env.containsKey(labelsColumnOptName)) {
-                String integerValue = env.get(labelsColumnOptName);
+                String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue) - 1;
             }
 
             // Read the CSV input from files or stdin as requested
-            String sFileName = env.get(scoresOptName);
-            String lFileName = env.get(labelsOptName);
+            String sFileName = getLast(env.get(scoresOptName));
+            String lFileName = getLast(env.get(labelsOptName));
             List<String[]> scoresCsv =
                 readCsv(sFileName, openFileOrInput(sFileName), defaultDelimiter);
             List<String[]> labelsCsv =
@@ -499,12 +527,12 @@ public class Main {
             // Get the label column
             int labelCol = 0;
             if (env.containsKey(labelsColumnOptName)) {
-                String integerValue = env.get(labelsColumnOptName);
+                String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue) - 1;
             }
 
             // Read the CSV input from files or stdin as requested
-            String lFileName = env.get(labelsOptName);
+            String lFileName = getLast(env.get(labelsOptName));
             List<String[]> labelsCsv =
                 readCsv(lFileName, openFileOrInput(lFileName), defaultDelimiter);
 
@@ -516,7 +544,39 @@ public class Main {
 
         // Report on the curve (if one was constructed)
         if (curve != null) {
-            printReport(curve, output);
+            // Get reports to run
+            List<String> reportNamesList = env.get(reportNameOptName);
+            List<String> reportFilesList = env.get(reportFileOptName);
+
+            // Do default report if none specified
+            if (reportNamesList == null || reportNamesList.size() == 0) {
+                Reports.yaml(curve, output);
+            }
+
+            // Run reports
+            else {
+                Iterator<String> reportNames = reportNamesList.iterator();
+                Iterator<String> reportFiles = reportFilesList.iterator();
+                String reportName;
+                String reportFile;
+                PrintWriter reportOutput = null;
+                while (reportNames.hasNext() && reportFiles.hasNext()) {
+                    reportName = reportNames.next().toLowerCase();
+                    reportFile = reportFiles.next();
+                    try {
+                        // Open output
+                        reportOutput = openFileOrOutput(reportFile);
+                        // Run report
+                        Reports.report(reportName, curve, reportOutput);
+                    } catch (IllegalArgumentException e) {
+                        throw new Main.Exception(e.getMessage(), ExitStatus.ERROR_USAGE);
+                    } finally {
+                        if (reportOutput != null && reportOutput != output) {
+                            reportOutput.close();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -538,11 +598,29 @@ public class Main {
      * java.util.Map#getOrDefault(Object, Object)} in 1.7.  (It was
      * introduced in 1.8.)
      */
-    private static <K,V> V mapGetOrDefault(Map<K,V> map, K key, V defaultValue) {
+    private static <K,V> V mapGetOrDefault(Map<K,List<V>> map, K key, V defaultValue) {
         if (map.containsKey(key)) {
-            return map.get(key);
+            return getLast(map.get(key));
         } else {
             return defaultValue;
+        }
+    }
+
+    private static <K,V> void putList(Map<K,List<V>> map, K key, V value) {
+        if (map.containsKey(key)) {
+            map.get(key).add(value);
+        } else {
+            LinkedList<V> list = new LinkedList<V>();
+            list.add(value);
+            map.put(key, list);
+        }
+    }
+
+    private static <V> V getLast(List<V> list) {
+        if (list == null) {
+            return null;
+        } else {
+            return list.get(list.size() - 1);
         }
     }
 
@@ -550,11 +628,23 @@ public class Main {
         throws FileNotFoundException {
 
         // Use the given input if the file name signifies stdio.
-        // Otherwise open the given file.
+        // Otherwise open the given file for reading.
         if (fileName.equals(stdioFileName)) {
             return input;
         } else {
             return new BufferedReader(new FileReader(fileName));
+        }
+    }
+
+    public PrintWriter openFileOrOutput(String fileName)
+        throws FileNotFoundException {
+
+        // Use the given output if the file name signifies stdio.
+        // Otherwise open the given file for writing.
+        if (fileName.equals(stdioFileName)) {
+            return output;
+        } else {
+            return new PrintWriter(fileName);
         }
     }
 
@@ -745,31 +835,5 @@ public class Main {
         public Iterator<Double> iterator() {
             return this;
         }
-    }
-
-    public static void printReport(Curve curve, PrintWriter output /* TODO make report object to handle what to include and what format */) {
-        output.println("%YAML 1.1");
-        output.println("---");
-        output.println("ROC area: " + curve.rocArea());
-        double[][] rocPoints = curve.rocPoints();
-        output.println(String.format("ROC points count: %d", rocPoints.length));
-        output.println("ROC points:");
-        for (double[] point : rocPoints) {
-            // Just format the floating point numbers to string for now
-            // because I can't find a floating point format that works
-            // like the string formatting and chops off the trailing
-            // zeros.
-            output.println(String.format("  - [%s, %s]", point[0], point[1]));
-        }
-        output.println("ROC points Gnuplot text: |");
-        for (double[] point : rocPoints) {
-            // Just format the floating point numbers to string for now
-            // because I can't find a floating point format that works
-            // like the string formatting and chops off the trailing
-            // zeros.
-            output.println(String.format("%s %s", point[0], point[1]));
-        }
-        output.println("# End ROC points Gnuplot text");
-        output.println("...");
     }
 }

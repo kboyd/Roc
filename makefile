@@ -144,7 +144,8 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
 
 # List Java dependencies here
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
-$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
+$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/Reports.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
+$(javaBuildDir)/$(javaPkgDir)/Reports.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class:
