@@ -45,6 +45,10 @@
 #
 ########################################
 
+# Ensure makefile is using bash to process commands. Bash (and not sh)
+# is required for [[ ... ]] tests.
+SHELL := /bin/bash
+
 # List all the phony targets (targets that are really commands, not files)
 .PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig selftest
 
