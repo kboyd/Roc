@@ -112,10 +112,15 @@ junitJars := $(wildcard $(junit) $(junitLocations))
 hamcrestLocations := hamcrest.jar ~/opt/hamcrest.jar /usr/share/java/hamcrest/core.jar
 hamcrestJars := $(wildcard $(hamcrest) $(hamcrestLocations))
 
-# Java class paths (one regular, one for testing).  Use 'strip' to
-# remove extra whitespace and avoid empty classpath entries
+# Java class paths. Use 'strip' to remove extra whitespace and avoid
+# empty classpath entries.
+# Regular build classpath
 classpath := $(subst $(space),:,$(strip $(CLASSPATH) $(CURDIR)/$(javaBuildDir)))
+# Testing classpath
 testClasspath := $(subst $(space),:,$(strip $(classpath) $(junitJars) $(hamcrestJars)))
+# JUnit version check classpath
+junitClasspath := $(subst $(space),:,$(strip $(junitJars) $(hamcrestJars)))
+
 
 # Java sources
 javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' -not -name 'package-info.java' | sort)
@@ -203,7 +208,7 @@ junitClasses := org.junit.Assert org.junit.Test
 junitClassesFiles := $(addsuffix .class,$(subst .,/,$(junitClasses)))
 $(javaBuildDir)/.junitClassesExist: $(javaBuildDir)/.exists
 	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(junitLocations)"; exit 1; }
-	@junitVersion=( $$(java -cp $(junitJars) junit.runner.Version) ); [[ $${junitVersion%*.*} -ge 4 && $${junitVersion#*.*} -ge 6 ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
+	@junitVersion=( $$(java -cp $(junitClasspath) junit.runner.Version) ); majorVersion=$${junitVersion%%.*}; nonMajorVersion=$${junitVersion#*.}; minorVersion=$${nonMajorVersion%%[.-]*}; [[ $$majorVersion -ge 4 && $$minorVersion -ge 6 ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Parsed major version as $$majorVersion\n$(indent)Parsed minor version as $$minorVersion\n$(indent)Searched JARs: $(junitClasspath)"; exit 1; }
 	@{ for jar in $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.junitJarsContents
 	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
 
