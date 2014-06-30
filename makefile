@@ -45,16 +45,18 @@
 #
 ########################################
 
-# Ensure makefile is using bash to process commands. Bash (and not sh)
-# is required for [[ ... ]] tests.
-SHELL := /bin/bash
-
-# List all the phony targets (targets that are really commands, not files)
+# List all the phony targets (targets that are really commands, not
+# files).  Keep this next to the documentation so they can easily be
+# kept in sync.
 .PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig selftest
 
 
 ########################################
 # Variables
+
+# Use bash as the shell.  Have make look it up rather than specifying a
+# complete path as that should be more flexible/portable.
+SHELL := bash
 
 # Variables for string substitution
 emptyString :=
@@ -112,15 +114,12 @@ junitJars := $(wildcard $(junit) $(junitLocations))
 hamcrestLocations := hamcrest.jar ~/opt/hamcrest.jar /usr/share/java/hamcrest/core.jar
 hamcrestJars := $(wildcard $(hamcrest) $(hamcrestLocations))
 
-# Java class paths. Use 'strip' to remove extra whitespace and avoid
-# empty classpath entries.
-# Regular build classpath
+# Java class paths.  The regular one includes any existing classpath and
+# the build directory.  The testing one adds JUnit and Hamcrest JARs to
+# that.  Use 'strip' to remove extra whitespace and avoid empty
+# classpath entries.
 classpath := $(subst $(space),:,$(strip $(CLASSPATH) $(CURDIR)/$(javaBuildDir)))
-# Testing classpath
 testClasspath := $(subst $(space),:,$(strip $(classpath) $(junitJars) $(hamcrestJars)))
-# JUnit version check classpath
-junitClasspath := $(subst $(space),:,$(strip $(junitJars) $(hamcrestJars)))
-
 
 # Java sources
 javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' -not -name 'package-info.java' | sort)
@@ -208,7 +207,7 @@ junitClasses := org.junit.Assert org.junit.Test
 junitClassesFiles := $(addsuffix .class,$(subst .,/,$(junitClasses)))
 $(javaBuildDir)/.junitClassesExist: $(javaBuildDir)/.exists
 	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(junitLocations)"; exit 1; }
-	@junitVersion=( $$(java -cp $(junitClasspath) junit.runner.Version) ); majorVersion=$${junitVersion%%.*}; nonMajorVersion=$${junitVersion#*.}; minorVersion=$${nonMajorVersion%%[.-]*}; [[ $$majorVersion -ge 4 && $$minorVersion -ge 6 ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Parsed major version as $$majorVersion\n$(indent)Parsed minor version as $$minorVersion\n$(indent)Searched JARs: $(junitClasspath)"; exit 1; }
+	@junitVersion=$$(java -cp $(testClasspath) junit.runner.Version); junitVersionParts=( $$(echo $$junitVersion | tr '.' ' ') ); [[ $${junitVersionParts[0]} -ge 4 && $${junitVersionParts[1]} -ge 6 ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Searched classpath: $(testClasspath)"; exit 1; }
 	@{ for jar in $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.junitJarsContents
 	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
 
