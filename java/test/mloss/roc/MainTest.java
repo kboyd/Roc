@@ -215,8 +215,9 @@ public class MainTest {
         containsString("ROC area: 0.4"),
         containsString("ROC points count: 11"),
         containsString("ROC points:"),
-        containsString("ROC points Gnuplot text: |"),
-        containsString("# End ROC points Gnuplot text"),
+        containsString("PR area: 0."),
+        containsString("PR points count: 11"),
+        containsString("PR points:"),
         containsString("..."));
 
     @Test

@@ -60,15 +60,6 @@ public class Reports {
         for (double[] point : prPoints) {
             output.println(String.format("  - [%s, %s]", point[0], point[1]));
         }
-        output.println("ROC points Gnuplot text: |");
-        for (double[] point : rocPoints) {
-            // Just format the floating point numbers to string for now
-            // because I can't find a floating point format that works
-            // like the string formatting and chops off the trailing
-            // zeros.
-            output.println(String.format("%s %s", point[0], point[1]));
-        }
-        output.println("# End ROC points Gnuplot text");
         output.println("...");
     }
 
