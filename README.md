@@ -114,7 +114,7 @@ requirements.
 * Standard Linux core utilities
 * GNU Make
 * JUnit >= 4.6
-* Hamcrest >= 1.1 (if not already included in your JUnit release)
+* Hamcrest >= 1.3 (if not already included in your JUnit release)
 
 
 Java Library and JAR
