@@ -157,7 +157,7 @@ public class Main {
 
         reportNameOptName + " STRING\n" + indent +
         "Name of the report to produce, one of the following:\n" + indent +
-        "[all, prArea, prPts, rocArea, rocPts]\n" + indent +
+        Reports.namesString + "\n" + indent +
         "Use multiple times to specify multiple reports.  Pairs with '--to'.\n" + indent +
         "Default is 'all' if no report specified.\n" +
         reportFileOptName + " FILE\n" + indent +
@@ -567,7 +567,7 @@ public class Main {
                 String reportFile;
                 PrintWriter reportOutput = null;
                 while (reportNames.hasNext() && reportFiles.hasNext()) {
-                    reportName = reportNames.next().toLowerCase();
+                    reportName = reportNames.next();
                     reportFile = reportFiles.next();
                     try {
                         // Open output
