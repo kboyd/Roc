@@ -110,11 +110,16 @@ javaPkgDir := mloss/roc
 # Locations for the JUnit and Hamcrest JARs required for testing.  Note
 # that some versions of JUnit 4 include some of the core Hamcrest
 # classes.  The /usr/share/java paths exist on Red Hat and Fedora.
-# Presumably they also exist on other distributions.
-junitLocations := junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar
-junitJars := $(wildcard $(junit) $(junitLocations))
-hamcrestLocations := hamcrest.jar ~/opt/hamcrest.jar /usr/share/java/hamcrest/core.jar
-hamcrestJars := $(wildcard $(hamcrest) $(hamcrestLocations))
+# Presumably they also exist on other distributions.  Only use the first
+# location found to help keep the classpath short and manageable: to
+# assist in debugging classpath problems and appropriately setting
+# variables.  (The system JUnit JAR might conflict with the Hamcrest
+# JAR, i.e. be old enough to contain Hamcrest classes that will override
+# those in the Hamcrest JAR.)
+junitLocations := junit.jar ~/opt/junit.jar /usr/share/java/junit4.jar
+junitJars := $(firstword $(wildcard $(junit) $(junitLocations)))
+hamcrestLocations := hamcrest-core.jar ~/opt/hamcrest-core.jar /usr/share/java/hamcrest/core.jar
+hamcrestJars := $(firstword $(wildcard $(hamcrest) $(hamcrestLocations)))
 
 # Java class paths.  The regular one includes any existing classpath and
 # the build directory.  The testing one adds JUnit and Hamcrest JARs to
@@ -208,7 +213,7 @@ $(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/
 $(javaBuildDir)/$(javaPkgDir)/MainTest.class: $(javaBuildDir)/$(javaPkgDir)/Main.class
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
-$(javaBuildDir)/$(javaPkgDir)/util/CsvProcessingTest.class: $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
+$(javaBuildDir)/$(javaPkgDir)/util/CsvProcessingTest.class: $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 
 #####
 # Main
