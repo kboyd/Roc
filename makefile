@@ -12,6 +12,8 @@
 # Useful Targets and their Descriptions
 # -------------------------------------
 #
+# help: Display this list of targets.
+#
 # main: Compile application main
 #
 # tests: Compile, run core JUnit tests.
@@ -45,24 +47,57 @@
 #
 ########################################
 
+# List all the phony targets (targets that are really commands, not
+# files).  Keep this next to the documentation so they can easily be
+# kept in sync.
+.PHONY: help tests usertests alltests javadoc release-javadoc jar clean-java clean-javadoc clean allclean listconfig selftest
+
 
 ########################################
 # Variables
 
-# JUnit 4 JAR location.  Allow local files to override system ones.
-junitJar := $(wildcard $(junit) junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar)
-ifndef junitJar
-$(error Cannot find the JUnit 4 JAR.  Add some alternative locations to the makefile or assign variable 'junit' on the command line)
+# Use bash as the shell.  Have make look it up rather than specifying a
+# complete path as that should be more flexible/portable.
+SHELL := bash
+
+# Variables for string substitution
+emptyString :=
+space := $(emptyString) $(emptyString)
+indent := $(emptyString)    $(emptyString)
+define newline
+
+
+endef
+makefileName := $(firstword $(MAKEFILE_LIST))
+
+# Target Java version
+javaVersion := 7
+# Java compiler version
+javacVersion := $(word 2, $(subst ., , $(word 2, $(shell javac -version 2>&1))))
+
+# Location of the Java runtime JAR for the target Java version.  Needed
+# for cross-compiling.
+rtJarLocations := /usr/lib/jvm/jre-1.$(javaVersion).0/lib/rt.jar
+rtJar := $(wildcard $(rtjar) $(rtJarLocations))
+
+# If the target Java version and the Java compiler version are
+# different, check for the runtime JAR for the target version and set
+# the bootclasspath option to enable proper cross-compilation.  Set
+# empty bootclasspath option when not cross-compiling.
+crossCompileOpts :=
+ifneq ($(javaVersion),$(javacVersion))
+ifndef rtJar
+$(error Error: The target Java version is $(javaVersion) but cannot find the Java $(javaVersion) runtime JAR.  (The compiler is version $(javacVersion).)  Add some alternative locations to the makefile, assign variable 'rtjar' on the command line, or set 'javaVersion' to the intended version.$(newline)$(indent)Searched: $(rtJarLocations))
 else
-junitJar := $(firstword $(junitJar))
+rtJar := $(firstword $(rtJar))
+# Set the bootclasspath option to the discovered runtime JAR to enable
+# proper cross-compilation
+crossCompileOpts := -bootclasspath $(rtJar)
+endif
 endif
 
-# Java compiler options (e.g. -source 5 -target 5)
-javacOpts := -source 5 -target 5 -Xlint
-
-# Version (anything in the README after the identifying phrase that
-# consists of digits and periods with digits on the ends)
-version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
+# Java compiler options (e.g. -source 7 -target 7)
+javacOpts := -source $(javaVersion) -target $(javaVersion) -Xlint
 
 # Project layout
 buildBaseDir := build
@@ -72,8 +107,21 @@ javaDocDir := java/doc
 javaBuildDir := $(buildBaseDir)/java
 javaPkgDir := mloss/roc
 
-# Java class path
-classpath := $(CLASSPATH):$(junitJar):$(CURDIR)/$(javaBuildDir)
+# Locations for the JUnit and Hamcrest JARs required for testing.  Note
+# that some versions of JUnit 4 include some of the core Hamcrest
+# classes.  The /usr/share/java paths exist on Red Hat and Fedora.
+# Presumably they also exist on other distributions.
+junitLocations := junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar
+junitJars := $(wildcard $(junit) $(junitLocations))
+hamcrestLocations := hamcrest.jar ~/opt/hamcrest.jar /usr/share/java/hamcrest/core.jar
+hamcrestJars := $(wildcard $(hamcrest) $(hamcrestLocations))
+
+# Java class paths.  The regular one includes any existing classpath and
+# the build directory.  The testing one adds JUnit and Hamcrest JARs to
+# that.  Use 'strip' to remove extra whitespace and avoid empty
+# classpath entries.
+classpath := $(subst $(space),:,$(strip $(CLASSPATH) $(CURDIR)/$(javaBuildDir)))
+testClasspath := $(subst $(space),:,$(strip $(classpath) $(junitJars) $(hamcrestJars)))
 
 # Java sources
 javaSrcFiles := $(shell find $(javaSrcDir) -name '*.java' -not -name 'package-info.java' | sort)
@@ -87,27 +135,27 @@ javaTestClasses := $(subst $(javaTestDir),$(javaBuildDir),$(javaTestFiles:.java=
 # Limit 'javaTestClasses' to actual unit tests (omit helper classes).
 javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
-# List all the phony targets (targets that are really commands, not files)
-.PHONY: listconfig main tests usertests alltests javadoc release-javadoc jar clean clean-java clean-javadoc allclean
+# Project version (anything in the README after the identifying phrase
+# that consists of digits and periods with digits on the ends)
+version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
 
 
 ########################################
-# Targets
+# General targets
 
 
-# Make-related, meta
-
-# Variables for string substitution
-emptyString :=
-space := $(emptyString) $(emptyString)
-indent := $(emptyString)    $(emptyString)
+# Print documentation
+help:
+	@sed -n '/^# Documentation/,/^#####/p' $(makefileName) | cut -c 3- | head -n -1
 
 # List variables and values
 listconfig:
 	@echo Variables:
 	@echo version: $(version)
-	@echo junitJar: $(junitJar)
 	@echo classpath: $(classpath)
+	@echo testClasspath: $(testClasspath)
+	@echo junitJars: $(junitJars)
+	@echo hamcrestJars: $(hamcrestJars)
 	@echo javaSrcFiles:
 	@echo -e "$(indent)$(subst $(space),\n$(indent),$(javaSrcFiles))"
 	@echo javaSrcClasses:
@@ -136,13 +184,15 @@ $(javaBuildDir)/.exists:
 ########################################
 # Java
 
-# General Java compilation
+# Java sources compilation
 $(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaSrcDir)/%.java
-	cd $(javaSrcDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) $(javacOpts) $*.java
-$(javaBuildDir)/%.class: $(javaBuildDir)/.exists $(javaTestDir)/%.java
-	cd $(javaTestDir) && javac -cp $(classpath) -d $(CURDIR)/$(javaBuildDir) $(javacOpts) $*.java
+	javac -cp $(classpath) $(crossCompileOpts) -d $(javaBuildDir) $(javacOpts) $(javaSrcDir)/$*.java
+# Java tests compilation.  Depends on JUnit and Hamcrest.
+$(javaBuildDir)/%.class: $(javaBuildDir)/.junitClassesExist $(javaBuildDir)/.hamcrestClassesExist $(javaTestDir)/%.java
+	javac -cp $(testClasspath) $(crossCompileOpts) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
 
 # List Java dependencies here
+# Application classes
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
 $(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/Reports.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
 $(javaBuildDir)/$(javaPkgDir)/Reports.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
@@ -151,11 +201,12 @@ $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
 $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class: $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class
 $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class:
+# Test classes
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
 $(javaBuildDir)/$(javaPkgDir)/MainTest.class: $(javaBuildDir)/$(javaPkgDir)/Main.class
-$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
+$(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
 $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessingTest.class: $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
 
@@ -164,20 +215,40 @@ $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessingTest.class: $(javaBuildDir)/$(ja
 
 main: $(javaBuildDir)/$(javaPkgDir)/Main.class
 
+# Test dependencies
+
+# Check for JUnit 4 JARs (>= 4.6) and the required JUnit classes
+junitClasses := org.junit.Assert org.junit.Test
+junitClassesFiles := $(addsuffix .class,$(subst .,/,$(junitClasses)))
+$(javaBuildDir)/.junitClassesExist: $(javaBuildDir)/.exists
+	@[[ -n "$(junitJars)" ]] && true || { echo -e "make: *** Error: Cannot find the JUnit 4 JAR.  Assign variable 'junit' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(junitLocations)"; exit 1; }
+	@junitVersion=$$(java -cp $(testClasspath) junit.runner.Version); junitVersionParts=( $$(echo $$junitVersion | tr '.-' ' ') ); [[ $${junitVersionParts[0]} -gt 4 || ( $${junitVersionParts[0]} -eq 4 && $${junitVersionParts[1]} -ge 6 ) ]] && true || { echo -e "make: *** Error: The JUnit version is too old.  Expected >= 4.6 but found $$junitVersion.\n$(indent)Searched classpath: $(testClasspath)"; exit 1; }
+	@{ for jar in $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.junitJarsContents
+	@[[ "$$(grep -c $(foreach pattern,$(junitClassesFiles),-e $(pattern)) $(javaBuildDir)/.junitJarsContents)" -eq "$(words $(junitClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The JUnit 4 JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars)"; exit 1; }
+
+# Check for Hamcrest JARs and the required Hamcrest classes (which may
+# be contained in the JUnit JARs in some versions)
+hamcrestClasses := org.hamcrest.CoreMatchers org.hamcrest.Matcher
+hamcrestClassesFiles := $(addsuffix .class,$(subst .,/,$(hamcrestClasses)))
+$(javaBuildDir)/.hamcrestClassesExist: $(javaBuildDir)/.exists
+	@[[ -n "$(wildcard $(hamcrestJars) $(junitJars))" ]] && true || { echo -e "make: *** Error: Cannot find any Hamcrest JARs.  Assign variable 'hamcrest' on the command line or add some alternative locations to the makefile.\n$(indent)Searched locations: $(hamcrestLocations) $(junitLocations)"; exit 1; }
+	@{ for jar in $(hamcrestJars) $(junitJars); do jar tf $$jar; done; } | sort | uniq > $(javaBuildDir)/.hamcrestJarsContents
+	@[[ "$$(grep -c $(foreach pattern,$(hamcrestClassesFiles),-e $(pattern)) $(javaBuildDir)/.hamcrestJarsContents)" -eq "$(words $(hamcrestClassesFiles))" ]] && touch $@ || { echo -e "make: *** Error: The Hamcrest JAR(s) do not contain the required classes.\n$(indent)Searched JARs: $(junitJars) $(hamcrestJars)"; exit 1; }
+
 #####
 # JUnit
 
 # Run unit tests
 tests: $(javaUnitTestClasses)
-	java -cp $(classpath) org.junit.runner.JUnitCore $(subst /,.,$(subst $(javaBuildDir)/,,$(javaUnitTestClasses:.class=)))
+	java -cp $(testClasspath) org.junit.runner.JUnitCore $(subst /,.,$(subst $(javaBuildDir)/,,$(javaUnitTestClasses:.class=)))
 
 # Run acceptance tests
 usertests: $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class
-	java -cp $(classpath) org.junit.runner.JUnitCore mloss.roc.UserScenarios
+	java -cp $(testClasspath) org.junit.runner.JUnitCore mloss.roc.UserScenarios
 
 # Run all tests
 alltests: $(javaUnitTestClasses) $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class
-	java -cp $(classpath) org.junit.runner.JUnitCore $(subst /,.,$(subst $(javaBuildDir)/,,$(^:.class=)))
+	java -cp $(testClasspath) org.junit.runner.JUnitCore $(subst /,.,$(subst $(javaBuildDir)/,,$(^:.class=)))
 
 #####
 # Javadoc for internal reading
@@ -193,6 +264,7 @@ $(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
 $(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
 	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
 # Work around javadoc bug where content is put in div with footer class
+# (but only if present)
 	grep -q 'class="footer".*name="overview_description"' $(javaDocDir)/overview-summary.html && patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html || true
 
 #####
@@ -203,6 +275,7 @@ release-javadoc: $(javaBuildDir)/doc/index.html
 $(javaBuildDir)/doc/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
 	javadoc -d $(javaBuildDir)/doc -sourcepath $(javaSrcDir) @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
 # Work around javadoc bug where content is put in div with footer class
+# (but only do if bug present)
 	grep -q 'class="footer".*name="overview_description"' $(javaBuildDir)/doc/overview-summary.html && patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaBuildDir)/doc/overview-summary.html || true
 
 #####
@@ -237,3 +310,20 @@ clean-javadoc:
 allclean: clean-java clean-javadoc
 	@find -name '*~' -delete
 	@rm -Rf $(buildBaseDir)
+
+
+########################################
+# Test the makefile to make sure each target runs (not necessarily
+# correctly)
+
+selfTestCommands := $(shell grep '^.PHONY:' $(makefileName) | sed -e 's/.PHONY://' -e 's/selftest//')
+selftest:
+	@for command in $(javaSrcClasses) $(javaTestClasses) $(selfTestCommands); do \
+	    echo -n "Testing 'make $$command' ... "; \
+	    output=$$( make allclean 2>&1 && make $$command 2>&1 ); \
+	    if [[ $$? -ne 0 ]]; then \
+	        echo -e "\n----------\n$$output\n----------\nFAIL: $$command" ; exit 1; \
+	    else \
+	        echo OK; \
+	    fi \
+	done

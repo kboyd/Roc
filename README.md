@@ -20,8 +20,7 @@ approaches using languages allowing for flexibility in each
 investigator's environment.
 
 Roc, the name of the software, is pronounced "rock" like its namesake,
-roc, an enormous, legendary [bird of
-prey](http://en.wikipedia.org/wiki/Roc_(mythology\)).
+roc, an enormous, legendary [bird of prey](http://en.wikipedia.org/wiki/Roc_(mythology)).
 
 
 Quick Links
@@ -93,6 +92,10 @@ P2=Python 2.x.
     Ranking Statistics
     . Mann-Whitney-U              J:T  P2:P       J:?  P2:?
 
+This software is designed and tested to support 1 million total
+examples.  It probably works on many more, but the performance and
+accuracy have not been tested at such larger scales.
+
 
 Requirements
 ------------
@@ -100,6 +103,18 @@ Requirements
 * Java 5 (or later) if using the Java library
 * Python 2.5 (or later, but not 3.x) if using the command line interface
   or Python library
+
+
+Development Requirements
+------------------------
+
+If you want to develop this software, there are some additional
+requirements.
+
+* Standard Linux core utilities
+* GNU Make
+* JUnit >= 4.6
+* Hamcrest >= 1.3 (if not already included in your JUnit release)
 
 
 Java Library and JAR
@@ -129,5 +144,5 @@ issue](https://github.com/kboyd/Roc/issues/new) to report a bug or ask a
 question.
 
 
-Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2014 Roc Project.  This is free software.  See LICENSE.txt
 for details.
