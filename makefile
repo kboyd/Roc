@@ -296,7 +296,7 @@ $(javaBuildDir)/%.java: $(javaSrcDir)/%.java
 
 # Build a JAR for the current version
 $(javaBuildDir)/roc-$(version).jar: README.md LICENSE.txt $(javaReleaseSrcFiles) $(javaSrcClasses) release-javadoc
-	jar cf $@ README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
+	jar cfe $@ mloss.roc.Main README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
 
 
 ########################################
