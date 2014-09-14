@@ -90,7 +90,9 @@ public class Main {
 
         "SYNOPSIS\n\n" +
 
-        "java mloss.roc.Main [OPTION [ARGUMENT]]...\n\n" +
+        "java [JAVAOPTS] mloss.roc.Main [OPTION [ARGUMENT]]...\n\n" +
+
+        "java [JAVAOPTS] -jar roc.jar [OPTION [ARGUMENT]]...\n\n" +
 
         "DESCRIPTION\n\n" +
 
@@ -101,7 +103,7 @@ public class Main {
         "  3. a single file with a column of labels that are already in ranked order.\n" +
         "The default behavior when no options are given is to treat standard input as\n" +
         "mode 1, equivalent to '--scores-labels -'.  Using '-' as a file name indicates\n" +
-        "standard input.\n" +
+        "standard input or standard output according to context.\n" +
         "\n" +
 
         "OPTIONS\n\n" +
@@ -120,8 +122,8 @@ public class Main {
         "Input\n\n" +
 
         scoresLabelsOptName + " FILE\n" + indent +
-        "File containing scores and labels, one per line, in CSV format.  No\n" + indent +
-        "default.\n" +
+        "File containing scores and labels, one per line, in CSV format.  Default\n" + indent +
+        "is '-' (standard input).\n" +
         scoresOptName + " FILE\n" + indent +
         "File containing scores, one per line, in CSV format.  Must be specified\n" + indent +
         "in combination with '--labels'.  The scores are matched to the labels by\n" + indent +
@@ -169,19 +171,20 @@ public class Main {
         "EXAMPLES\n\n" +
 
         "Join results with ground truth:\n" +
-        "    ...Main --scores results.csv --scores-key 1 --scores-column 5\n" +
+        "    java... --scores results.csv --scores-key 1 --scores-column 5\n" +
         "            --labels truth.csv   --labels-key 3 --labels-column 4\n" +
 
         "Join using compound key (whose fields are reversed in the truth):\n" +
-        "    ...Main --scores results.csv --scores-key 1,2 --scores-column 3\n" +
+        "    java... --scores results.csv --scores-key 1,2 --scores-column 3\n" +
         "            --labels truth.csv   --labels-key 2,1 --labels-column 3\n" +
 
         "Specify score and label columns:\n" +
-        "    ...Main --scores-labels scrsLbls.csv --labels-column 3 --scores-column 4\n" +
+        "    java... --scores-labels scrsLbls.csv --labels-column 3 --scores-column 4\n" +
 
-        "Processing standard input with default options (which could be omitted):\n" +
-        "    <classifier> | java...Main --scores-labels - --scores-column 1\n" +
-        "        --labels-column 2 --positive 1 --report all --to - --format yaml\n" +
+        "Processing standard input with default options.  The following are equivalent:\n" +
+        "    <classifier> | java...\n" +
+        "    <classifier> | java... --scores-labels - --scores-column 1 --labels-column 2\n" +
+        "        --positive 1 --report all --to -\n" +
 
         "";  // This is here to make inserting/reordering lines easier
 
