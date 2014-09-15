@@ -295,7 +295,7 @@ public class Main {
         // specially.
         for (String arg : args) {
             if (helpPattern.matcher(arg.toLowerCase()).matches()) {
-                error.println(help);
+                output.println(help);
                 return;
             }
         }

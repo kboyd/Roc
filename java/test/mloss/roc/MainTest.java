@@ -62,9 +62,9 @@ public class MainTest {
         for (String[] cryHelp : helpCmds) {
             makeMain("");
             main.run(cryHelp);
-            // Help output goes to error so regular output should be empty
-            assertEquals("", outputString.toString());
-            assertThat(errorString.toString(), helpMatcher);
+            // Help output goes to regular output
+            assertThat(outputString.toString(), helpMatcher);
+            assertEquals("", errorString.toString());
         }
     }
 
