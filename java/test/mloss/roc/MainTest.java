@@ -69,10 +69,10 @@ public class MainTest {
     }
 
     @Test
-    public void run_aboutVersion()
+    public void run_about()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        // Matcher for about/version output
+        // Matcher for about output
         Matcher<String> matcher = allOf(
             containsString("Roc"),
             containsString("ROC and PR curves"),
@@ -81,15 +81,24 @@ public class MainTest {
             containsString("license"),
             containsString("github.com/kboyd/Roc"));
 
-        // Check both about and version
-        String[][] cmds = {{"--about"}, {"--version"}};
-        for (String[] cmd : cmds) {
-            makeMain("");
-            main.run(cmd);
-            // Informational output goes to error so regular output should be empty
-            assertEquals("", outputString.toString());
-            assertThat(errorString.toString(), matcher);
-        }
+        String[] cmd = {"--about"};
+        makeMain("");
+        main.run(cmd);
+        // Informational output goes to regular output
+        assertThat(outputString.toString(), matcher);
+        assertEquals("", errorString.toString());
+    }
+
+    @Test
+    public void run_version()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {"--version"};
+        makeMain("");
+        main.run(cmd);
+        // Informational output goes to regular output
+        assertEquals("Roc 0.1.0\n", outputString.toString());
+        assertEquals("", errorString.toString());
     }
 
     @Test

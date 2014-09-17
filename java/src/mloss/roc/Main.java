@@ -415,9 +415,16 @@ public class Main {
 
         // Process the operations
 
-        // Print about
-        if (env.containsKey(versionOptName) || env.containsKey(aboutOptName)) {
-            error.println(aboutMessage);
+        // Print about and quit
+        if (env.containsKey(aboutOptName)) {
+            output.println(aboutMessage);
+            return;
+        }
+
+        // Print version and quit
+        if (env.containsKey(versionOptName)) {
+            output.println("Roc 0.1.0");
+            return;
         }
 
         // Print license
