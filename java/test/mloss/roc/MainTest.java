@@ -103,27 +103,6 @@ public class MainTest {
         assertEquals("", errorString.toString());
     }
 
-    @Test
-    public void run_license()
-        throws Main.Exception, FileNotFoundException, IOException {
-
-        // Matcher for license output
-        Matcher<String> matcher = allOf(
-            containsString("Roc"),
-            containsString("free"),
-            containsString("open source"),
-            containsString("BSD"),
-            containsString("license"));
-
-        // Check both about and version
-        String[] cmd = {"--license"};
-        makeMain("");
-        main.run(cmd);
-        // Informational output goes to error so regular output should be empty
-        assertEquals("", outputString.toString());
-        assertThat(errorString.toString(), matcher);
-    }
-
     // Scores and labels together
     public static final String scrsLblsCsv =
         "0.54803549918305260,1\n" +

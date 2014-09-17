@@ -53,15 +53,9 @@ public class Main {
         MetaInfo.NAME, MetaInfo.LICENSE_NAME
     );
 
-    // TODO replace license message with dumping license file from JAR
-    // (or similar "resource" access)
-    public static final String licenseMessage =
-        "Roc is free, open source software licensed under the BSD 2-clause (FreeBSD) license.";
-
     public static final String helpOptName = "--help";
     public static final String aboutOptName = "--about";
     public static final String versionOptName = "--version";
-    public static final String licenseOptName = "--license";
     public static final String debugOptName = "--debug";
     public static final String scoresOptName = "--scores";
     public static final String labelsOptName = "--labels";
@@ -118,8 +112,6 @@ public class Main {
         "Display information about this software and its license.\n" +
         versionOptName + "\n" + indent +
         "Display program version.\n" +
-        licenseOptName + "\n" + indent +
-        "Display a summary of the license for this software.\n" +
         debugOptName + "\n" + indent + "Print stack traces, etc.\n" +
         "\n" +
 
@@ -311,8 +303,7 @@ public class Main {
             // Commands
             if (arg.equals(helpOptName) ||
                 arg.equals(versionOptName) ||
-                arg.equals(aboutOptName) ||
-                arg.equals(licenseOptName)) {
+                arg.equals(aboutOptName)) {
                 // Just store the command
                 env.put(arg, null);
             }
@@ -429,11 +420,6 @@ public class Main {
         if (env.containsKey(versionOptName)) {
             output.println(MetaInfo.NAME + " " + MetaInfo.VERSION_STRING);
             return;
-        }
-
-        // Print license
-        if (env.containsKey(licenseOptName)) {
-            error.println(licenseMessage);
         }
 
         // Process inputs to build the curve.  Providing scores and
