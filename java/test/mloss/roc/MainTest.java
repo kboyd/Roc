@@ -73,13 +73,15 @@ public class MainTest {
         throws Main.Exception, FileNotFoundException, IOException {
 
         // Matcher for about output
+        @SuppressWarnings("unchecked") // Type inference shortcoming?
         Matcher<String> matcher = allOf(
-            containsString("Roc"),
-            containsString("ROC and PR curves"),
-            containsString("Copyright"),
-            containsString("free software"),
-            containsString("license"),
-            containsString("github.com/kboyd/Roc"));
+            containsString(MetaInfo.NAME),
+            containsString(MetaInfo.VERSION_STRING),
+            containsString(MetaInfo.TAGLINE),
+            containsString(MetaInfo.URL),
+            containsString(MetaInfo.COPYRIGHT_NOTICE),
+            containsString("free, open source software"),
+            containsString(MetaInfo.LICENSE_NAME));
 
         String[] cmd = {"--about"};
         makeMain("");
@@ -97,7 +99,7 @@ public class MainTest {
         makeMain("");
         main.run(cmd);
         // Informational output goes to regular output
-        assertEquals("Roc 0.1.0\n", outputString.toString());
+        assertEquals(MetaInfo.NAME + " " + MetaInfo.VERSION_STRING + "\n", outputString.toString());
         assertEquals("", errorString.toString());
     }
 

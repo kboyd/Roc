@@ -142,7 +142,7 @@ javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # Project version (anything in the README after the identifying phrase
 # that consists of digits and periods with digits on the ends)
-version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
+version := $(shell grep VERSION_STRING $(javaSrcDir)/$(javaPkgDir)/MetaInfo.java | sed -e 's/.*"\([0-9][0-9.]*[0-9]\)".*/\1/')
 
 
 ########################################
@@ -199,7 +199,7 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.junitClassesExist $(javaBuildDir)/.ham
 # List Java dependencies here
 # Application classes
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
-$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/Reports.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class
+$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/Reports.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class $(javaBuildDir)/$(javaPkgDir)/MetaInfo.class
 $(javaBuildDir)/$(javaPkgDir)/Reports.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
 $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:

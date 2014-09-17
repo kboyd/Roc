@@ -45,10 +45,13 @@ import mloss.roc.util.NaiveCsvReader;
  */
 public class Main {
 
-    public static final String aboutMessage =
-        "Roc 0.1.0.  ROC and PR curves.\n" +
-        "Copyright (c) 2014 Roc Project.  This is free software; see the license.\n" +
-        "https://github.com/kboyd/Roc";
+    public static final String aboutMessage = String.format(
+        "%s %s.  %s.\n%s\n%s.\n%s is free, open source software licensed under the %s license.",
+        MetaInfo.NAME, MetaInfo.VERSION_STRING, MetaInfo.TAGLINE,
+        MetaInfo.URL,
+        MetaInfo.COPYRIGHT_NOTICE,
+        MetaInfo.NAME, MetaInfo.LICENSE_NAME
+    );
 
     // TODO replace license message with dumping license file from JAR
     // (or similar "resource" access)
@@ -56,8 +59,8 @@ public class Main {
         "Roc is free, open source software licensed under the BSD 2-clause (FreeBSD) license.";
 
     public static final String helpOptName = "--help";
-    public static final String versionOptName = "--version";
     public static final String aboutOptName = "--about";
+    public static final String versionOptName = "--version";
     public static final String licenseOptName = "--license";
     public static final String debugOptName = "--debug";
     public static final String scoresOptName = "--scores";
@@ -86,7 +89,7 @@ public class Main {
     // Manually wrap the help text to 80 characters (column 89 for
     // non-indented, column 81 for indented)
     public static final String help =
-        "                      Roc.  Everything ROC and PR curves.\n\n" +
+        "                      " + MetaInfo.NAME + ".  " + MetaInfo.TAGLINE + ".\n\n" +
 
         "SYNOPSIS\n\n" +
 
@@ -111,9 +114,10 @@ public class Main {
         "Information\n\n" +
 
         helpOptName + "\n" + indent + "Display this help.\n" +
-        aboutOptName + "\n" +
+        aboutOptName + "\n" + indent +
+        "Display information about this software and its license.\n" +
         versionOptName + "\n" + indent +
-        "Display the version and other information about this software.\n" +
+        "Display program version.\n" +
         licenseOptName + "\n" + indent +
         "Display a summary of the license for this software.\n" +
         debugOptName + "\n" + indent + "Print stack traces, etc.\n" +
@@ -423,7 +427,7 @@ public class Main {
 
         // Print version and quit
         if (env.containsKey(versionOptName)) {
-            output.println("Roc 0.1.0");
+            output.println(MetaInfo.NAME + " " + MetaInfo.VERSION_STRING);
             return;
         }
 
