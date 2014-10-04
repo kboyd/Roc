@@ -418,10 +418,15 @@ public class Main {
             }
         } // Done parsing command line
 
-        // Enforce logical constraints between options
+        // Check and fill-in the command line arguments
+
+        // Enforce logical constraints between options.  (Scores option
+        // must have a labels option.)
         if (env.containsKey(scoresOptName) && !env.containsKey(labelsOptName)) {
             throw new Main.Exception(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
         }
+        // Scores-labels option overrides individual scores and/or
+        // labels options.  No need to check for mutual exclusivity.
 
         // Flatten groups of report names
         for (int groupIndex = 0; groupIndex < reportGroups.size(); groupIndex++) {
@@ -441,10 +446,12 @@ public class Main {
 
         // TODO check report names
 
-        // TODO sanity check nothing to do (what to do when command line is only options and no commands?)
-
         // If no operations, do the default
-        if (env.size() == 0) {
+        if (!(env.containsKey(scoresLabelsOptName) ||
+              env.containsKey(scoresOptName) ||
+              env.containsKey(labelsOptName) ||
+              env.containsKey(aboutOptName) ||
+              env.containsKey(versionOptName))) {
             putList(env, defaultOperation, defaultFileName);
         }
 

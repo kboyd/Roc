@@ -15,7 +15,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -435,7 +434,6 @@ public class MainTest {
         assertThat(outputString.toString(), rocAreaMatcher);
     }
 
-    @Ignore
     @Test
     public void run_reportDefaultInput()
         throws Main.Exception, FileNotFoundException, IOException {
