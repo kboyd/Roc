@@ -8,12 +8,14 @@ package mloss.roc;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.hamcrest.Matcher;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -184,18 +186,37 @@ public class MainTest {
         "b,0.96599717171711140,a,,0,n,\n" +
         "h,0.51474884028057590,a,,1,y,\n";
 
-    public static String makeTempFileWithContents(String content)
-        throws FileNotFoundException, IOException {
+    public static File makeTempFile()
+        throws IOException {
 
-        // Create temporary file
         File tmp = File.createTempFile("rocJunitTmp", "");
         tmp.deleteOnExit();
-        // Put the contents in the temp file
+        return tmp;
+    }
+
+    public static File makeTempFileWithContents(String content)
+        throws IOException {
+
+        // Create a temporary file and put the contents in it
+        File tmp = makeTempFile();
         PrintWriter output = new PrintWriter(tmp);
         output.write(content);
         output.close();
-        // Return the name of the temp file
-        return tmp.getAbsolutePath();
+        return tmp;
+    }
+
+    public static String readFileAsString(File file)
+        throws IOException {
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        StringBuilder builder = new StringBuilder(1000);
+        String line = reader.readLine(); // Strips EOLs
+        while (line != null) {
+            builder.append(line);
+            builder.append("\n");
+            line = reader.readLine();
+        }
+        return builder.toString();
     }
 
     @SuppressWarnings("unchecked")
@@ -214,8 +235,10 @@ public class MainTest {
     public void run_rankedLabels()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String labelsFileName = makeTempFileWithContents(lblsCsv);
-        String[] cmd = {"--labels", labelsFileName};
+        File labelsFile = makeTempFileWithContents(lblsCsv);
+        String[] cmd = {
+            "--labels", labelsFile.getAbsolutePath(),
+        };
         makeMain("");
         main.run(cmd);
         assertEquals("", errorString.toString());
@@ -226,8 +249,10 @@ public class MainTest {
     public void run_scoresLabelsTogether()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String scoreslabelsFileName = makeTempFileWithContents(scrsLblsCsv);
-        String[] cmd = {"--scores-labels", scoreslabelsFileName};
+        File scoreslabelsFile = makeTempFileWithContents(scrsLblsCsv);
+        String[] cmd = {
+            "--scores-labels", scoreslabelsFile.getAbsolutePath(),
+        };
         makeMain("");
         main.run(cmd);
         assertEquals("", errorString.toString());
@@ -238,14 +263,11 @@ public class MainTest {
     public void run_scoresLabelsTogetherWithColumns()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String scoreslabelsFileName = makeTempFileWithContents(keysScrsLblsCsv);
+        File scoreslabelsFile = makeTempFileWithContents(keysScrsLblsCsv);
         String[] cmd = {
-            "--scores-labels",
-            scoreslabelsFileName,
-            "--labels-column",
-            "5",
-            "--scores-column",
-            "2",
+            "--scores-labels", scoreslabelsFile.getAbsolutePath(),
+            "--labels-column", "5",
+            "--scores-column", "2",
         };
         makeMain("");
         main.run(cmd);
@@ -257,9 +279,12 @@ public class MainTest {
     public void run_separateScoresLabelsInOrder()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String scoresFileName = makeTempFileWithContents(scrsCsv);
-        String labelsFileName = makeTempFileWithContents(lblsCsv);
-        String[] cmd = {"--scores", scoresFileName, "--labels", labelsFileName};
+        File scoresFile = makeTempFileWithContents(scrsCsv);
+        File labelsFile = makeTempFileWithContents(lblsCsv);
+        String[] cmd = {
+            "--scores", scoresFile.getAbsolutePath(),
+            "--labels", labelsFile.getAbsolutePath(),
+        };
         makeMain("");
         main.run(cmd);
         assertEquals("", errorString.toString());
@@ -270,17 +295,13 @@ public class MainTest {
     public void run_separateScoresLabelsInOrderWithColumns()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String scoresFileName = makeTempFileWithContents(keysScrsCsv);
-        String labelsFileName = makeTempFileWithContents(keysLblsCsv);
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
         String[] cmd = {
-            "--scores",
-            scoresFileName,
-            "--scores-column",
-            "2",
-            "--labels",
-            labelsFileName,
-            "--labels-column",
-            "1",
+            "--scores", scoresFile.getAbsolutePath(),
+            "--scores-column", "2",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-column", "1",
         };
         makeMain("");
         main.run(cmd);
@@ -292,21 +313,15 @@ public class MainTest {
     public void run_joinedScoresLabels()
         throws Main.Exception, FileNotFoundException, IOException {
 
-        String scoresFileName = makeTempFileWithContents(keysScrsCsv);
-        String labelsFileName = makeTempFileWithContents(keysLblsCsv);
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
         String[] cmd = {
-            "--scores",
-            scoresFileName,
-            "--scores-key",
-            "3,1",
-            "--scores-column",
-            "2",
-            "--labels",
-            labelsFileName,
-            "--labels-key",
-            "2,3",
-            "--labels-column",
-            "1",
+            "--scores", scoresFile.getAbsolutePath(),
+            "--scores-key", "3,1",
+            "--scores-column", "2",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-key", "2,3",
+            "--labels-column", "1",
         };
         makeMain("");
         main.run(cmd);
@@ -346,14 +361,10 @@ public class MainTest {
         throws Main.Exception, FileNotFoundException, IOException {
 
         String[] cmd = {
-            "--scores-labels",
-            "-",
-            "--positive",
-            "y",
-            "--labels-column",
-            "6",
-            "--scores-column",
-            "2",
+            "--scores-labels", "-",
+            "--positive", "y",
+            "--labels-column", "6",
+            "--scores-column", "2",
         };
         makeMain(keysScrsLblsCsv);
         main.run(cmd);
@@ -369,21 +380,25 @@ public class MainTest {
         containsString("0.8 0.8"),
         containsString("1.0 1.0"));
 
+    public static final Matcher<String> rocAreaMatcher =
+        containsString("0.44");
+
+    public static final Matcher<String> prAreaMatcher =
+        containsString("0.417");
+
+    public static final Matcher<String> rocPrAreasMatcher =
+        allOf(rocAreaMatcher, prAreaMatcher);
+
     @Test
     public void run_reportRocPoints()
         throws Main.Exception, FileNotFoundException, IOException {
 
         String[] cmd = {
-            "--scores-labels",
-            "-",
-            "--report",
-            "rocpts",
-            "--to",
-            "-",
-            "--scores-column",
-            "2",
-            "--labels-column",
-            "5",
+            "--scores-labels", "-",
+            "--report", "rocpts",
+            "--to", "-",
+            "--scores-column", "2",
+            "--labels-column", "5",
         };
         makeMain(keysScrsLblsCsv);
         main.run(cmd);
@@ -391,5 +406,127 @@ public class MainTest {
         assertThat(outputString.toString(), rocPtsMatcher);
     }
 
-    // TODO test for delimiter option
+    @Test
+    public void run_singleReport()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--report", "rocArea",
+            "--to", "-",
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocAreaMatcher);
+    }
+
+    @Test
+    public void run_reportDefaultOutput()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--report", "rocArea",
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocAreaMatcher);
+    }
+
+    @Ignore
+    @Test
+    public void run_reportDefaultInput()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--report", "rocArea",
+            "--to", "-",
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocAreaMatcher);
+    }
+
+    @Test
+    public void run_multipleReportsMultipleOptions()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--report", "rocArea",
+            "--report", "prArea",
+            "--to", "-",
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocPrAreasMatcher);
+    }
+
+    @Test
+    public void run_multipleReportsSingleOption()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--report", "rocArea,prArea",
+            "--to", "-",
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), rocPrAreasMatcher);
+    }
+
+    @Test
+    public void run_reportsToMultipleFiles()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File rocAreaFile = makeTempFile();
+        File prAreaFile = makeTempFile();
+        File areasFile = makeTempFile();
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--report", "rocArea",
+            "--to", rocAreaFile.getAbsolutePath(),
+            "--report", "prArea",
+            "--to", prAreaFile.getAbsolutePath(),
+            "--report", "rocArea,prArea",
+            "--to", areasFile.getAbsolutePath(),
+        };
+        makeMain(scrsLblsCsv);
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertEquals("", outputString.toString());
+        assertThat(readFileAsString(rocAreaFile), rocAreaMatcher);
+        assertThat(readFileAsString(prAreaFile), prAreaMatcher);
+        assertThat(readFileAsString(areasFile), rocPrAreasMatcher);
+    }
+
+    @Test
+    public void run_toFileWithoutReport()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        String[] cmd = {
+            "--scores-labels", "-",
+            "--to", "-",
+            "--report", "all",
+        };
+        makeMain(scrsLblsCsv);
+        try {
+            main.run(cmd);
+            fail("Exception not thrown for no '--report' before '--to'");
+        } catch (Main.Exception e) {
+            assertThat(e.getMessage(), containsString("No report options precede output file option"));
+        }
+        assertEquals("", errorString.toString());
+        assertEquals("", outputString.toString());
+    }
+
+    // TODO test output file given multiple times
+
+    // TODO test delimiter option
 }

@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,6 +29,7 @@ import mloss.roc.util.NaiveCsvReader;
 
 // TODO design reporting in terms of different information and different formats
 // TODO how handle options that only make sense for a file but no files given?
+// TODO option for delimiter
 
 
 /**
@@ -153,15 +155,17 @@ public class Main {
 
         "Output\n\n" +
 
-        reportNameOptName + " STRING\n" + indent +
-        "Name of the report to produce, one of the following:\n" + indent +
+        reportNameOptName + " STRING(S)\n" + indent +
+        "Name or list of names of the reports to produce, from the following:\n" + indent +
         Reports.namesString + "\n" + indent +
-        "Use multiple times to specify multiple reports.  Pairs with '--to'.\n" + indent +
-        "Default is 'all' if no report specified.\n" +
+        "Specify multiple reports with a comma-separated list or by using the\n" + indent +
+        "option multiple times.  Follow with a '--to' option to specify the\n" + indent +
+        "output file for the report(s).  Default is '--report all' if no report\n" + indent +
+        "options are specified.\n" +
         reportFileOptName + " FILE\n" + indent +
-        "File for the output of a report.  Pairs with '--report', in order.  That\n" + indent +
-        "is, each report needs an output destination, so use '--to' for each\n" + indent +
-        "'--report'.  Default is '-' (standard output) if no output specified.\n" +
+        "File for the output of one or more reports.  Must follow one or more\n" + indent +
+        "'--report' options.  If there is no trailing '--to' option, then\n" + indent +
+        "'--to -' is assumed and output goes to standard output.\n" +
         "\n" +
 
         "EXAMPLES\n\n" +
@@ -285,6 +289,10 @@ public class Main {
         // line parsing library.
         Map<String, List<String>> env = new TreeMap<String, List<String>>();
 
+        // State for groups of reports and their output files
+        List<List<String>> reportGroups = new ArrayList<List<String>>(10);
+        List<String> reportFiles = new ArrayList<String>(10);
+
         // Search the command line arguments for requested help.  Help
         // overrides all other operations and must be processed before
         // any possible exceptions.  Therefore it must be treated
@@ -299,6 +307,7 @@ public class Main {
         // Parse the command line options and their arguments
         for (int argIndex = 0; argIndex < args.length; argIndex++) {
             String arg = args[argIndex].toLowerCase();
+            int nextArgIndex = argIndex + 1;
 
             // Commands
             if (arg.equals(helpOptName) ||
@@ -313,11 +322,11 @@ public class Main {
                      arg.equals(labelsOptName) ||
                      arg.equals(scoresLabelsOptName)) {
                 // Check filename argument given
-                if (argIndex + 1 >= args.length) {
+                if (nextArgIndex >= args.length) {
                     throw new Main.Exception(String.format("File name missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check file exists and is readable
-                String fileName = args[argIndex + 1];
+                String fileName = args[nextArgIndex];
                 File file = new File(fileName);
                 if (!fileName.equals(defaultFileName) &&
                     (!file.exists() ||
@@ -334,11 +343,11 @@ public class Main {
             else if (arg.equals(scoresColumnOptName) ||
                      arg.equals(labelsColumnOptName)) {
                 // Check integer argument given
-                if (argIndex + 1 >= args.length) {
+                if (nextArgIndex >= args.length) {
                     throw new Main.Exception(String.format("Integer missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check the value is an integer
-                String integerValue = args[argIndex + 1];
+                String integerValue = args[nextArgIndex];
                 if (!integerPattern.matcher(integerValue).matches()) {
                     throw new Main.Exception(String.format("Not an integer: %s", integerValue), ExitStatus.ERROR_USAGE);
                 }
@@ -351,11 +360,11 @@ public class Main {
             else if (arg.equals(scoresKeyOptName) ||
                      arg.equals(labelsKeyOptName)) {
                 // Check integer/list argument given
-                if (argIndex + 1 >= args.length) {
+                if (nextArgIndex >= args.length) {
                     throw new Main.Exception(String.format("Integer or list of integers missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Check the value is an integer or a list of integers
-                String integerListValue = args[argIndex + 1];
+                String integerListValue = args[nextArgIndex];
                 if (!integerListPattern.matcher(integerListValue).matches()) {
                     throw new Main.Exception(String.format("Not an integer or list of integers: %s", integerListValue), ExitStatus.ERROR_USAGE);
                 }
@@ -369,12 +378,34 @@ public class Main {
                      arg.equals(reportNameOptName) ||
                      arg.equals(reportFileOptName)) {
                 // Check that an argument was given
-                if (argIndex + 1 >= args.length) {
+                if (nextArgIndex >= args.length) {
                     throw new Main.Exception(String.format("Argument missing after option: %s", arg), ExitStatus.ERROR_USAGE);
                 }
                 // Store the value
-                putList(env, arg, args[argIndex + 1]);
+                putList(env, arg, args[nextArgIndex]);
                 argIndex++;
+
+                // Special handling for reports and their outputs
+
+                // Report names
+                if (arg.equals(reportNameOptName)) {
+                    // Allocate a list to hold this group of reports if
+                    // the previous group already got an output or if no
+                    // list yet exists for the first group of reports
+                    if (reportGroups.size() == reportFiles.size()) {
+                        reportGroups.add(new LinkedList<String>());
+                    }
+                    reportGroups.get(reportGroups.size() - 1).add(args[nextArgIndex]);
+                }
+
+                // Report outputs
+                else if (arg.equals(reportFileOptName)) {
+                    // Check if an output is given before a report
+                    if (reportGroups.size() == reportFiles.size()) {
+                        throw new Main.Exception(String.format("No report options precede output file option: %s %s", reportFileOptName, args[nextArgIndex]), ExitStatus.ERROR_USAGE);
+                    }
+                    reportFiles.add(args[nextArgIndex]);
+                }
             }
 
             // Ignored or non-functional arguments
@@ -392,11 +423,20 @@ public class Main {
             throw new Main.Exception(String.format("Option '%s' must be accompanied by option '%s'.", scoresOptName, labelsOptName), ExitStatus.ERROR_USAGE);
         }
 
-        // Check that lists of report names and report files are of equal length
-        if (env.containsKey(reportNameOptName) != env.containsKey(reportFileOptName) ||
-            (env.containsKey(reportNameOptName) &&
-             env.get(reportNameOptName).size() != env.get(reportFileOptName).size())) {
-            throw new Main.Exception(String.format("Options %s and %s must be given the same number of times.", reportNameOptName, reportFileOptName), ExitStatus.ERROR_USAGE);
+        // Flatten groups of report names
+        for (int groupIndex = 0; groupIndex < reportGroups.size(); groupIndex++) {
+            List<String> group = reportGroups.get(groupIndex);
+            List<String> newGroup = new LinkedList<String>();
+            for (String reportNamesList : group) {
+                String[] reportNames = reportNamesList.split(",");
+                newGroup.addAll(Arrays.asList(reportNames));
+            }
+            reportGroups.set(groupIndex, newGroup);
+        }
+
+        // Default the last report file to standard output
+        if (reportFiles.size() < reportGroups.size()) {
+            reportFiles.add(defaultFileName);
         }
 
         // TODO check report names
@@ -550,30 +590,28 @@ public class Main {
 
         // Report on the curve (if one was constructed)
         if (curve != null) {
-            // Get reports to run
-            List<String> reportNamesList = env.get(reportNameOptName);
-            List<String> reportFilesList = env.get(reportFileOptName);
-
             // Do default report if none specified
-            if (reportNamesList == null || reportNamesList.size() == 0) {
+            if (reportGroups.size() == 0) {
                 Reports.yaml(curve, output);
             }
 
             // Run reports
             else {
-                Iterator<String> reportNames = reportNamesList.iterator();
-                Iterator<String> reportFiles = reportFilesList.iterator();
-                String reportName;
+                Iterator<List<String>> reportGroupsIter = reportGroups.iterator();
+                Iterator<String> reportFilesIter = reportFiles.iterator();
+                List<String> reportGroup;
                 String reportFile;
                 PrintWriter reportOutput = null;
-                while (reportNames.hasNext() && reportFiles.hasNext()) {
-                    reportName = reportNames.next();
-                    reportFile = reportFiles.next();
+                while (reportGroupsIter.hasNext() && reportFilesIter.hasNext()) {
+                    reportGroup = reportGroupsIter.next();
+                    reportFile = reportFilesIter.next();
                     try {
                         // Open output
                         reportOutput = openFileOrOutput(reportFile);
-                        // Run report
-                        Reports.report(reportName, curve, reportOutput);
+                        // Run reports
+                        for (String reportName : reportGroup) {
+                            Reports.report(reportName, curve, reportOutput);
+                        }
                     } catch (IllegalArgumentException e) {
                         throw new Main.Exception(e.getMessage(), ExitStatus.ERROR_USAGE);
                     } finally {
