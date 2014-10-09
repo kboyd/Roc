@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * Copyright (c) 2014 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -19,13 +19,13 @@ import mloss.roc.util.IterableArray;
 
 public class CurvePrimitivesBuilderTest {
 
-    // Sorted labels based on predicteds and actuals below
+    // Sorted labels based on scores and labels below
     public static final int[] rankedLabels = {
         1, 1, 1, 3, 2, 3, 2, 2, 2, 3, 2, 3, 1, 3, 3, 1, 1
     };
 
     // [random.uniform(-100, 100) for i in xrange(17)]
-    public static final double[] predicteds = {
+    public static final double[] scores = {
         -18.95840085578395, 93.4748011165401, -75.0369638305275,
         95.62739569795454, 96.41839667685787, 37.65397831676424,
         -71.21440043496705, -14.789818865549293, -46.052787553164464,
@@ -35,7 +35,7 @@ public class CurvePrimitivesBuilderTest {
     };
 
     // [random.choice((1, 2, 3)) for i in xrange(17)]
-    public static final int[] actuals = {
+    public static final int[] labels = {
         2, 1, 1,
         1, 1, 3,
         3, 2, 1,
@@ -86,13 +86,13 @@ public class CurvePrimitivesBuilderTest {
     //}
 
     /**
-     * Tests {@link Curve.PrimitivesBuilder.predicteds(double[])} and
-     * {@link Curve.PrimitivesBuilder.actuals(int[])} and {@link
+     * Tests {@link Curve.PrimitivesBuilder.scores(double[])} and
+     * {@link Curve.PrimitivesBuilder.labels(int[])} and {@link
      * Curve.PrimitivesBuilder.positiveLabel(int)}.
      */
     @Test
-    public void testBuildWithPredictedsActuals() {
-        Curve curve = builder.predicteds(predicteds).actuals(actuals)
+    public void testBuildWithScoresLabels() {
+        Curve curve = builder.scores(scores).labels(labels)
             .build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
@@ -101,7 +101,7 @@ public class CurvePrimitivesBuilderTest {
         assertArrayEquals(negCountsLabel3, curve.falsePositiveCounts);
     }
 
-    //@Test public void testBuildWithPredictedsActualsWeights() {
+    //@Test public void testBuildWithScoresLabelsWeights() {
     //}
 
     /**
@@ -113,10 +113,10 @@ public class CurvePrimitivesBuilderTest {
         List<Integer> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new int[] {});
         assertEquals(0, list.size());
-        list = Curve.PrimitivesBuilder.primitiveArrayToList(actuals);
+        list = Curve.PrimitivesBuilder.primitiveArrayToList(labels);
         assertEquals(17, list.size());
         IterableArray<Integer> iterable = new IterableArray<Integer>
-            (Arrays.intArrayToIntegerArray(actuals));
+            (Arrays.intArrayToIntegerArray(labels));
         assertIterablesEqual(iterable, list);
     }
 
@@ -129,10 +129,10 @@ public class CurvePrimitivesBuilderTest {
         List<Double> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new double[] {});
         assertEquals(0, list.size());
-        list = Curve.PrimitivesBuilder.primitiveArrayToList(predicteds);
+        list = Curve.PrimitivesBuilder.primitiveArrayToList(scores);
         assertEquals(17, list.size());
         IterableArray<Double> iterable = new IterableArray<Double>
-            (Arrays.doubleArrayToDoubleArray(predicteds));
+            (Arrays.doubleArrayToDoubleArray(scores));
         assertIterablesEqual(iterable, list);
     }
 }

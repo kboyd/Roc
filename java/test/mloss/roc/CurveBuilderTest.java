@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * Copyright (c) 2014 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -34,25 +34,25 @@ public class CurveBuilderTest {
     public static final List<String> rankedLabelsList =
         Collections.unmodifiableList(Arrays.asList(rankedLabelsArray));
 
-    // Predicteds and actuals in various forms
-    public static final Double[] predictedsArray = {
+    // Scores and labels in various forms
+    public static final Double[] scoresArray = {
         0.47341896085274016, 0.018859285548017635, 0.9315716230462066,
         0.9335304877912131, 0.7290329817040795, 0.9838470565991855,
         0.9819062711720467, 0.5422121795480975, 0.5023282102530746,
         0.13125000483509008, 0.04172635518302947
     };
     // ranks: {8, 11, 4, 3, 5, 1, 2, 6, 7, 9, 10}
-    public static final String[] actualsArray = {
+    public static final String[] labelsArray = {
         "1", "1", "1", "3", "2", "1", "2", "2", "1", "3", "1"
     };
-    public static final Iterable<Double> predictedsSequence =
-        new IterableArray<Double>(predictedsArray);
-    public static final Iterable<String> actualsSequence =
-        new IterableArray<String>(actualsArray);
-    public static final List<Double> predictedsList =
-        Collections.unmodifiableList(Arrays.asList(predictedsArray));
-    public static final List<String> actualsList =
-        Collections.unmodifiableList(Arrays.asList(actualsArray));
+    public static final Iterable<Double> scoresSequence =
+        new IterableArray<Double>(scoresArray);
+    public static final Iterable<String> labelsSequence =
+        new IterableArray<String>(labelsArray);
+    public static final List<Double> scoresList =
+        Collections.unmodifiableList(Arrays.asList(scoresArray));
+    public static final List<String> labelsList =
+        Collections.unmodifiableList(Arrays.asList(labelsArray));
 
     // An object different than any of the labels but that will compare equal
     public static final String positiveLabel = new String("1");
@@ -91,22 +91,22 @@ public class CurveBuilderTest {
     //}
 
     /**
-     * Tests {@link Curve.Builder.predicteds(Iterable)} and {@link
-     * Curve.Builder.predicteds(Iterable)}.
+     * Tests {@link Curve.Builder.scores(Iterable)} and {@link
+     * Curve.Builder.scores(Iterable)}.
      */
     @Test
-    public void testBuildWithPredictedsActuals() {
+    public void testBuildWithScoresLabels() {
         // Check sequence instantiation
-        builder.predicteds(predictedsSequence).actuals(actualsSequence);
-        assertNotSame(predictedsSequence, builder.predicteds);
-        assertIterablesEqual(predictedsSequence, builder.predicteds);
-        assertNotSame(actualsSequence, builder.actuals);
-        assertIterablesEqual(actualsSequence, builder.actuals);
+        builder.scores(scoresSequence).labels(labelsSequence);
+        assertNotSame(scoresSequence, builder.scores);
+        assertIterablesEqual(scoresSequence, builder.scores);
+        assertNotSame(labelsSequence, builder.labels);
+        assertIterablesEqual(labelsSequence, builder.labels);
 
         // Check list reuse
-        builder.predicteds(predictedsList).actuals(actualsList);
-        assertSame(predictedsList, builder.predicteds);
-        assertSame(actualsList, builder.actuals);
+        builder.scores(scoresList).labels(labelsList);
+        assertSame(scoresList, builder.scores);
+        assertSame(labelsList, builder.labels);
 
         // Check build
         Curve curve = builder.positiveLabel(positiveLabel).build();
@@ -114,7 +114,7 @@ public class CurveBuilderTest {
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
     }
 
-    //@Test public void testBuildWithPredictedsActualsWeights() {
+    //@Test public void testBuildWithScoresLabelsWeights() {
     //}
 
     /** Tests {@link Curve.Builder.comparator(Comparator)}. */
@@ -128,7 +128,7 @@ public class CurveBuilderTest {
                 }
             });
         /* The above comparator results in the following (effective)
-         * predicteds and actuals:
+         * scores and labels:
          *
          * [4, 0, 9, 9, 7, 9, 9, 5, 5, 1, 0]
          * [1, 1, 1, 3, 2, 1, 2, 2, 1, 3, 1]
@@ -143,7 +143,7 @@ public class CurveBuilderTest {
          */
         int[] posCounts = {0, 1, 1, 2, 2, 2, 2, 3, 4, 4, 5, 6};
         int[] negCounts = {0, 0, 1, 1, 2, 3, 4, 4, 4, 5, 5, 5};
-        Curve curve = builder.predicteds(predictedsList).actuals(actualsList)
+        Curve curve = builder.scores(scoresList).labels(labelsList)
             .positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
@@ -155,32 +155,32 @@ public class CurveBuilderTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_noLabelPa() {
+    public void testInvalidState_noPositiveLabelSl() {
         builder
-            .predicteds(predictedsList)
-            .actuals(actualsList)
+            .scores(scoresList)
+            .labels(labelsList)
             .build();
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_noLabelRl() {
+    public void testInvalidState_noPositiveLabelRl() {
         builder
             .rankedLabels(rankedLabelsList)
             .build();
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_noActuals() {
+    public void testInvalidState_noLabels() {
         builder
-            .predicteds(predictedsList)
+            .scores(scoresList)
             .positiveLabel(positiveLabel)
             .build();
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_noPredicteds() {
+    public void testInvalidState_noScores() {
         builder
-            .actuals(actualsList)
+            .labels(labelsList)
             .positiveLabel(positiveLabel)
             .build();
     }
@@ -195,32 +195,32 @@ public class CurveBuilderTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_emptyPredicteds() {
-        List<Double> emptyPredicteds = Collections.emptyList();
+    public void testInvalidState_emptyScores() {
+        List<Double> emptyScores = Collections.emptyList();
         builder
-            .predicteds(emptyPredicteds)
-            .actuals(actualsList)
+            .scores(emptyScores)
+            .labels(labelsList)
             .positiveLabel(positiveLabel)
             .build();
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void testInvalidState_emptyActuals() {
-        List<String> emptyActuals = Collections.emptyList();
+    public void testInvalidState_emptyLabels() {
+        List<String> emptyLabels = Collections.emptyList();
         builder
-            .predicteds(predictedsList)
-            .actuals(emptyActuals)
+            .scores(scoresList)
+            .labels(emptyLabels)
             .positiveLabel(positiveLabel)
             .build();
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void testInvalidState_paSize() {
-        List<Double> predicteds = new LinkedList<Double>(predictedsList);
-        predicteds.add(6.28);
+        List<Double> scores = new LinkedList<Double>(scoresList);
+        scores.add(6.28);
         builder
-            .predicteds(predicteds)
-            .actuals(actualsList)
+            .scores(scores)
+            .labels(labelsList)
             .positiveLabel(positiveLabel)
             .build();
     }
@@ -228,7 +228,7 @@ public class CurveBuilderTest {
 //    @Test(expected=IllegalArgumentException.class)
 //    public void testInvalidStatePAWSize() {
 //        List<Double> weights = Collections.emptyList();
-//        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
+//        builder.scores(scoresList).labels(labelsList).weights(weights)
 //            .positiveLabel(positiveLabel).build();
 //    }
 
