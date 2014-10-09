@@ -63,7 +63,8 @@ public class CurvePrimitivesBuilderTest {
     // Object under test
     Curve.PrimitivesBuilder builder;
 
-    @Before public void setUp() {
+    @Before
+    public void setUp() {
         builder = new Curve.PrimitivesBuilder();
     }
 
@@ -71,7 +72,8 @@ public class CurvePrimitivesBuilderTest {
      * Tests {@link Curve.PrimitivesBuilder.rankedLabels(int[])} and
      * {@link Curve.PrimitivesBuilder.positiveLabel(int)}.
      */
-    @Test public void testBuildWithRankedLabels() {
+    @Test
+    public void testBuildWithRankedLabels() {
         Curve curve = builder.rankedLabels(rankedLabels).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
@@ -88,7 +90,8 @@ public class CurvePrimitivesBuilderTest {
      * {@link Curve.PrimitivesBuilder.actuals(int[])} and {@link
      * Curve.PrimitivesBuilder.positiveLabel(int)}.
      */
-    @Test public void testBuildWithPredictedsActuals() {
+    @Test
+    public void testBuildWithPredictedsActuals() {
         Curve curve = builder.predicteds(predicteds).actuals(actuals)
             .build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
@@ -105,7 +108,8 @@ public class CurvePrimitivesBuilderTest {
      * Tests {@link
      * Curve.PrimitivesBuilder.primitiveArrayToList(int[])}.
      */
-    @Test public void testPrimitiveArrayToListInteger() {
+    @Test
+    public void testPrimitiveArrayToListInteger() {
         List<Integer> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new int[] {});
         assertEquals(0, list.size());
@@ -120,7 +124,8 @@ public class CurvePrimitivesBuilderTest {
      * Tests {@link
      * Curve.PrimitivesBuilder.primitiveArrayToList(double[])}.
      */
-    @Test public void testPrimitiveArrayToListDouble() {
+    @Test
+    public void testPrimitiveArrayToListDouble() {
         List<Double> list = Curve.PrimitivesBuilder
             .primitiveArrayToList(new double[] {});
         assertEquals(0, list.size());

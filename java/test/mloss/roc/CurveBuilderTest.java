@@ -64,12 +64,14 @@ public class CurveBuilderTest {
     // Object under test
     Curve.Builder<Double, String> builder;
 
-    @Before public void setUp() {
+    @Before
+    public void setUp() {
         builder = new Curve.Builder<Double, String>();
     }
 
     /** Tests {@link Curve.Builder.rankedLabels(Iterable)}. */
-    @Test public void testBuildWithRankedLabels() {
+    @Test
+    public void testBuildWithRankedLabels() {
         // Check sequence instantiation
         builder.rankedLabels(rankedLabelsSequence);
         assertNotSame(rankedLabelsSequence, builder.rankedLabels);
@@ -92,7 +94,8 @@ public class CurveBuilderTest {
      * Tests {@link Curve.Builder.predicteds(Iterable)} and {@link
      * Curve.Builder.predicteds(Iterable)}.
      */
-    @Test public void testBuildWithPredictedsActuals() {
+    @Test
+    public void testBuildWithPredictedsActuals() {
         // Check sequence instantiation
         builder.predicteds(predictedsSequence).actuals(actualsSequence);
         assertNotSame(predictedsSequence, builder.predicteds);
@@ -115,7 +118,8 @@ public class CurveBuilderTest {
     //}
 
     /** Tests {@link Curve.Builder.comparator(Comparator)}. */
-    @Test public void testComparator() {
+    @Test
+    public void testComparator() {
         builder.comparator(new Comparator<Number>() {
                 // Compare only tenths (and larger) digits
                 public int compare(Number n1, Number n2) {
@@ -236,7 +240,8 @@ public class CurveBuilderTest {
 //    }
 
     /** Tests {@link Curve.Builder.instantiateSequence(Iterable)}. */
-    @Test public void instantiateSequence() {
+    @Test
+    public void instantiateSequence() {
         Random random = new Random();
         int sequenceSize = random.nextInt(31);
         Long[] array = new Long[sequenceSize];
@@ -253,7 +258,8 @@ public class CurveBuilderTest {
      * Tests {@link Curve.Builder.TupleScoreReverseComparator} with
      * natural orderings.
      */
-    @Test public void testTupleScoreReverseComparatorNaturalOrdering() {
+    @Test
+    public void testTupleScoreReverseComparatorNaturalOrdering() {
         Curve.Builder<Double, String>.TupleScoreReverseComparator comparator =
             builder.new TupleScoreReverseComparator();
         Curve.Builder<Double, String>.Tuple tuple1 = builder.new Tuple(3.33, "pos");
@@ -271,7 +277,8 @@ public class CurveBuilderTest {
      * Tests {@link Curve.Builder.TupleScoreReverseComparator} with
      * an explicit, given comparator.
      */
-    @Test public void testTupleScoreReverseComparatorExplicitComparator() {
+    @Test
+    public void testTupleScoreReverseComparatorExplicitComparator() {
         // Create a builder for a score type with richer comparison possibilities
         Curve.Builder<String, String> builder = new Curve.Builder<String, String>();
         /* Create a non-standard comparator that compares strings by

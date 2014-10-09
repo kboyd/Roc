@@ -21,7 +21,8 @@ public class UserScenarios {
      * classifier, and just calculates the area for the ROC curve and
      * the area and the points for the achievable curve.
      */
-    @Test public void minimalRocAreaScenario() {
+    @Test
+    public void minimalRocAreaScenario() {
         // Imagine the following two arrays come from a dataset and a classifier
         int[] actualLabels = {1, 1, 0, 0, 0, 0, 1,
                               1, 0, 1, 1, 1, 0};
