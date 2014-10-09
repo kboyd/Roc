@@ -179,6 +179,8 @@ public class Curve {
      * labels into some prespecified positive and negative signifiers.
      */
     public Curve(int[] rankedLabels, int positiveLabel) {
+        if (rankedLabels.length == 0)
+            throw new IllegalArgumentException("The list of ranked labels must not be empty.");
         initFields(rankedLabels.length);
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -206,6 +208,8 @@ public class Curve {
      * labels into some prespecified positive and negative signifiers.
      */
     public <T> Curve(List<T> rankedLabels, T positiveLabel) {
+        if (rankedLabels.size() == 0)
+            throw new IllegalArgumentException("The list of ranked labels must not be empty.");
         initFields(rankedLabels.size());
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -899,24 +903,37 @@ public class Curve {
          * called by {@link #build()} before building.
          */
         private void checkValidBuilderState() {
-            // Check for correct builder state
-            if (positiveLabel == null) {
-                throw new IllegalStateException("A positive label must be specified.");
-            }
+            int numberLabels;
+            // Check build from predicteds and actuals
             if (rankedLabels == null) {
                 if (predicteds == null || actuals == null) {
-                    throw new IllegalStateException("Both 'predicteds' and 'actuals' must be specified unless 'rankedLabels' is specified.");
+                    throw new IllegalArgumentException("Both 'predicteds' and 'actuals' must be specified unless 'rankedLabels' is specified.");
+                }
+                if (predicteds.size() == 0) {
+                    throw new IllegalArgumentException("The list of predicteds must not be empty.");
+                }
+                if (actuals.size() == 0) {
+                    throw new IllegalArgumentException("The list of actuals must not be empty.");
                 }
                 if (predicteds.size() != actuals.size()) {
-                    throw new IllegalStateException("The sizes of 'predicteds' and 'actuals' must agree.");
+                    throw new IllegalArgumentException("The sizes of 'predicteds' and 'actuals' must agree.");
                 }
-                if (weights != null && weights.size() != predicteds.size()) {
-                    throw new IllegalStateException("The size of 'weights' must agree with those of 'predicteds' and 'actuals'.");
+                numberLabels = predicteds.size();
+            }
+            // Check build from ranked labels
+            else {
+                if (rankedLabels.size() == 0) {
+                    throw new IllegalArgumentException("The list of ranked labels must not be empty.");
                 }
-            } else {
-                if (weights != null && weights.size() != rankedLabels.size()) {
-                    throw new IllegalStateException("The sizes of 'rankedLabels' and 'weights' must agree.");
-                }
+                numberLabels = rankedLabels.size();
+            }
+            // Check size of weights is the same as other lists
+            if (weights != null && weights.size() != numberLabels) {
+                throw new IllegalArgumentException("The number of weights is not equal to the number of labels.");
+            }
+            // Check that there is a postive label
+            if (positiveLabel == null) {
+                throw new IllegalArgumentException("A positive label must be specified.");
             }
             // Builder state OK
         }
@@ -926,8 +943,8 @@ public class Curve {
          * this point.  Ranks the labels by the scores if necessary.
          *
          * @return A new curve
-         * @throws IllegalStateException if the builder is not in a
-         * valid state to construct a curve
+         * @throws IllegalArgumentException if the builder has not been
+         * given valid arguments as required to construct a curve
          */
         public Curve build() {
             // Check if it is OK to proceed (throws exception if not)

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -144,41 +145,90 @@ public class CurveBuilderTest {
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateEmpty() {
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_empty() {
         builder.build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateNoLabel() {
-        builder.predicteds(predictedsList).actuals(actualsList).build();
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_noLabelPa() {
+        builder
+            .predicteds(predictedsList)
+            .actuals(actualsList)
+            .build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateNoActuals() {
-        builder.predicteds(predictedsList).positiveLabel(positiveLabel).build();
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_noLabelRl() {
+        builder
+            .rankedLabels(rankedLabelsList)
+            .build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStateNoPredicteds() {
-        builder.actuals(actualsList).positiveLabel(positiveLabel).build();
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_noActuals() {
+        builder
+            .predicteds(predictedsList)
+            .positiveLabel(positiveLabel)
+            .build();
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testInvalidStatePASize() {
-        List<Double> predicteds = Collections.emptyList();
-        builder.predicteds(predicteds).actuals(actualsList)
-            .positiveLabel(positiveLabel).build();
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_noPredicteds() {
+        builder
+            .actuals(actualsList)
+            .positiveLabel(positiveLabel)
+            .build();
     }
 
-//    @Test(expected=IllegalStateException.class)
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_emptyRankedLabels() {
+        List<String> emptyLabels = Collections.emptyList();
+        builder
+            .rankedLabels(emptyLabels)
+            .positiveLabel(positiveLabel)
+            .build();
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_emptyPredicteds() {
+        List<Double> emptyPredicteds = Collections.emptyList();
+        builder
+            .predicteds(emptyPredicteds)
+            .actuals(actualsList)
+            .positiveLabel(positiveLabel)
+            .build();
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_emptyActuals() {
+        List<String> emptyActuals = Collections.emptyList();
+        builder
+            .predicteds(predictedsList)
+            .actuals(emptyActuals)
+            .positiveLabel(positiveLabel)
+            .build();
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testInvalidState_paSize() {
+        List<Double> predicteds = new LinkedList<Double>(predictedsList);
+        predicteds.add(6.28);
+        builder
+            .predicteds(predicteds)
+            .actuals(actualsList)
+            .positiveLabel(positiveLabel)
+            .build();
+    }
+
+//    @Test(expected=IllegalArgumentException.class)
 //    public void testInvalidStatePAWSize() {
 //        List<Double> weights = Collections.emptyList();
 //        builder.predicteds(predictedsList).actuals(actualsList).weights(weights)
 //            .positiveLabel(positiveLabel).build();
 //    }
 
-//    @Test(expected=IllegalStateException.class)
+//    @Test(expected=IllegalArgumentException.class)
 //    public void testInvalidStateRLWSize() {
 //        List<Double> weights = Collections.emptyList();
 //        builder.rankedLabels(rankedLabelsList).weights(weights)

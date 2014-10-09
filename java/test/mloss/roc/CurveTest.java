@@ -6,6 +6,7 @@
 package mloss.roc;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -521,7 +522,7 @@ public class CurveTest {
         // Use 2^20 positives and 2^20 negatives to test up to our
         // supported scale of 1 million.
         int n = 1<<20;
-        
+
         // Check when in perfect order with correct rocArea of 1.
         int[] labels = new int[n+n];
         // Positives (1) come first.
@@ -534,7 +535,7 @@ public class CurveTest {
         double[] expectedMannWhitneyU = {0.0, (double) n * (double) n};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
-        
+
         // Check when in worst order with correct rocArea of 0.
         // Negatives (0) come first.
         Arrays.fill(labels, 0, n, 0);
@@ -546,5 +547,15 @@ public class CurveTest {
         expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadArgs_emptyIntArray() {
+        curve = new Curve(new int[]{});
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadArgs_emptyListT() {
+        curve = new Curve(new LinkedList<Integer>(), 1);
     }
 }
