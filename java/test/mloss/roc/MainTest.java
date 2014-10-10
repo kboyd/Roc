@@ -329,6 +329,32 @@ public class MainTest {
     }
 
     @Test
+    public void run_emptyJoinResult()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
+        String[] cmd = {
+            "--scores", scoresFile.getAbsolutePath(),
+            // Wrong join columns to produce empty result
+            "--scores-key", "1,3",
+            "--scores-column", "2",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-key", "2,3",
+            "--labels-column", "1",
+        };
+        makeMain("");
+        try {
+            main.run(cmd);
+            fail("Exception not thrown for empty join result.");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), containsString("Empty join result"));
+        }
+        assertEquals("", outputString.toString());
+        assertEquals("", errorString.toString());
+    }
+
+    @Test
     public void run_noArgs()
         throws Main.Exception, FileNotFoundException, IOException {
 

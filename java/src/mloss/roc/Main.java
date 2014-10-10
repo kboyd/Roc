@@ -794,6 +794,12 @@ public class Main {
         List<String[]> scoresLabelsRows =
             CsvProcessing.mergeJoin(keys, fields, scoresCsv, labelsCsv);
 
+        // Check for an empty join result which means the user probably
+        // did something wrong and in any case will not produce sensical
+        // output
+        if (scoresLabelsRows.size() == 0)
+            throw new IllegalArgumentException("Empty join result: no score-label pairs to rank.  Check your inputs and join parameters.");
+
         // Call the separate, in-order curve builder
         return buildCurveFromSeparateScoresLabels(
             scoresLabelsRows, fields.length - 2,
