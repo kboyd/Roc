@@ -751,8 +751,8 @@ public class Main {
 
         // Build and return the curve
         return new Curve.Builder<Double,String>()
-            .predicteds(scoresIterator)
-            .actuals(labelsIterator)
+            .scores(scoresIterator)
+            .labels(labelsIterator)
             .positiveLabel(positiveLabel)
             .build();
     }
@@ -819,8 +819,8 @@ public class Main {
 
         // Build and return the curve
         return new Curve.Builder<Double, String>()
-            .predicteds(scoresIterator)
-            .actuals(labelsIterator)
+            .scores(scoresIterator)
+            .labels(labelsIterator)
             .positiveLabel(positiveLabel)
             .build();
     }
