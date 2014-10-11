@@ -132,11 +132,16 @@ public class Main {
         "negative.  No default.\n" +
         scoresColumnOptName + " INTEGER\n" + indent +
         "Column containing the scores in either the scores file or the\n" + indent +
-        "scores-labels file.  1-based number.  Default is 1.\n" +
+        "scores-labels file.  1-based number.  Default is 1 or the smallest\n" + indent +
+        "number that is not a labels column (scores-labels input) or the smallest\n" + indent +
+        "number that is not a scores keys column (separate scores and labels\n" + indent +
+        "inputs).  Default is 1 if both columns are left unspecified.\n" +
         labelsColumnOptName + " INTEGER\n" + indent +
         "Column containing the labels in either the labels file or the\n" + indent +
-        "scores-labels file.  1-based number.  Default is 1.  Default is 2 if\n" + indent +
-        "'--scores-column' is 1 and input is a scores-labels file.\n" +
+        "scores-labels file.  1-based number.  Default is 1 or the smallest\n" + indent +
+        "number that is not a scores column (scores-labels input) or the smallest\n" + indent +
+        "number that is not a labels keys column (separate scores and labels\n" + indent +
+        "inputs).  Default is 2 if both columns are left unspecified.\n" +
         scoresKeyOptName + " INTEGER(S)\n" + indent +
         "Column or list of columns containing the (compound) keys for the scores\n" + indent +
         "file to use when joining the scores to the labels from the labels file.\n" + indent +
@@ -487,24 +492,21 @@ public class Main {
                 String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue);
             }
-            // Default column values that were not specified.  For this
-            // single-file input, the scores and labels columns default
-            // to 1 and 2 if possible.  Otherwise they default to 1.
-            // This approach results in a conflict in the case
-            // '--labels-column 1', but a "smarter" algorithm is too
-            // complicated to explain easily in the documentation and
-            // has doubtful utility anyway.
-            if ((scoreCol == 0 || scoreCol == 1) && labelCol == 0) {
-                scoreCol = 1;
-                labelCol = 2;
-            } else if (scoreCol == 0) {
-                scoreCol = 1;
-            } else if (labelCol == 0) {
-                labelCol = 1;
+            // Default column values that were not specified.  Pick the
+            // smallest number not specified by the other column value.
+            // If neither column was specified the scores column is
+            // first.
+            if (scoreCol == 0) {
+                while (scoreCol == 0 || scoreCol == labelCol)
+                    scoreCol++;
+            }
+            if (labelCol == 0) {
+                while (labelCol == 0 || labelCol == scoreCol)
+                    labelCol++;
             }
             // Check column numbers are different
             if (scoreCol == labelCol) {
-                throw new Main.Exception("The scores and labels columns must not be the same.", ExitStatus.ERROR_USAGE);
+                throw new Main.Exception(String.format("Column conflict for scores and labels: {%s} <-> {%s}", scoreCol + 1, labelCol + 1), ExitStatus.ERROR_USAGE);
             }
             // Change column numbers to indices
             scoreCol--;
@@ -528,11 +530,15 @@ public class Main {
             int[] labelsKeyCols = {};
             if (env.containsKey(scoresKeyOptName)) {
                 String integerListValue = getLast(env.get(scoresKeyOptName));
-                scoresKeyCols = parseIntegerList(integerListValue);
+                scoresKeyCols = mloss.roc.util.Arrays.add(-1,
+                    mloss.roc.util.Arrays.parseInts(
+                        commaSplitPattern.split(integerListValue)));
             }
             if (env.containsKey(labelsKeyOptName)) {
                 String integerListValue = getLast(env.get(labelsKeyOptName));
-                labelsKeyCols = parseIntegerList(integerListValue);
+                labelsKeyCols = mloss.roc.util.Arrays.add(-1,
+                    mloss.roc.util.Arrays.parseInts(
+                        commaSplitPattern.split(integerListValue)));
             }
             // Check for key agreement (provided by both or neither)
             if ((scoresKeyCols.length > 0 ||
@@ -541,16 +547,37 @@ public class Main {
                 throw new Main.Exception("The same number of keys must be specified for both scores and labels.", ExitStatus.ERROR_USAGE);
             }
 
-            // Get the scores and labels columns
+            // Get the scores and labels columns (or intelligently
+            // default them)
             int scoreCol = 0;
             int labelCol = 0;
             if (env.containsKey(scoresColumnOptName)) {
                 String integerValue = getLast(env.get(scoresColumnOptName));
                 scoreCol = Integer.parseInt(integerValue) - 1;
+            } else {
+                while (mloss.roc.util.Arrays.indexOf(scoreCol, scoresKeyCols) != -1)
+                    scoreCol++;
             }
             if (env.containsKey(labelsColumnOptName)) {
                 String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue) - 1;
+            } else {
+                while (mloss.roc.util.Arrays.indexOf(labelCol, labelsKeyCols) != -1)
+                    labelCol++;
+            }
+
+            // Check for column conflicts
+            if (mloss.roc.util.Arrays.indexOf(scoreCol, scoresKeyCols) != -1) {
+                String colsString = mloss.roc.util.Arrays.join(",",
+                    mloss.roc.util.Arrays.toStrings(
+                        mloss.roc.util.Arrays.add(1, scoresKeyCols)));
+                throw new Main.Exception(String.format("Column conflict for scores keys and scores: {%s} <-> {%s}", colsString, scoreCol + 1), ExitStatus.ERROR_USAGE);
+            }
+            if (mloss.roc.util.Arrays.indexOf(labelCol, labelsKeyCols) != -1) {
+                String colsString = mloss.roc.util.Arrays.join(",",
+                    mloss.roc.util.Arrays.toStrings(
+                        mloss.roc.util.Arrays.add(1, labelsKeyCols)));
+                throw new Main.Exception(String.format("Column conflict for labels keys and labels: {%s} <-> {%s}", colsString, labelCol + 1), ExitStatus.ERROR_USAGE);
             }
 
             // Read the CSV input from files or stdin as requested
@@ -629,19 +656,6 @@ public class Main {
                 }
             }
         }
-    }
-
-    /**
-     * Parse a comma-separated list of positive integers into an array
-     * of integers, subtracting 1 along the way.
-     */
-    private static int[] parseIntegerList(String list) {
-        String[] strs = commaSplitPattern.split(list);
-        int[] ints = new int[strs.length];
-        for (int i = 0; i < strs.length; i++) {
-            ints[i] = Integer.parseInt(strs[i]) - 1;
-        }
-        return ints;
     }
 
     /**

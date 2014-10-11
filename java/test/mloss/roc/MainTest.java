@@ -355,6 +355,97 @@ public class MainTest {
     }
 
     @Test
+    public void run_joinedScoresLabelsDefaultNonkeyColumns()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
+        String[] cmd = {
+            "--scores", scoresFile.getAbsolutePath(),
+            "--scores-key", "3,1",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-key", "2,3",
+        };
+        makeMain("");
+        main.run(cmd);
+        assertEquals("", errorString.toString());
+        assertThat(outputString.toString(), yamlMatcher);
+    }
+
+    @Test
+    public void run_columnConflict_scores()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
+        String[] cmd = {
+            "--scores", scoresFile.getAbsolutePath(),
+            "--scores-key", "3,1",
+            "--scores-column", "1",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-key", "2,3",
+            "--labels-column", "1",
+        };
+        makeMain("");
+        try {
+            main.run(cmd);
+            fail("Exception not thrown for column conflict.");
+        } catch (Main.Exception e) {
+            assertThat(e.getMessage(), containsString("Column conflict"));
+        }
+        assertEquals("", outputString.toString());
+        assertEquals("", errorString.toString());
+    }
+
+    @Test
+    public void run_columnConflict_labels()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresFile = makeTempFileWithContents(keysScrsCsv);
+        File labelsFile = makeTempFileWithContents(keysLblsCsv);
+        String[] cmd = {
+            "--scores", scoresFile.getAbsolutePath(),
+            "--scores-key", "3,1",
+            "--scores-column", "2",
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-key", "2,3",
+            "--labels-column", "2",
+        };
+        makeMain("");
+        try {
+            main.run(cmd);
+            fail("Exception not thrown for column conflict.");
+        } catch (Main.Exception e) {
+            assertThat(e.getMessage(), containsString("Column conflict"));
+        }
+        assertEquals("", outputString.toString());
+        assertEquals("", errorString.toString());
+    }
+
+    @Test
+    public void run_columnConflict_scoresLabels()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresLabelsFile = makeTempFileWithContents(scrsLblsCsv);
+        String[] cmd = {
+            "--scores-labels", scoresLabelsFile.getAbsolutePath(),
+            "--scores-column", "2",
+            "--labels-column", "2",
+        };
+        makeMain("");
+        try {
+            main.run(cmd);
+            fail("Exception not thrown for column conflict.");
+        } catch (Main.Exception e) {
+            assertThat(e.getMessage(), containsString("Column conflict"));
+        }
+        assertEquals("", outputString.toString());
+        assertEquals("", errorString.toString());
+    }
+
+    // TODO exceptions for column indices out of bounds
+
+    @Test
     public void run_noArgs()
         throws Main.Exception, FileNotFoundException, IOException {
 
