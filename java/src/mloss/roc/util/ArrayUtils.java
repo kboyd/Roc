@@ -18,31 +18,25 @@ public class ArrayUtils {
     private ArrayUtils() {}
 
     /**
-     * Converts an int array to an Integer array.  Creates an Integer
-     * array that is a copy of the values in the given int array.
-     *
-     * @param array Any int array.
+     * Converts an array of ints to an array of Integers.
      */
-    public static Integer[] intArrayToIntegerArray(int[] array) {
-        Integer[] objectArray = new Integer[array.length];
-        for (int index = 0; index < array.length; ++index) {
-            objectArray[index] = Integer.valueOf(array[index]);
+    public static Integer[] intsToIntegers(int... ints) {
+        Integer[] integers = new Integer[ints.length];
+        for (int index = 0; index < ints.length; ++index) {
+            integers[index] = Integer.valueOf(ints[index]);
         }
-        return objectArray;
+        return integers;
     }
 
     /**
-     * Converts a double array to a Double array.  Creates a Double
-     * array that is a copy of the values in the given double array.
-     *
-     * @param array Any double array.
+     * Converts an array of doubles to an array of Doubles.
      */
-    public static Double[] doubleArrayToDoubleArray(double[] array) {
-        Double[] objectArray = new Double[array.length];
-        for (int index = 0; index < array.length; ++index) {
-            objectArray[index] = Double.valueOf(array[index]);
+    public static Double[] dblsToDoubles(double... dbls) {
+        Double[] doubles = new Double[dbls.length];
+        for (int index = 0; index < dbls.length; ++index) {
+            doubles[index] = Double.valueOf(dbls[index]);
         }
-        return objectArray;
+        return doubles;
     }
 
     /**
@@ -87,7 +81,7 @@ public class ArrayUtils {
     }
 
     /**
-     * Convert each of the given strings to integers (using {@link
+     * Converts each of the given strings to integers (using {@link
      * Integer.parseInt(String)}).
      */
     public static int[] parseInts(String... strings) {
@@ -99,7 +93,7 @@ public class ArrayUtils {
     }
 
     /**
-     * Convert each of the given integers to strings (using {@link
+     * Converts each of the given integers to strings (using {@link
      * Object.toString()}).
      */
     public static String[] toStrings(int... ints) {

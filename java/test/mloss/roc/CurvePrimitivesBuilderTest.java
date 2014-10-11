@@ -116,7 +116,7 @@ public class CurvePrimitivesBuilderTest {
         list = Curve.PrimitivesBuilder.primitiveArrayToList(labels);
         assertEquals(17, list.size());
         IterableArray<Integer> iterable = new IterableArray<Integer>(
-            ArrayUtils.intArrayToIntegerArray(labels));
+            ArrayUtils.intsToIntegers(labels));
         assertIterablesEqual(iterable, list);
     }
 
@@ -132,7 +132,7 @@ public class CurvePrimitivesBuilderTest {
         list = Curve.PrimitivesBuilder.primitiveArrayToList(scores);
         assertEquals(17, list.size());
         IterableArray<Double> iterable = new IterableArray<Double>(
-            ArrayUtils.doubleArrayToDoubleArray(scores));
+            ArrayUtils.dblsToDoubles(scores));
         assertIterablesEqual(iterable, list);
     }
 }
