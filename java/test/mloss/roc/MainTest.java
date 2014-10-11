@@ -443,7 +443,77 @@ public class MainTest {
         assertEquals("", errorString.toString());
     }
 
-    // TODO exceptions for column indices out of bounds
+    @Test
+    public void run_columnOob_lowerBound()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresLabelsFile = makeTempFileWithContents(scrsLblsCsv);
+        File scoresFile = makeTempFileWithContents(scrsCsv);
+        File labelsFile = makeTempFileWithContents(lblsCsv);
+        String[][] cmds = {
+            {"--scores-labels", scoresLabelsFile.getAbsolutePath(),
+             "--scores-column", "0",
+            },
+            {"--scores-labels", scoresLabelsFile.getAbsolutePath(),
+             "--labels-column", "0",
+            },
+            {"--scores", scoresFile.getAbsolutePath(),
+            "--labels", labelsFile.getAbsolutePath(),
+            "--scores-column", "0",
+            },
+            {"--scores", scoresFile.getAbsolutePath(),
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-column", "0",
+            },
+        };
+        for (String[] cmd : cmds) {
+            makeMain("");
+            try {
+                main.run(cmd);
+                fail("Exception not thrown for column out of bounds.");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                assertThat(e.getMessage(), containsString("Column index out of bounds"));
+            }
+            assertEquals("", outputString.toString());
+            assertEquals("", errorString.toString());
+        }
+    }
+
+    @Test
+    public void run_columnOob_upperBound()
+        throws Main.Exception, FileNotFoundException, IOException {
+
+        File scoresLabelsFile = makeTempFileWithContents(scrsLblsCsv);
+        File scoresFile = makeTempFileWithContents(scrsCsv);
+        File labelsFile = makeTempFileWithContents(lblsCsv);
+        String[][] cmds = {
+            {"--scores-labels", scoresLabelsFile.getAbsolutePath(),
+             "--scores-column", "10",
+            },
+            {"--scores-labels", scoresLabelsFile.getAbsolutePath(),
+             "--labels-column", "10",
+            },
+            {"--scores", scoresFile.getAbsolutePath(),
+            "--labels", labelsFile.getAbsolutePath(),
+            "--scores-column", "10",
+            },
+            {"--scores", scoresFile.getAbsolutePath(),
+            "--labels", labelsFile.getAbsolutePath(),
+            "--labels-column", "10",
+            },
+        };
+        for (String[] cmd : cmds) {
+            makeMain("");
+            try {
+                main.run(cmd);
+                fail("Exception not thrown for column out of bounds.");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                assertThat(e.getMessage(), containsString("Column index out of bounds"));
+            }
+            assertEquals("", outputString.toString());
+            assertEquals("", errorString.toString());
+        }
+    }
 
     @Test
     public void run_noArgs()

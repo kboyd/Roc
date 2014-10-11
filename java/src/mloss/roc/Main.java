@@ -449,8 +449,6 @@ public class Main {
             reportFiles.add(defaultFileName);
         }
 
-        // TODO check report names
-
         // If no operations, do the default
         if (!(env.containsKey(scoresLabelsOptName) ||
               env.containsKey(scoresOptName) ||
@@ -486,31 +484,28 @@ public class Main {
             int labelCol = 0;
             if (env.containsKey(scoresColumnOptName)) {
                 String integerValue = getLast(env.get(scoresColumnOptName));
-                scoreCol = Integer.parseInt(integerValue);
+                scoreCol = Integer.parseInt(integerValue) - 1;
             }
             if (env.containsKey(labelsColumnOptName)) {
                 String integerValue = getLast(env.get(labelsColumnOptName));
-                labelCol = Integer.parseInt(integerValue);
+                labelCol = Integer.parseInt(integerValue) - 1;
             }
             // Default column values that were not specified.  Pick the
             // smallest number not specified by the other column value.
             // If neither column was specified the scores column is
             // first.
-            if (scoreCol == 0) {
-                while (scoreCol == 0 || scoreCol == labelCol)
+            if (!env.containsKey(scoresColumnOptName) && env.containsKey(labelsColumnOptName)) {
+                while (scoreCol == labelCol)
                     scoreCol++;
             }
-            if (labelCol == 0) {
-                while (labelCol == 0 || labelCol == scoreCol)
+            if (!env.containsKey(labelsColumnOptName)) {
+                while (labelCol == scoreCol)
                     labelCol++;
             }
             // Check column numbers are different
             if (scoreCol == labelCol) {
                 throw new Main.Exception(String.format("Column conflict for scores and labels: {%s} <-> {%s}", scoreCol + 1, labelCol + 1), ExitStatus.ERROR_USAGE);
             }
-            // Change column numbers to indices
-            scoreCol--;
-            labelCol--;
 
             // Read the CSV input from files or stdin as requested
             String slFileName = getLast(env.get(scoresLabelsOptName));
@@ -862,7 +857,7 @@ public class Main {
 
         public E next() {
             E[] next = iterator.next();
-            if (column >= next.length) {
+            if (column < 0 || column >= next.length) {
                 throw new ArrayIndexOutOfBoundsException(String.format("Column index out of bounds: %s", column));
             }
             return next[column];
