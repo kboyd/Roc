@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import mloss.roc.util.CsvProcessing;
+import mloss.roc.util.ArrayUtils;
 import mloss.roc.util.NaiveCsvReader;
 
 
@@ -525,15 +526,13 @@ public class Main {
             int[] labelsKeyCols = {};
             if (env.containsKey(scoresKeyOptName)) {
                 String integerListValue = getLast(env.get(scoresKeyOptName));
-                scoresKeyCols = mloss.roc.util.Arrays.add(-1,
-                    mloss.roc.util.Arrays.parseInts(
-                        commaSplitPattern.split(integerListValue)));
+                scoresKeyCols = ArrayUtils.add(-1, ArrayUtils.parseInts(
+                    commaSplitPattern.split(integerListValue)));
             }
             if (env.containsKey(labelsKeyOptName)) {
                 String integerListValue = getLast(env.get(labelsKeyOptName));
-                labelsKeyCols = mloss.roc.util.Arrays.add(-1,
-                    mloss.roc.util.Arrays.parseInts(
-                        commaSplitPattern.split(integerListValue)));
+                labelsKeyCols = ArrayUtils.add(-1, ArrayUtils.parseInts(
+                    commaSplitPattern.split(integerListValue)));
             }
             // Check for key agreement (provided by both or neither)
             if ((scoresKeyCols.length > 0 ||
@@ -550,28 +549,28 @@ public class Main {
                 String integerValue = getLast(env.get(scoresColumnOptName));
                 scoreCol = Integer.parseInt(integerValue) - 1;
             } else {
-                while (mloss.roc.util.Arrays.indexOf(scoreCol, scoresKeyCols) != -1)
+                while (ArrayUtils.indexOf(scoreCol, scoresKeyCols) != -1)
                     scoreCol++;
             }
             if (env.containsKey(labelsColumnOptName)) {
                 String integerValue = getLast(env.get(labelsColumnOptName));
                 labelCol = Integer.parseInt(integerValue) - 1;
             } else {
-                while (mloss.roc.util.Arrays.indexOf(labelCol, labelsKeyCols) != -1)
+                while (ArrayUtils.indexOf(labelCol, labelsKeyCols) != -1)
                     labelCol++;
             }
 
             // Check for column conflicts
-            if (mloss.roc.util.Arrays.indexOf(scoreCol, scoresKeyCols) != -1) {
-                String colsString = mloss.roc.util.Arrays.join(",",
-                    mloss.roc.util.Arrays.toStrings(
-                        mloss.roc.util.Arrays.add(1, scoresKeyCols)));
+            if (ArrayUtils.indexOf(scoreCol, scoresKeyCols) != -1) {
+                String colsString = ArrayUtils.join(",",
+                    ArrayUtils.toStrings(
+                        ArrayUtils.add(1, scoresKeyCols)));
                 throw new Main.Exception(String.format("Column conflict for scores keys and scores: {%s} <-> {%s}", colsString, scoreCol + 1), ExitStatus.ERROR_USAGE);
             }
-            if (mloss.roc.util.Arrays.indexOf(labelCol, labelsKeyCols) != -1) {
-                String colsString = mloss.roc.util.Arrays.join(",",
-                    mloss.roc.util.Arrays.toStrings(
-                        mloss.roc.util.Arrays.add(1, labelsKeyCols)));
+            if (ArrayUtils.indexOf(labelCol, labelsKeyCols) != -1) {
+                String colsString = ArrayUtils.join(",",
+                    ArrayUtils.toStrings(
+                        ArrayUtils.add(1, labelsKeyCols)));
                 throw new Main.Exception(String.format("Column conflict for labels keys and labels: {%s} <-> {%s}", colsString, labelCol + 1), ExitStatus.ERROR_USAGE);
             }
 

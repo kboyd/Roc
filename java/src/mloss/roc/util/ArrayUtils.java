@@ -9,13 +9,13 @@ package mloss.roc.util;
 /**
  * <p>All the array utilities we wished Java included.</p>
  */
-public class Arrays {
+public class ArrayUtils {
 
     /**
      * Unconstructable (no-op).  (A private constructor is necessary
      * because otherwise Java inserts a default public constructor.)
      */
-    private Arrays() {}
+    private ArrayUtils() {}
 
     /**
      * Converts an int array to an Integer array.  Creates an Integer
