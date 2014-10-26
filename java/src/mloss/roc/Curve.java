@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import java.util.Arrays;
 
 // TODO: handle case where classifier output is a weak ranking, e.g. class labels
 
@@ -184,14 +185,6 @@ public class Curve {
     }
 
     /**
-     * Calls {@link #Curve(int[], int)} with positiveLabel=1 (the
-     * default positive label for integers).
-     */
-    public Curve(int[] rankedLabels) {
-        this(rankedLabels, 1);
-    }
-
-    /**
      * Creates a classification result analysis suitable for producing
      * ROC and PR curves.  This is the version to use for collections of
      * number objects.
@@ -208,6 +201,65 @@ public class Curve {
     public <T> Curve(List<T> rankedLabels, T positiveLabel) {
         initFields(rankedLabels.size());
         buildCounts(rankedLabels, positiveLabel);
+    }
+
+    /**
+     * Creates a classification result analysis suitable for producing
+     * ROC and PR curves when there instances in the ranking that are
+     * indistinguishable, i.e. ties in the ranking.
+     *
+     * @param rankedLabels A list containing the true label for each
+     * example in the order of classified most likely positive to
+     * classified most likely negative. (The numbers used to rank the
+     * labels are not part of the ranked labels.)
+     * @param runLengths A list containing runs of indistinguishable
+     * labels in the rankedLabels list. Classification thresholds are
+     * only possible between runs, not within a run (when
+     * runLengths[i] is greater than 1, indicating ties in the
+     * ranking).
+     * @param positiveLabel The label that will be considered
+     * positive. All other labels are considere negative. This allows
+     * for handling multiple classes without having to rewrite all the
+     * labels into some prespecified positive and negative signifiers.
+     */
+    public Curve(int[] rankedLabels, int[] runLengths, int positiveLabel) {
+        initFields(runLengths.length);
+        buildCounts(rankedLabels, runLengths, positiveLabel);
+    }
+
+    /**
+     * Calls {@link #Curve(int[], int[], int)} with positiveLabel=1
+     * (the default positive label for integers).
+     */
+    /* Already have constructor with 2 int arrays.
+      public Curve(int[] rankedLabels, int[] runLengths) {
+        this(rankedLabels, runLengths, 1);
+      }
+    */
+
+    /**
+     * Creates a classification result analysis suitable for producing
+     * ROC and PR curves when there instances in the ranking that are
+     * indistinguishable, i.e. ties in the ranking. This is the
+     * version to use for collections of number objects.
+     *
+     * @param rankedLabels A list containing the true label for each
+     * example in the order of classified most likely positive to
+     * classified most likely negative. (The numbers used to rank the
+     * labels are not part of the ranked labels.)
+     * @param runLengths A list containing runs of indistinguishable
+     * labels in the rankedLabels list. Classification thresholds are
+     * only possible between runs, not within a run (when
+     * runLengths[i] is greater than 1, indicating ties in the
+     * ranking).
+     * @param positiveLabel The label that will be considered
+     * positive. All other labels are considere negative. This allows
+     * for handling multiple classes without having to rewrite all the
+     * labels into some prespecified positive and negative signifiers.
+     */
+    public <T> Curve(List<T> rankedLabels, int[] runLengths, T positiveLabel) {
+        initFields(runLengths.length);
+        buildCounts(rankedLabels, runLengths, positiveLabel);
     }
 
     /**
@@ -247,6 +299,81 @@ public class Curve {
             truePositiveCounts[labelIndex + 1] = totalPositives;
             falsePositiveCounts[labelIndex + 1] = totalNegatives;
             labelIndex++;
+        }
+    }
+
+    /**
+     * Counts and stores the numbers of correctly-classified positives
+     * and incorrectly classified negatives at each threshold between
+     * a run of ties.
+     *
+     * @param rankedLabels A list containing the true label for each
+     * example. The labels must already by ordered (ranked) from most
+     * likely positive to most likely negative.
+     * @param runLengths A list containing runs of tied examples in
+     * the ranking.
+     * @param positiveLabel The label that will be considered positive.
+     */
+    void buildCounts(int[] rankedLabels, int[] runLengths,
+                     int positiveLabel) {
+        // Calculate the individual confusion matrices
+        int runIndex = 0;
+        int nextThreshold = runLengths[runIndex];
+        for (int labelIndex = 0; labelIndex < rankedLabels.length;
+             labelIndex++) {
+            if (rankedLabels[labelIndex] == positiveLabel) {
+                totalPositives++;
+            } else {
+                totalNegatives++;
+            }
+            // check if between runs
+            if (labelIndex + 1 == nextThreshold) {
+                truePositiveCounts[runIndex + 1] = totalPositives;
+                falsePositiveCounts[runIndex + 1] = totalNegatives;
+                runIndex++;
+                if (runIndex < runLengths.length) {
+                    nextThreshold += runLengths[runIndex];
+                }
+            }
+        }
+
+        if (runIndex != runLengths.length ||
+            nextThreshold != rankedLabels.length) {
+            throw new IllegalArgumentException("Sum of run lengths must equal length of rankedLabels.");
+        }
+    }
+
+    /**
+     * Generic collections version of {@link #buildCounts(int[],
+     * int[], int)}.
+     */
+    <T> void buildCounts(Iterable<T> rankedLabels, int[] runLengths,
+                         T positiveLabel) {
+        // Calculate the individual confusion matrices
+        int labelIndex = 0;
+        int runIndex = 0;
+        int nextThreshold = runLengths[runIndex];
+        for (T label : rankedLabels) {
+            if (label.equals(positiveLabel)) {
+                totalPositives++;
+            } else {
+                totalNegatives++;
+            }
+            // check if between runs
+            if (labelIndex + 1 == nextThreshold) {
+                truePositiveCounts[runIndex + 1] = totalPositives;
+                falsePositiveCounts[runIndex + 1] = totalNegatives;
+                runIndex++;
+                if (runIndex < runLengths.length) {
+                    nextThreshold += runLengths[runIndex];
+                }
+            }
+            labelIndex++;
+        }
+
+        if (runIndex != runLengths.length ||
+            nextThreshold != labelIndex) {
+            throw new IllegalArgumentException("Sum of run lengths must equal length of rankedLabels.");
         }
     }
 
@@ -933,6 +1060,9 @@ public class Curve {
             // Check if it is OK to proceed (throws exception if not)
             checkValidBuilderState();
 
+            // Lengths of tied subsequences in the ranked labels list
+            int runLengths[];
+
             // Create a list of ranked labels if not already given
             if (rankedLabels == null) {
                 // Rank actuals by predicteds using a stable sort.
@@ -954,9 +1084,32 @@ public class Curve {
                 // Sort in reverse order to make a ranking
                 Collections.sort(sorted, new TupleScoreReverseComparator(comparator));
                 rankedLabels = new ArrayList<TLabel>(sorted.size());
+                ArrayList<Integer> dynamicRunLengths = new ArrayList<Integer>();
+                int currentRunLength = -1;
+                // Keep previous tuple to check for ties in predicteds
+                Tuple previous = null;
                 for (Tuple tuple : sorted) {
                     rankedLabels.add(tuple.label);
+
+                    if (previous != null && tuple.score.equals(previous.score)) {
+                        // tied
+                        currentRunLength++;
+                    }
+                    else {
+                        if (currentRunLength != -1) {
+                            dynamicRunLengths.add(currentRunLength);
+                        }
+                        currentRunLength = 1;
+                    }
+                    previous = tuple;
                 }
+                // Add the final set of scores
+                dynamicRunLengths.add(currentRunLength);
+
+                // Convert to primitive int[] array
+                runLengths = new int[dynamicRunLengths.size()];
+                for (int i = 0; i < dynamicRunLengths.size(); i++) runLengths[i] = dynamicRunLengths.get(i);
+
                 // Make sure the weights are in the ranked order too
                 if (weights != null) {
                     // Create a new list so that the original one is left unmodified
@@ -966,9 +1119,14 @@ public class Curve {
                     }
                 }
             }
+            else {
+                // runLengths are all 1
+                runLengths = new int[rankedLabels.size()];
+                Arrays.fill(runLengths, 1);
+            }
 
             // TODO pass weights if specified
-            return new Curve(rankedLabels, positiveLabel);
+            return new Curve(rankedLabels, runLengths, positiveLabel);
         }
 
         /**

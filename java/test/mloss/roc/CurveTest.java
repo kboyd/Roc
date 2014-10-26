@@ -6,6 +6,7 @@
 package mloss.roc;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -57,9 +58,9 @@ public class CurveTest {
     Curve staircaseCurve;
 
     @Before public void setUp() {
-        curve = new Curve(labelsAverage);
+        curve = new Curve(labelsAverage, 1);
         randCurve = new Curve(random_posCounts, random_negCounts);
-        staircaseCurve = new Curve(staircaseLabels);
+        staircaseCurve = new Curve(staircaseLabels, 1);
     }
 
     /**
@@ -67,31 +68,31 @@ public class CurveTest {
      * Curve.buildCounts(int[], int)}.
      */
     @Test public void testBuildCountsFromHardLabels() {
-        Curve curve = new Curve(labelsWorst);
+        Curve curve = new Curve(labelsWorst, 1);
         assertArrayEquals(labelsWorst_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(2, curve.totalNegatives);
 
-        curve = new Curve(labelsWorst, 0);  // Non-default positive label
+        curve = new Curve(labelsWorst, 0); // Change positive label
         assertArrayEquals(labelsWorst_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_posCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsAverage);
+        curve = new Curve(labelsAverage, 1);
         assertArrayEquals(labelsAverage_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsAverage, 0);  // Non-default positive label
+        curve = new Curve(labelsAverage, 0);  // Change positive label
         assertArrayEquals(labelsAverage_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_posCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsBest);
+        curve = new Curve(labelsBest, 1);
         assertArrayEquals(labelsBest_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsBest_negCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
@@ -528,7 +529,7 @@ public class CurveTest {
         Arrays.fill(labels, 0, n, 1);
         // Negatives (0) come after.
         Arrays.fill(labels, n, n+n, 0);
-        Curve hugeCurve = new Curve(labels);
+        Curve hugeCurve = new Curve(labels, 1);
         double expectedRocArea = 1.0;
         assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
         double[] expectedMannWhitneyU = {0.0, (double) n * (double) n};
@@ -540,11 +541,76 @@ public class CurveTest {
         Arrays.fill(labels, 0, n, 0);
         // Positives (1) come after.
         Arrays.fill(labels, n, n+n, 1);
-        hugeCurve = new Curve(labels);
+        hugeCurve = new Curve(labels, 1);
         expectedRocArea = 0.0;
         assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
         expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
+    }
+
+    @Test public void testRunLengthsPrimitiveConstructor() {
+        int[] rankedLabels = {1, 0, 1, 1, 0, 0};
+
+        // everything is tied
+        Curve curve = new Curve(rankedLabels, new int[]{6}, 1);
+        int[] expectedPosCounts = {0, 3};
+        int[] expectedNegCounts = {0, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // run of length 3
+        curve = new Curve(rankedLabels, new int[]{1, 1, 3, 1}, 1);
+        expectedPosCounts = new int[]{0, 1, 1, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // 2 separate runs
+        curve = new Curve(rankedLabels, new int[]{2, 1, 1, 2}, 1);
+        expectedPosCounts = new int[]{0, 1, 2, 3, 3};
+        expectedNegCounts = new int[]{0, 1, 1, 1, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // no ties
+        curve = new Curve(rankedLabels, new int[]{1, 1, 1, 1, 1, 1}, 1);
+        expectedPosCounts = new int[]{0, 1, 1, 2, 3, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 1, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+    }
+
+    @Test public void testRunLengthGenericConstructor() {
+        String[] rankedLabelsArray = {"true", "false", "true", "true", "false", "false"};
+        List<String> rankedLabels = Arrays.asList(rankedLabelsArray);
+
+        // everything is tied
+        Curve curve = new Curve(rankedLabels, new int[]{6}, "true");
+        int[] expectedPosCounts = {0, 3};
+        int[] expectedNegCounts = {0, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // run of length 3
+        curve = new Curve(rankedLabels, new int[]{1, 1, 3, 1}, "true");
+        expectedPosCounts = new int[]{0, 1, 1, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // 2 separate runs
+        curve = new Curve(rankedLabels, new int[]{2, 1, 1, 2}, "true");
+        expectedPosCounts = new int[]{0, 1, 2, 3, 3};
+        expectedNegCounts = new int[]{0, 1, 1, 1, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // no ties
+        curve = new Curve(rankedLabels, new int[]{1, 1, 1, 1, 1, 1}, "true");
+        expectedPosCounts = new int[]{0, 1, 1, 2, 3, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 1, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
     }
 }
