@@ -57,9 +57,9 @@ public class CurveTest {
     Curve staircaseCurve;
 
     @Before public void setUp() {
-        curve = new Curve(labelsAverage);
+        curve = new Curve(labelsAverage, 1);
         randCurve = new Curve(random_posCounts, random_negCounts);
-        staircaseCurve = new Curve(staircaseLabels);
+        staircaseCurve = new Curve(staircaseLabels, 1);
     }
 
     /**
@@ -67,31 +67,31 @@ public class CurveTest {
      * Curve.buildCounts(int[], int)}.
      */
     @Test public void testBuildCountsFromHardLabels() {
-        Curve curve = new Curve(labelsWorst);
+        Curve curve = new Curve(labelsWorst, 1);
         assertArrayEquals(labelsWorst_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(2, curve.totalNegatives);
 
-        curve = new Curve(labelsWorst, 0);  // Non-default positive label
+        curve = new Curve(labelsWorst, 0); // Change positive label
         assertArrayEquals(labelsWorst_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_posCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsAverage);
+        curve = new Curve(labelsAverage, 1);
         assertArrayEquals(labelsAverage_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_negCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsAverage, 0);  // Non-default positive label
+        curve = new Curve(labelsAverage, 0);  // Change positive label
         assertArrayEquals(labelsAverage_negCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsAverage_posCounts, curve.falsePositiveCounts);
         assertEquals(5, curve.totalPositives);
         assertEquals(5, curve.totalNegatives);
 
-        curve = new Curve(labelsBest);
+        curve = new Curve(labelsBest, 1);
         assertArrayEquals(labelsBest_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsBest_negCounts, curve.falsePositiveCounts);
         assertEquals(2, curve.totalPositives);
@@ -528,7 +528,7 @@ public class CurveTest {
         Arrays.fill(labels, 0, n, 1);
         // Negatives (0) come after.
         Arrays.fill(labels, n, n+n, 0);
-        Curve hugeCurve = new Curve(labels);
+        Curve hugeCurve = new Curve(labels, 1);
         double expectedRocArea = 1.0;
         assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
         double[] expectedMannWhitneyU = {0.0, (double) n * (double) n};
@@ -540,7 +540,7 @@ public class CurveTest {
         Arrays.fill(labels, 0, n, 0);
         // Positives (1) come after.
         Arrays.fill(labels, n, n+n, 1);
-        hugeCurve = new Curve(labels);
+        hugeCurve = new Curve(labels, 1);
         expectedRocArea = 0.0;
         assertEquals(expectedRocArea, hugeCurve.rocArea(), TOLERANCE);
         expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};

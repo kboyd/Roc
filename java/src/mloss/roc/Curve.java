@@ -184,14 +184,6 @@ public class Curve {
     }
 
     /**
-     * Calls {@link #Curve(int[], int)} with positiveLabel=1 (the
-     * default positive label for integers).
-     */
-    public Curve(int[] rankedLabels) {
-        this(rankedLabels, 1);
-    }
-
-    /**
      * Creates a classification result analysis suitable for producing
      * ROC and PR curves.  This is the version to use for collections of
      * number objects.
