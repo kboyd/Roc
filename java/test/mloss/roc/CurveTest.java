@@ -6,6 +6,7 @@
 package mloss.roc;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -546,5 +547,70 @@ public class CurveTest {
         expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
+    }
+
+    @Test public void testRunLengthsPrimitiveConstructor() {
+        int[] rankedLabels = {1, 0, 1, 1, 0, 0};
+
+        // everything is tied
+        Curve curve = new Curve(rankedLabels, new int[]{6}, 1);
+        int[] expectedPosCounts = {0, 3};
+        int[] expectedNegCounts = {0, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // run of length 3
+        curve = new Curve(rankedLabels, new int[]{1, 1, 3, 1}, 1);
+        expectedPosCounts = new int[]{0, 1, 1, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // 2 separate runs
+        curve = new Curve(rankedLabels, new int[]{2, 1, 1, 2}, 1);
+        expectedPosCounts = new int[]{0, 1, 2, 3, 3};
+        expectedNegCounts = new int[]{0, 1, 1, 1, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // no ties
+        curve = new Curve(rankedLabels, new int[]{1, 1, 1, 1, 1, 1}, 1);
+        expectedPosCounts = new int[]{0, 1, 1, 2, 3, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 1, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+    }
+
+    @Test public void testRunLengthGenericConstructor() {
+        String[] rankedLabelsArray = {"true", "false", "true", "true", "false", "false"};
+        List<String> rankedLabels = Arrays.asList(rankedLabelsArray);
+
+        // everything is tied
+        Curve curve = new Curve(rankedLabels, new int[]{6}, "true");
+        int[] expectedPosCounts = {0, 3};
+        int[] expectedNegCounts = {0, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // run of length 3
+        curve = new Curve(rankedLabels, new int[]{1, 1, 3, 1}, "true");
+        expectedPosCounts = new int[]{0, 1, 1, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // 2 separate runs
+        curve = new Curve(rankedLabels, new int[]{2, 1, 1, 2}, "true");
+        expectedPosCounts = new int[]{0, 1, 2, 3, 3};
+        expectedNegCounts = new int[]{0, 1, 1, 1, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
+
+        // no ties
+        curve = new Curve(rankedLabels, new int[]{1, 1, 1, 1, 1, 1}, "true");
+        expectedPosCounts = new int[]{0, 1, 1, 2, 3, 3, 3};
+        expectedNegCounts = new int[]{0, 0, 1, 1, 1, 2, 3};
+        assertArrayEquals(expectedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(expectedNegCounts, curve.falsePositiveCounts);
     }
 }
