@@ -5,7 +5,7 @@ Roc Project Goals, Ideals, and Philosophies
 General
 -------
 
-* Clarity. One should be able to easily grok the models and APIs.
+* Clarity.  One should be able to easily grok the models and APIs.
 
 
 Documentation

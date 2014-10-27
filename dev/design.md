@@ -9,24 +9,20 @@ High-Level Issues
 * Code license: BSD 2-clause (FreeBSD)
 
 
-Features
---------
+Future Features?
+----------------
 
-* library
-* curve points
+(Check the README for the current status of implemented features.)
+
 * measures
-  * curve area
   * accuracy? (at a particular threshold)
-  * Mann-Whitney U
   * Kendall's Tau
   * Kruskal-Wallis?
   * F1?
-* convex hull (or not)
 * one-column (labels sorted according to removed key) or two-column
   input (key-label pairs to be sorted)
   * input via a positive list and a negative list (or files)
 * regular PR, minimum PR
-* arbitrary labels (specify what label is true)
 * utilities
   * read labels (and weights) from file
   * write points to file
@@ -36,12 +32,6 @@ Features
 * one-line analysis, i.e. one function call to read input and write
   output points and areas
 * ties in ranking
-
-
-Future Features
----------------
-
-* CLI
 * aggregation (vertical averaging)
 * weighted examples (three-column input)
 * clipping of curve
@@ -106,14 +96,6 @@ Notes
   ROC and trapezoid-analogue closed-form solution for PR.
 
 
-Development Structure
----------------------
-
-* How organize different languages, tests?
-* Build system?  (Probably not Ant.)
-* Versions - how do we want to deal with versions, or does it not matter at this point
-
-
 Tools and Languages
 -------------------
 
@@ -121,10 +103,9 @@ Tools and Languages
   ([Markdown](http://daringfireball.net/projects/markdown/syntax)) for
   documentation
 * Java for "pure", reference implementation
-* Vala for library implementation
-* Swig for language bindings
-* Python for CLI?
-* Build system?  Waf?
+* Python?
+* Julia?
+* Build system?  Scons? Waf?
 
 
 Competitors
@@ -137,5 +118,5 @@ Competitors
 * [StAR](http://protein.bio.puc.cl/cardex/servers/roc/roc_analysis.php)
 
 
-Copyright (c) 2012 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2014 Roc Project.  This is free software.  See LICENSE.txt
 for details.

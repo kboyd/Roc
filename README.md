@@ -55,9 +55,12 @@ Features and Project Maturity
 
 Roc is version 0.1.0.
 
-This software is in the early design and development stages.  It is
-planned to be released as a library and as a command-line interface
-(CLI) front-end for the library.  The table below contains a summary of
+This software is still in the alpha stages of design and development.
+However, it is mature enough for the authors to use it as part of their
+everyday workflow.
+
+It is released as a library and as a command-line interface (CLI)
+front-end for the library.  The table below contains a summary of
 features.
 
 Features are S=stable, T=tested, I=implemented, P=planned, NP=not
@@ -67,15 +70,15 @@ P2=Python 2.x.
     Feature Description           Library Status  CLI Status
     -------------------           --------------  ----------
     ROC curves
-    . Points                      J:T  P2:P       J:P  P2:P
-    . Area                        J:T  P2:P       J:P  P2:P
+    . Points                      J:T  P2:P       J:T  P2:P
+    . Area                        J:T  P2:P       J:T  P2:P
     . Maximum area (convex hull)  J:T  P2:P       J:P  P2:P
     . Aggregation (averaging)     J:P  P2:P       J:?  P2:?
     . Confidence bounds           J:P  P2:P       J:?  P2:?
     . Clipping                    J:P  P2:P       J:?  P2:?
     PR curves
-    . Points                      J:T  P2:P       J:P  P2:P
-    . Area                        J:T  P2:P       J:P  P2:P
+    . Points                      J:T  P2:P       J:T  P2:P
+    . Area                        J:T  P2:P       J:T  P2:P
     . Maximum area (convex hull)  J:I  P2:P       J:P  P2:P
     . Aggregation (averaging)     J:P  P2:P       J:?  P2:?
     . Confidence bounds           J:P  P2:P       J:?  P2:?
@@ -83,9 +86,9 @@ P2=Python 2.x.
     . Minimum awareness           J:P  P2:P       J:?  P2:?
     Plotting                      J:NP P2:P       J:NP P2:P
     Inputs
-    . Ranking                     J:T  P2:P       J:P  P2:P
-    . Predicteds, actuals         J:T  P2:P       J:P  P2:P
-    . Predicted-actual pairs      J:P  P2:P       J:P  P2:P
+    . Ranking of labels           J:T  P2:P       J:T  P2:P
+    . Scores, labels              J:T  P2:P       J:T  P2:P
+    . Score-label pairs           J:P  P2:P       J:T  P2:P
     . Example weights             J:P  P2:P       J:P  P2:P
     Convenience
     . File I/O                    J:P  P2:P       NA
@@ -100,9 +103,7 @@ accuracy have not been tested at such larger scales.
 Requirements
 ------------
 
-* Java 5 (or later) if using the Java library
-* Python 2.5 (or later, but not 3.x) if using the command line interface
-  or Python library
+* Java 6 (or later)
 
 
 Development Requirements
@@ -122,8 +123,8 @@ missing Hamcrest symbols, try placing Hamcrest ahead of JUnit on the
 class path or updating JUnit.
 
 
-Java Library and JAR
---------------------
+Java Library, JAR, CLI
+----------------------
 
 The Java library provides an API for working with ROC and PR curves in
 your Java programs.  It is distributed as a Java archive (JAR)
@@ -133,6 +134,11 @@ To include the library in your Java project, just place the JAR in a
 convenient location and include it in your classpath.  You can browse
 the documentation by extracting it from the JAR or by viewing the
 [latest version on GitHub](http://kboyd.github.io/Roc/javadoc/).
+
+The JAR also contains the command-line interface which can be run like
+this:
+
+    java -jar roc-0.1.0.jar --help
 
 
 Contact

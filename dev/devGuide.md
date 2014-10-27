@@ -81,7 +81,7 @@ Development
 
 * Everything derives from `master`.  It is used for integration and
   release.  It should be as stable as possible.
-* Develop on your own branch: dev/<username>
+* Develop on your own branch: <initials>/<topicName>
 * Create other branches as needed for bugs, large features, etc.
 * Meta can be done directly on `master` or on your own branch depending
   on where it fits best.
@@ -96,5 +96,5 @@ References
   recommended reading list.
 
 
-Copyright (c) 2013 Roc Project.  This is free software.  See LICENSE.txt
+Copyright (c) 2014 Roc Project.  This is free software.  See LICENSE.txt
 for details.
