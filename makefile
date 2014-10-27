@@ -14,6 +14,8 @@
 #
 # help: Display this list of targets.
 #
+# main: Compile application main
+#
 # tests: Compile, run core JUnit tests.
 #
 # usertests: Compile, run JUnit user scenarios (functionality/acceptance
@@ -108,11 +110,16 @@ javaPkgDir := mloss/roc
 # Locations for the JUnit and Hamcrest JARs required for testing.  Note
 # that some versions of JUnit 4 include some of the core Hamcrest
 # classes.  The /usr/share/java paths exist on Red Hat and Fedora.
-# Presumably they also exist on other distributions.
-junitLocations := junit4.jar ~/opt/junit4.jar /usr/share/java/junit4.jar
-junitJars := $(wildcard $(junit) $(junitLocations))
-hamcrestLocations := hamcrest.jar ~/opt/hamcrest.jar /usr/share/java/hamcrest/core.jar
-hamcrestJars := $(wildcard $(hamcrest) $(hamcrestLocations))
+# Presumably they also exist on other distributions.  Only use the first
+# location found to help keep the classpath short and manageable: to
+# assist in debugging classpath problems and appropriately setting
+# variables.  (The system JUnit JAR might conflict with the Hamcrest
+# JAR, i.e. be old enough to contain Hamcrest classes that will override
+# those in the Hamcrest JAR.)
+junitLocations := junit.jar ~/opt/junit.jar /usr/share/java/junit4.jar
+junitJars := $(firstword $(wildcard $(junit) $(junitLocations)))
+hamcrestLocations := hamcrest-core.jar ~/opt/hamcrest-core.jar /usr/share/java/hamcrest/core.jar
+hamcrestJars := $(firstword $(wildcard $(hamcrest) $(hamcrestLocations)))
 
 # Java class paths.  The regular one includes any existing classpath and
 # the build directory.  The testing one adds JUnit and Hamcrest JARs to
@@ -135,7 +142,7 @@ javaUnitTestClasses := $(filter %Test.class,$(javaTestClasses))
 
 # Project version (anything in the README after the identifying phrase
 # that consists of digits and periods with digits on the ends)
-version := $(shell grep 'Roc is version' README.md | sed -e 's/.*Roc is version \([0-9][0-9.]*[0-9]\).*/\1/')
+version := $(shell grep VERSION_STRING $(javaSrcDir)/$(javaPkgDir)/MetaInfo.java | sed -e 's/.*"\([0-9][0-9.]*[0-9]\)".*/\1/')
 
 
 ########################################
@@ -190,15 +197,28 @@ $(javaBuildDir)/%.class: $(javaBuildDir)/.junitClassesExist $(javaBuildDir)/.ham
 	javac -cp $(testClasspath) $(crossCompileOpts) -d $(javaBuildDir) $(javacOpts) $(javaTestDir)/$*.java
 
 # List Java dependencies here
+# Application classes
 $(javaBuildDir)/$(javaPkgDir)/Curve.class:
+$(javaBuildDir)/$(javaPkgDir)/Main.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/Reports.class $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class $(javaBuildDir)/$(javaPkgDir)/MetaInfo.class $(javaBuildDir)/$(javaPkgDir)/util/ArrayUtils.class
+$(javaBuildDir)/$(javaPkgDir)/Reports.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class:
-$(javaBuildDir)/$(javaPkgDir)/util/Arrays.class:
+$(javaBuildDir)/$(javaPkgDir)/util/ArrayUtils.class:
+$(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class:
 $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class: $(javaBuildDir)/$(javaPkgDir)/util/ArrayIterator.class
+$(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class:
+# Test classes
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/Arrays.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/ArrayUtils.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/MainTest.class: $(javaBuildDir)/$(javaPkgDir)/Main.class
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:
+$(javaBuildDir)/$(javaPkgDir)/util/CsvProcessingTest.class: $(javaBuildDir)/$(javaPkgDir)/util/CsvProcessing.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+
+#####
+# Main
+
+main: $(javaBuildDir)/$(javaPkgDir)/Main.class
 
 # Test dependencies
 
@@ -248,7 +268,8 @@ $(javaSrcDir)/doc-files/LICENSE.txt: LICENSE.txt
 # Javadoc level private
 $(javaDocDir)/index.html: $(javaSrcDir)/overview.html $(javaSrcDir)/javadocOptions.txt $(javaSrcFiles) $(javaDocFiles) $(javaSrcDir)/doc-files/LICENSE.txt $(javaSrcDir)/overview-summary.html.patch
 	javadoc -d $(javaDocDir) -sourcepath $(javaSrcDir) -private @$(javaSrcDir)/javadocOptions.txt -overview $< $(javaSrcFiles)
-# Work around javadoc bug where content is put in div with footer class (but only if present)
+# Work around javadoc bug where content is put in div with footer class
+# (but only if present)
 	grep -q 'class="footer".*name="overview_description"' $(javaDocDir)/overview-summary.html && patch --forward --input $(javaSrcDir)/overview-summary.html.patch $(javaDocDir)/overview-summary.html || true
 
 #####
@@ -275,7 +296,7 @@ $(javaBuildDir)/%.java: $(javaSrcDir)/%.java
 
 # Build a JAR for the current version
 $(javaBuildDir)/roc-$(version).jar: README.md LICENSE.txt $(javaReleaseSrcFiles) $(javaSrcClasses) release-javadoc
-	jar cf $@ README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
+	jar cfe $@ mloss.roc.Main README.md LICENSE.txt -C $(javaBuildDir) mloss -C $(javaBuildDir) doc
 
 
 ########################################

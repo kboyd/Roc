@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 Roc Project.  This is free software.  See
+ * Copyright (c) 2014 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -26,14 +26,14 @@ public class IterableArray<E> implements Iterable<E> {
      * used as a collection.  Just wraps the given array; does not
      * allocate memory.</p>
      *
-     * <p>Use {@link Arrays#intArrayToIntegerArray(int[])} and {@link
-     * Arrays#doubleArrayToDoubleArray(double[])} to first convert
-     * arrays of primitives to arrays of objects if needed. For
+     * <p>Use {@link ArrayUtils#intArrayToIntegerArray(int[])} and
+     * {@link ArrayUtils#doubleArrayToDoubleArray(double[])} to first
+     * convert arrays of primitives to arrays of objects if needed. For
      * example:</p>
      *
      * <pre><code>
      * int[] intArray = ...;
-     * ... = new IterableArray(Arrays.intArrayToIntegerArray(intArray));
+     * ... = new IterableArray(ArrayUtils.intArrayToIntegerArray(intArray));
      * </code></pre>
      *
      * @param array Some array of objects.

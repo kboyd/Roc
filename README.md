@@ -116,6 +116,11 @@ requirements.
 * JUnit >= 4.6
 * Hamcrest >= 1.3 (if not already included in your JUnit release)
 
+Note that certain JUnit versions contain some Hamcrest classes and so
+may conflict with (override) those from Hamcrest.  If you encounter
+missing Hamcrest symbols, try placing Hamcrest ahead of JUnit on the
+class path or updating JUnit.
+
 
 Java Library and JAR
 --------------------

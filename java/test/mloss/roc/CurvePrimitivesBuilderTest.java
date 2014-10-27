@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static mloss.roc.util.Assert.*;
-import mloss.roc.util.Arrays;
+import mloss.roc.util.ArrayUtils;
 import mloss.roc.util.IterableArray;
 
 
@@ -115,8 +115,8 @@ public class CurvePrimitivesBuilderTest {
         assertEquals(0, list.size());
         list = Curve.PrimitivesBuilder.primitiveArrayToList(labels);
         assertEquals(17, list.size());
-        IterableArray<Integer> iterable = new IterableArray<Integer>
-            (Arrays.intArrayToIntegerArray(labels));
+        IterableArray<Integer> iterable = new IterableArray<Integer>(
+            ArrayUtils.intsToIntegers(labels));
         assertIterablesEqual(iterable, list);
     }
 
@@ -131,8 +131,8 @@ public class CurvePrimitivesBuilderTest {
         assertEquals(0, list.size());
         list = Curve.PrimitivesBuilder.primitiveArrayToList(scores);
         assertEquals(17, list.size());
-        IterableArray<Double> iterable = new IterableArray<Double>
-            (Arrays.doubleArrayToDoubleArray(scores));
+        IterableArray<Double> iterable = new IterableArray<Double>(
+            ArrayUtils.dblsToDoubles(scores));
         assertIterablesEqual(iterable, list);
     }
 }
