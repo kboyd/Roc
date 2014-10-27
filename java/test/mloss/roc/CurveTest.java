@@ -6,6 +6,7 @@
 package mloss.roc;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -56,7 +57,8 @@ public class CurveTest {
     Curve randCurve;
     Curve staircaseCurve;
 
-    @Before public void setUp() {
+    @Before
+    public void setUp() {
         curve = new Curve(labelsAverage);
         randCurve = new Curve(random_posCounts, random_negCounts);
         staircaseCurve = new Curve(staircaseLabels);
@@ -66,7 +68,8 @@ public class CurveTest {
      * Tests {@link Curve.buildCounts(int[])} and {@link
      * Curve.buildCounts(int[], int)}.
      */
-    @Test public void testBuildCountsFromHardLabels() {
+    @Test
+    public void testBuildCountsFromHardLabels() {
         Curve curve = new Curve(labelsWorst);
         assertArrayEquals(labelsWorst_posCounts, curve.truePositiveCounts);
         assertArrayEquals(labelsWorst_negCounts, curve.falsePositiveCounts);
@@ -118,7 +121,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.confusionMatrix(int)}. */
-    @Test public void testConfusionMatrix() {
+    @Test
+    public void testConfusionMatrix() {
         // Normal
         int[][] expected = {
             {0, 0, 5, 5},
@@ -156,7 +160,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.rocPoint(int)}. */
-    @Test public void testRocPoint() {
+    @Test
+    public void testRocPoint() {
         // Normal
         // Remember FPR horizontal, TPR vertical
         // Do these in fractions for human readability and floating-point precision
@@ -185,7 +190,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.rocPoints()}. */
-    @Test public void testRocPoints() {
+    @Test
+    public void testRocPoints() {
         // Normal
         double[][] expected = createRocPoints(labelsAverage_posCounts, labelsAverage_negCounts);
         double[][] actual = curve.rocPoints();
@@ -204,7 +210,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.rocArea()}. */
-    @Test public void testRocArea() {
+    @Test
+    public void testRocArea() {
         // Normal
         // Points: Rectangles (w * h = area):
         // 1-2: 0.2 * 0.2 = 1.0 / 25.0
@@ -320,7 +327,8 @@ public class CurveTest {
     };
 
     /** Tests {@link Curve.prPoint(int)}. */
-    @Test public void testPrPoint() {
+    @Test
+    public void testPrPoint() {
         // Normal
         for (int expectedIndex = 0;
              expectedIndex < expectedRawPrPoints_curve.length;
@@ -339,7 +347,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.prPoints()}. */
-    @Test public void testPrPoints() {
+    @Test
+    public void testPrPoints() {
         // Normal
         double[][] actual = curve.prPoints();
         assertEquals(expectedPrPoints_curve.length, actual.length);
@@ -364,7 +373,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.prArea()}. */
-    @Test public void testPrArea() {
+    @Test
+    public void testPrArea() {
         // Normal
         // Fields: point, increment type, area calculation
         // Think of the increment type as ASCII art for the line
@@ -419,7 +429,8 @@ public class CurveTest {
     static final int[] expectedPosCounts_convexHull = {0, 1, 10, 12};
 
     /** Tests {@link Curve.convexHullPoints(int[], int[])}. */
-    @Test public void testConvexHullPoints() {
+    @Test
+    public void testConvexHullPoints() {
         // Full area, convex hull is left and top of rectangle
         int[][] points = Curve.convexHullPoints(labelsBest_negCounts, labelsBest_posCounts);
         int[] xs = {0, 0, 3};
@@ -448,7 +459,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.convexHull()}. */
-    @Test public void testConvexHull() {
+    @Test
+    public void testConvexHull() {
         // Normal
         Curve hull = curve.convexHull();
         int[] expectedPosCounts_curve = {0, 1, 3, 5};
@@ -474,7 +486,8 @@ public class CurveTest {
     }
 
     /** Tests {@link Curve.mannWhitneyU()}. */
-    @Test public void testMannWhitneyU() {
+    @Test
+    public void testMannWhitneyU() {
         /* There are 2 samples; rank them all together.  For each
          * sample, r is the sum of ranks for that sample, n is the
          * sample size, u is the statistic.
@@ -517,11 +530,12 @@ public class CurveTest {
      * negative) ROC areas when totalPositives and totalNegatives are
      * greater than 2^16.  https://github.com/kboyd/Roc/issues/15
      */
-    @Test public void testRocAreaIntegerOverflow() {
+    @Test
+    public void testRocAreaIntegerOverflow() {
         // Use 2^20 positives and 2^20 negatives to test up to our
         // supported scale of 1 million.
         int n = 1<<20;
-        
+
         // Check when in perfect order with correct rocArea of 1.
         int[] labels = new int[n+n];
         // Positives (1) come first.
@@ -534,7 +548,7 @@ public class CurveTest {
         double[] expectedMannWhitneyU = {0.0, (double) n * (double) n};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
-        
+
         // Check when in worst order with correct rocArea of 0.
         // Negatives (0) come first.
         Arrays.fill(labels, 0, n, 0);
@@ -546,5 +560,15 @@ public class CurveTest {
         expectedMannWhitneyU = new double[]{(double) n * (double) n, 0.0};
         assertArrayEquals(expectedMannWhitneyU, hugeCurve.mannWhitneyU(),
                           TOLERANCE);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadArgs_emptyIntArray() {
+        curve = new Curve(new int[]{});
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testConstructorBadArgs_emptyListT() {
+        curve = new Curve(new LinkedList<Integer>(), 1);
     }
 }

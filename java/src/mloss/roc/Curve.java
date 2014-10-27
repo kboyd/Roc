@@ -179,6 +179,8 @@ public class Curve {
      * labels into some prespecified positive and negative signifiers.
      */
     public Curve(int[] rankedLabels, int positiveLabel) {
+        if (rankedLabels.length == 0)
+            throw new IllegalArgumentException("The list of ranked labels must not be empty.");
         initFields(rankedLabels.length);
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -206,6 +208,8 @@ public class Curve {
      * labels into some prespecified positive and negative signifiers.
      */
     public <T> Curve(List<T> rankedLabels, T positiveLabel) {
+        if (rankedLabels.size() == 0)
+            throw new IllegalArgumentException("The list of ranked labels must not be empty.");
         initFields(rankedLabels.size());
         buildCounts(rankedLabels, positiveLabel);
     }
@@ -747,10 +751,10 @@ public class Curve {
      *
      * <p>There are also additional options.  A list of weights may be
      * given.  The list of weights must correspond to the lists of
-     * predicteds and actuals (if given) or correspond to the list of
-     * ranked labels.  A comparator may be given which will be used for
-     * sorting the scores.  Otherwise the natural ordering of the scores
-     * will be used.<p>
+     * scores and labels (if given) or correspond to the list of ranked
+     * labels.  A comparator may be given which will be used for sorting
+     * the scores.  Otherwise the natural ordering of the scores will be
+     * used.<p>
      *
      * <h3>Notes</h3>
      *
@@ -784,8 +788,8 @@ public class Curve {
         // this package.  All the lists should be the same length and
         // kept in the same order.
         List<TLabel> rankedLabels;
-        List<TScore> predicteds;
-        List<TLabel> actuals;
+        List<TScore> scores;
+        List<TLabel> labels;
         List<Double> weights;
         TLabel positiveLabel;
         Comparator<? super TScore> comparator;
@@ -821,14 +825,14 @@ public class Curve {
          * scores will be used to rank the actual labels.  The iterable
          * is instantiated as a list if necessary.
          *
-         * @param predicteds A sequence of scores
+         * @param scores A sequence of scores
          * @return This builder
          */
-        public Builder<TScore, TLabel> predicteds(Iterable<TScore> predicteds) {
-            if (predicteds instanceof List) {
-                this.predicteds = (List<TScore>) predicteds;
+        public Builder<TScore, TLabel> scores(Iterable<TScore> scores) {
+            if (scores instanceof List) {
+                this.scores = (List<TScore>) scores;
             } else {
-                this.predicteds = Builder.instantiateSequence(predicteds);
+                this.scores = Builder.instantiateSequence(scores);
             }
             return this;
         }
@@ -839,14 +843,14 @@ public class Curve {
          * predictions.  The iterable is instantiated as a list if
          * necessary.
          *
-         * @param actuals A sequence of labels
+         * @param labels A sequence of labels
          * @return This builder
          */
-        public Builder<TScore, TLabel> actuals(Iterable<TLabel> actuals) {
-            if (actuals instanceof List) {
-                this.actuals = (List<TLabel>) actuals;
+        public Builder<TScore, TLabel> labels(Iterable<TLabel> labels) {
+            if (labels instanceof List) {
+                this.labels = (List<TLabel>) labels;
             } else {
-                this.actuals = Builder.instantiateSequence(actuals);
+                this.labels = Builder.instantiateSequence(labels);
             }
             return this;
         }
@@ -899,24 +903,37 @@ public class Curve {
          * called by {@link #build()} before building.
          */
         private void checkValidBuilderState() {
-            // Check for correct builder state
-            if (positiveLabel == null) {
-                throw new IllegalStateException("A positive label must be specified.");
-            }
+            int numberLabels;
+            // Check build from scores and labels
             if (rankedLabels == null) {
-                if (predicteds == null || actuals == null) {
-                    throw new IllegalStateException("Both 'predicteds' and 'actuals' must be specified unless 'rankedLabels' is specified.");
+                if (scores == null || labels == null) {
+                    throw new IllegalArgumentException("When using scores and labels, both lists must be specified.");
                 }
-                if (predicteds.size() != actuals.size()) {
-                    throw new IllegalStateException("The sizes of 'predicteds' and 'actuals' must agree.");
+                if (scores.size() == 0) {
+                    throw new IllegalArgumentException("The list of scores must not be empty.");
                 }
-                if (weights != null && weights.size() != predicteds.size()) {
-                    throw new IllegalStateException("The size of 'weights' must agree with those of 'predicteds' and 'actuals'.");
+                if (labels.size() == 0) {
+                    throw new IllegalArgumentException("The list of labels must not be empty.");
                 }
-            } else {
-                if (weights != null && weights.size() != rankedLabels.size()) {
-                    throw new IllegalStateException("The sizes of 'rankedLabels' and 'weights' must agree.");
+                if (scores.size() != labels.size()) {
+                    throw new IllegalArgumentException("The number of scores does not equal the number of labels.");
                 }
+                numberLabels = labels.size();
+            }
+            // Check build from ranked labels
+            else {
+                if (rankedLabels.size() == 0) {
+                    throw new IllegalArgumentException("The list of ranked labels must not be empty.");
+                }
+                numberLabels = rankedLabels.size();
+            }
+            // Check size of weights is the same as other lists
+            if (weights != null && weights.size() != numberLabels) {
+                throw new IllegalArgumentException("The number of weights does not equal the number of labels.");
+            }
+            // Check that there is a postive label
+            if (positiveLabel == null) {
+                throw new IllegalArgumentException("A positive label must be specified.");
             }
             // Builder state OK
         }
@@ -926,8 +943,8 @@ public class Curve {
          * this point.  Ranks the labels by the scores if necessary.
          *
          * @return A new curve
-         * @throws IllegalStateException if the builder is not in a
-         * valid state to construct a curve
+         * @throws IllegalArgumentException if the builder has not been
+         * given valid arguments as required to construct a curve
          */
         public Curve build() {
             // Check if it is OK to proceed (throws exception if not)
@@ -935,20 +952,20 @@ public class Curve {
 
             // Create a list of ranked labels if not already given
             if (rankedLabels == null) {
-                // Rank actuals by predicteds using a stable sort.
+                // Rank labels by scores using a stable sort.
                 // First populate a sortable list.
-                List<Tuple> sorted = new ArrayList<Tuple>(predicteds.size());
-                Iterator<TScore> iterPredicteds = predicteds.iterator();
-                Iterator<TLabel> iterActuals = actuals.iterator();
+                List<Tuple> sorted = new ArrayList<Tuple>(scores.size());
+                Iterator<TScore> iterScores = scores.iterator();
+                Iterator<TLabel> iterLabels = labels.iterator();
                 // Include the weights in the sort if not null (else branch)
                 if (weights == null) {
-                    while (iterPredicteds.hasNext() && iterActuals.hasNext()) {
-                        sorted.add(new Tuple(iterPredicteds.next(), iterActuals.next()));
+                    while (iterScores.hasNext() && iterLabels.hasNext()) {
+                        sorted.add(new Tuple(iterScores.next(), iterLabels.next()));
                     }
                 } else {
                     Iterator<Double> iterWeights = weights.iterator();
-                    while (iterPredicteds.hasNext() && iterActuals.hasNext() && iterWeights.hasNext()) {
-                        sorted.add(new Tuple(iterPredicteds.next(), iterActuals.next(), iterWeights.next()));
+                    while (iterScores.hasNext() && iterLabels.hasNext() && iterWeights.hasNext()) {
+                        sorted.add(new Tuple(iterScores.next(), iterLabels.next(), iterWeights.next()));
                     }
                 }
                 // Sort in reverse order to make a ranking
@@ -1069,22 +1086,22 @@ public class Curve {
         }
 
         /**
-         * @param predicteds A sequence of scores
+         * @param scores A sequence of scores
          * @return This builder
-         * @see Builder#predicteds(Iterable)
+         * @see Builder#scores(Iterable)
          */
-        public PrimitivesBuilder predicteds(double[] predicteds) {
-            this.predicteds = PrimitivesBuilder.primitiveArrayToList(predicteds);
+        public PrimitivesBuilder scores(double[] scores) {
+            this.scores = PrimitivesBuilder.primitiveArrayToList(scores);
             return this;
         }
 
         /**
-         * @param actuals A sequence of labels
+         * @param labels A sequence of labels
          * @return This builder
-         * @see Builder#actuals(Iterable)
+         * @see Builder#labels(Iterable)
          */
-        public PrimitivesBuilder actuals(int[] actuals) {
-            this.actuals = PrimitivesBuilder.primitiveArrayToList(actuals);
+        public PrimitivesBuilder labels(int[] labels) {
+            this.labels = PrimitivesBuilder.primitiveArrayToList(labels);
             return this;
         }
 
