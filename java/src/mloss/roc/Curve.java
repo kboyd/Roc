@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Roc Project.  This is free software.  See
+ * Copyright (c) 2015 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -12,9 +12,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-
-// TODO: handle case where classifier output is a weak ranking, e.g. class labels
 
 /**
  * <p>This class is a binary classification result analysis suitable for
@@ -970,18 +967,40 @@ public class Curve {
                 }
                 // Sort in reverse order to make a ranking
                 Collections.sort(sorted, new TupleScoreReverseComparator(comparator));
-                rankedLabels = new ArrayList<TLabel>(sorted.size());
+                // Construct lists of positive and negative counts
+                int posCount = 0;
+                int negCount = 0;
+                int[] posCounts = new int[sorted.size() + 1];
+                int[] negCounts = new int[sorted.size() + 1];
+                int countIndex = 0; // Should start at 1.  Loop will increment first iteration.
+                TScore lastScore = null;
                 for (Tuple tuple : sorted) {
-                    rankedLabels.add(tuple.label);
-                }
-                // Make sure the weights are in the ranked order too
-                if (weights != null) {
-                    // Create a new list so that the original one is left unmodified
-                    weights = new ArrayList<Double>(sorted.size());
-                    for (Tuple tuple : sorted) {
-                        weights.add(tuple.weight);
+                    // Advance the count index if the score of this
+                    // tuple does not equal the score of the previous
+                    // tuple
+                    if (!tuple.score.equals(lastScore)) {
+                        posCounts[countIndex] = posCount;
+                        negCounts[countIndex] = negCount;
+                        countIndex++;
+                    }
+                    lastScore = tuple.score;
+                    // Count the label
+                    if (tuple.label.equals(positiveLabel)) {
+                        posCount++;
+                    } else {
+                        negCount++;
                     }
                 }
+                posCounts[countIndex] = posCount;
+                negCounts[countIndex] = negCount;
+                countIndex++;
+                // Limit the arrays of counts to their actual size
+                int[] realPosCounts = new int[countIndex];
+                int[] realNegCounts = new int[countIndex];
+                System.arraycopy(posCounts, 0, realPosCounts, 0, countIndex);
+                System.arraycopy(negCounts, 0, realNegCounts, 0, countIndex);
+                // Construct the curve
+                return new Curve(realPosCounts, realNegCounts);
             }
 
             // TODO pass weights if specified

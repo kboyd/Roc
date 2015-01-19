@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Roc Project.  This is free software.  See
+ * Copyright (c) 2015 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -61,6 +61,22 @@ public class CurveBuilderTest {
     public static final int[] posCounts = {0, 1, 1, 1, 2, 2, 2, 3, 4, 4, 5, 6};
     public static final int[] negCounts = {0, 0, 1, 2, 2, 3, 4, 4, 4, 5, 5, 5};
 
+    // Tied scores and labels
+    public static final Integer[] tiedScoresArray = { // 5 levels
+        3, 1, 5, 1, 4, 2, 1, 3, 3, 1, 1, 1, 2,
+    };
+    public static final Integer[] tiedLabelsArray = { // 3 classes
+        3, 3, 3, 1, 2, 1, 2, 1, 1, 1, 2, 2, 1,
+    };
+    public static final Integer tiedPositiveLabel = new Integer(1);
+    public static final int[] tiedPosCounts = {0, 0, 0, 2, 4, 6};
+    public static final int[] tiedNegCounts = {0, 1, 2, 3, 3, 7};
+    // Collections forms of above
+    public static final Iterable<Integer> tiedScoresSequence =
+        new IterableArray<Integer>(tiedScoresArray);
+    public static final Iterable<Integer> tiedLabelsSequence =
+        new IterableArray<Integer>(tiedLabelsArray);
+
     // Object under test
     Curve.Builder<Double, String> builder;
 
@@ -92,7 +108,7 @@ public class CurveBuilderTest {
 
     /**
      * Tests {@link Curve.Builder.scores(Iterable)} and {@link
-     * Curve.Builder.scores(Iterable)}.
+     * Curve.Builder.labels(Iterable)}.
      */
     @Test
     public void testBuildWithScoresLabels() {
@@ -112,6 +128,19 @@ public class CurveBuilderTest {
         Curve curve = builder.positiveLabel(positiveLabel).build();
         assertArrayEquals(posCounts, curve.truePositiveCounts);
         assertArrayEquals(negCounts, curve.falsePositiveCounts);
+    }
+
+    @Test
+    public void testBuildWithTiedScoresLabels() {
+        Curve.Builder<Integer, Integer> builder =
+            new Curve.Builder<Integer, Integer>();
+        Curve curve = builder.
+            scores(tiedScoresSequence).
+            labels(tiedLabelsSequence).
+            positiveLabel(tiedPositiveLabel).
+            build();
+        assertArrayEquals(tiedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(tiedNegCounts, curve.falsePositiveCounts);
     }
 
     //@Test public void testBuildWithScoresLabelsWeights() {

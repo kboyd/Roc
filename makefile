@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Roc Project.  This is free software.  See
+# Copyright (c) 2015 Roc Project.  This is free software.  See
 # LICENSE.txt for details.
 #
 # Builds all the aspects of Roc until a better build situation comes
@@ -209,7 +209,7 @@ $(javaBuildDir)/$(javaPkgDir)/util/NaiveCsvReader.class:
 # Test classes
 $(javaBuildDir)/$(javaPkgDir)/CurveTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class
 $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
-$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/ArrayUtils.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class
+$(javaBuildDir)/$(javaPkgDir)/CurvePrimitivesBuilderTest.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/util/Assert.class $(javaBuildDir)/$(javaPkgDir)/util/ArrayUtils.class $(javaBuildDir)/$(javaPkgDir)/util/IterableArray.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class $(javaBuildDir)/$(javaPkgDir)/CurveBuilderTest.class
 $(javaBuildDir)/$(javaPkgDir)/MainTest.class: $(javaBuildDir)/$(javaPkgDir)/Main.class
 $(javaBuildDir)/$(javaPkgDir)/UserScenarios.class: $(javaBuildDir)/$(javaPkgDir)/Curve.class $(javaBuildDir)/$(javaPkgDir)/CurveTest.class
 $(javaBuildDir)/$(javaPkgDir)/util/Assert.class:

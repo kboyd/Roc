@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Roc Project.  This is free software.  See
+ * Copyright (c) 2015 Roc Project.  This is free software.  See
  * LICENSE.txt for details.
  */
 
@@ -99,6 +99,33 @@ public class CurvePrimitivesBuilderTest {
         curve = builder.positiveLabel(3).build();
         assertArrayEquals(posCountsLabel3, curve.truePositiveCounts);
         assertArrayEquals(negCountsLabel3, curve.falsePositiveCounts);
+    }
+
+    @Test
+    public void testBuildWithTiedScoresLabels() {
+        double[] scores =
+            new double[CurveBuilderTest.tiedScoresArray.length];
+        int[] labels =
+            new int[CurveBuilderTest.tiedLabelsArray.length];
+        for (int i = 0; i < scores.length; i++) {
+            scores[i] = CurveBuilderTest.tiedScoresArray[i].doubleValue();
+            labels[i] = CurveBuilderTest.tiedLabelsArray[i].intValue();
+        }
+        Curve curve = builder.scores(scores).labels(labels).build();
+        assertArrayEquals(CurveBuilderTest.tiedPosCounts, curve.truePositiveCounts);
+        assertArrayEquals(CurveBuilderTest.tiedNegCounts, curve.falsePositiveCounts);
+    }
+
+    @Test
+    public void testBuildWithCompletelyTiedScores() {
+        double[] scores = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        int[] labels = {1, 0, 1, 0, 1, 0, 1, 0};
+        int[] posCounts = {0, 4};
+        int[] negCounts = {0, 4};
+        Curve curve = builder.scores(scores).labels(labels).build();
+        assertArrayEquals(posCounts, curve.truePositiveCounts);
+        assertArrayEquals(negCounts, curve.falsePositiveCounts);
+        assertEquals(0.5, curve.rocArea(), CurveTest.TOLERANCE);
     }
 
     //@Test public void testBuildWithScoresLabelsWeights() {
